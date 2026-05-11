@@ -1,0 +1,409 @@
+:root {
+    --admin-bg: #f4f1ea;
+    --admin-bg-dark: #0b1220;
+    --admin-surface: rgba(255, 255, 255, 0.94);
+    --admin-surface-muted: #f6f4ef;
+    --admin-surface-dark: rgba(14, 23, 40, 0.9);
+    --admin-surface-dark-muted: rgba(20, 32, 56, 0.92);
+    --admin-border: rgba(148, 163, 184, 0.22);
+    --admin-border-strong: rgba(15, 23, 42, 0.12);
+    --admin-text: #132033;
+    --admin-text-muted: #5f6f86;
+    --admin-text-dark: #e5edf8;
+    --admin-text-dark-muted: #93a4ba;
+    --admin-accent: #d97706;
+    --admin-accent-strong: #b45309;
+    --admin-success: #15803d;
+    --admin-warning: #d97706;
+    --admin-danger: #dc2626;
+    --admin-radius-xl: 1.25rem;
+    --admin-radius-2xl: 1.5rem;
+    --admin-radius-3xl: 1.75rem;
+    --admin-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+    --admin-shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+html.fi body,
+body.fi,
+body.fi-body {
+    background:
+        radial-gradient(circle at top left, rgba(245, 158, 11, 0.08), transparent 30%),
+        linear-gradient(180deg, #f8f5ef 0%, #f2eee7 100%);
+    color: var(--admin-text);
+}
+
+html.dark.fi body,
+html.dark body.fi,
+html.dark body.fi-body {
+    background:
+        radial-gradient(circle at top left, rgba(245, 158, 11, 0.1), transparent 32%),
+        linear-gradient(180deg, #08111d 0%, #0a1323 100%);
+    color: var(--admin-text-dark);
+}
+
+.fi-topbar {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(251, 248, 242, 0.88);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+}
+
+html.dark .fi-topbar {
+    border-bottom-color: rgba(148, 163, 184, 0.12);
+    background: rgba(8, 17, 29, 0.88);
+}
+
+.fi-sidebar {
+    border-right: 1px solid rgba(255, 255, 255, 0.48);
+    background:
+        linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(244, 241, 235, 0.94)) !important;
+    backdrop-filter: blur(18px);
+}
+
+html.dark .fi-sidebar {
+    border-right-color: rgba(148, 163, 184, 0.12);
+    background:
+        linear-gradient(180deg, rgba(10, 18, 32, 0.97), rgba(11, 20, 36, 0.95)) !important;
+}
+
+.fi-sidebar .fi-sidebar-item-button,
+.fi-sidebar .fi-sidebar-group-button {
+    border-radius: 1rem;
+    transition: background-color 140ms ease, color 140ms ease, transform 140ms ease, border-color 140ms ease;
+}
+
+.fi-sidebar .fi-sidebar-item-button:hover,
+.fi-sidebar .fi-sidebar-group-button:hover {
+    background: rgba(217, 119, 6, 0.1);
+    transform: translateX(2px);
+}
+
+.fi-sidebar .fi-sidebar-item-active .fi-sidebar-item-button {
+    border: 1px solid rgba(217, 119, 6, 0.18);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(234, 179, 8, 0.05));
+}
+
+.fi-page,
+.fi-main {
+    color: inherit;
+}
+
+.fi-page-header {
+    margin-bottom: 1.25rem;
+}
+
+.fi-page-header-heading,
+.fi-section-header-heading {
+    letter-spacing: -0.03em;
+}
+
+.fi-page-header-subheading,
+.fi-section-header-description {
+    color: var(--admin-text-muted);
+}
+
+html.dark .fi-page-header-subheading,
+html.dark .fi-section-header-description {
+    color: var(--admin-text-dark-muted);
+}
+
+.fi-section,
+.fi-ta,
+.fi-modal-window,
+.fi-dropdown-panel,
+.fi-in-tabs,
+.fi-fo-field-wrp,
+.fi-fo-repeater-item,
+.fi-fo-builder-item,
+.fi-fo-placeholder,
+.fi-wi-widget {
+    border: 1px solid var(--admin-border) !important;
+    border-radius: var(--admin-radius-2xl) !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(249, 247, 243, 0.98)) !important;
+    box-shadow: var(--admin-shadow);
+}
+
+html.dark .fi-section,
+html.dark .fi-ta,
+html.dark .fi-modal-window,
+html.dark .fi-dropdown-panel,
+html.dark .fi-in-tabs,
+html.dark .fi-fo-field-wrp,
+html.dark .fi-fo-repeater-item,
+html.dark .fi-fo-builder-item,
+html.dark .fi-fo-placeholder,
+html.dark .fi-wi-widget {
+    border-color: rgba(148, 163, 184, 0.16) !important;
+    background: linear-gradient(180deg, rgba(14, 23, 40, 0.94), rgba(12, 20, 35, 0.92)) !important;
+    box-shadow: none;
+}
+
+.fi-section-content,
+.fi-ta-ctn {
+    background: transparent !important;
+}
+
+.fi-fo-section,
+.fi-fo-tabs,
+.fi-resource-list-records-summary,
+.fi-modal-content,
+.fi-dropdown-list {
+    background: transparent !important;
+}
+
+.fi-ta-header-toolbar {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    background: transparent;
+}
+
+.fi-ta table {
+    font-size: 0.92rem;
+}
+
+.fi-ta th {
+    color: var(--admin-text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+html.dark .fi-ta th {
+    color: var(--admin-text-dark-muted);
+}
+
+.fi-ta td {
+    padding-top: 0.7rem !important;
+    padding-bottom: 0.7rem !important;
+    vertical-align: middle;
+}
+
+.fi-ta tr:hover td {
+    background: rgba(217, 119, 6, 0.04);
+}
+
+html.dark .fi-ta tr:hover td {
+    background: rgba(217, 119, 6, 0.08);
+}
+
+.fi-input-wrp,
+.fi-select-input,
+.fi-input,
+.fi-textarea,
+.fi-fo-rich-editor .tox-tinymce {
+    border-radius: 1rem !important;
+}
+
+.fi-input-wrp,
+.fi-select-input,
+.fi-input,
+textarea.fi-input,
+select.fi-select-input {
+    border-color: rgba(148, 163, 184, 0.2) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+html.dark .fi-input-wrp,
+html.dark .fi-select-input,
+html.dark .fi-input,
+html.dark textarea.fi-input,
+html.dark select.fi-select-input {
+    border-color: rgba(148, 163, 184, 0.16) !important;
+    background: rgba(18, 29, 49, 0.94) !important;
+    box-shadow: none;
+}
+
+.fi-input-wrp:focus-within,
+.fi-select-input:focus,
+.fi-input:focus,
+textarea.fi-input:focus,
+select.fi-select-input:focus {
+    border-color: rgba(217, 119, 6, 0.4) !important;
+    box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.12) !important;
+}
+
+textarea.fi-input {
+    min-height: 11rem;
+    padding-top: 0.9rem !important;
+    padding-bottom: 0.9rem !important;
+    line-height: 1.6;
+}
+
+.fi-fo-field-wrp-helper-text,
+.fi-fo-field-wrp-hint,
+.fi-fo-field-wrp-error-message {
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.fi-tabs {
+    gap: 0.45rem;
+}
+
+.fi-tabs-item {
+    border-radius: 999px !important;
+}
+
+.fi-tabs-item[aria-selected="true"] {
+    background: rgba(217, 119, 6, 0.1) !important;
+    color: var(--admin-accent-strong) !important;
+}
+
+html.dark .fi-tabs-item[aria-selected="true"] {
+    background: rgba(217, 119, 6, 0.18) !important;
+    color: #fcd34d !important;
+}
+
+.fi-btn {
+    border-radius: 0.95rem !important;
+    box-shadow: var(--admin-shadow-soft);
+}
+
+.fi-btn-color-primary {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+
+.fi-badge,
+.fi-dropdown-list-item,
+.fi-breadcrumbs-item-label,
+.fi-pagination-item-label,
+.fi-input-wrp-prefix,
+.fi-input-wrp-suffix {
+    color: inherit;
+}
+
+.fi-fo-file-upload,
+.fi-fo-file-upload-uploading-file,
+.fi-fo-placeholder {
+    border-radius: 1rem !important;
+}
+
+.fi-fo-file-upload {
+    border: 1px dashed rgba(148, 163, 184, 0.28) !important;
+    background: rgba(255, 255, 255, 0.76) !important;
+}
+
+html.dark .fi-fo-file-upload {
+    border-color: rgba(148, 163, 184, 0.16) !important;
+    background: rgba(18, 29, 49, 0.9) !important;
+}
+
+.fi-fo-field-wrp-label,
+.fi-fo-section-header-heading,
+.fi-modal-heading {
+    color: var(--admin-text);
+}
+
+html.dark .fi-fo-field-wrp-label,
+html.dark .fi-fo-section-header-heading,
+html.dark .fi-modal-heading {
+    color: var(--admin-text-dark);
+}
+
+.fi-simple-layout {
+    background:
+        radial-gradient(circle at top left, rgba(245, 158, 11, 0.12), transparent 30%),
+        linear-gradient(180deg, #f8f5ef 0%, #f2eee7 100%);
+}
+
+html.dark .fi-simple-layout {
+    background:
+        radial-gradient(circle at top left, rgba(245, 158, 11, 0.14), transparent 34%),
+        linear-gradient(180deg, #08111d 0%, #0a1323 100%);
+}
+
+.fi-simple-main-ctn,
+.fi-simple-main {
+    border-radius: var(--admin-radius-3xl);
+}
+
+.fi-simple-main {
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(249, 247, 243, 0.98));
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+}
+
+html.dark .fi-simple-main {
+    border-color: rgba(148, 163, 184, 0.16);
+    background: linear-gradient(180deg, rgba(14, 23, 40, 0.94), rgba(12, 20, 35, 0.92));
+    box-shadow: none;
+}
+
+.admin-page-frame {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.admin-page-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.admin-page-grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-page-grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-section-panel {
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-2xl);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(249, 247, 243, 0.98));
+    box-shadow: var(--admin-shadow);
+    padding: 1.25rem;
+}
+
+html.dark .admin-section-panel {
+    border-color: rgba(148, 163, 184, 0.16);
+    background: linear-gradient(180deg, rgba(14, 23, 40, 0.94), rgba(12, 20, 35, 0.92));
+    box-shadow: none;
+}
+
+.admin-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: flex-end;
+    border-top: 1px solid var(--admin-border);
+    padding-top: 1rem;
+}
+
+.admin-note {
+    border-radius: 1rem;
+    border: 1px solid rgba(217, 119, 6, 0.16);
+    background: rgba(217, 119, 6, 0.08);
+    color: var(--admin-accent-strong);
+    padding: 0.9rem 1rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+html.dark .admin-note {
+    background: rgba(217, 119, 6, 0.12);
+    color: #fcd34d;
+}
+
+.admin-empty-state {
+    border: 1px dashed rgba(148, 163, 184, 0.28);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.72);
+    padding: 1rem;
+    color: var(--admin-text-muted);
+    text-align: center;
+}
+
+html.dark .admin-empty-state {
+    background: rgba(18, 29, 49, 0.9);
+    color: var(--admin-text-dark-muted);
+}
+
+@media (max-width: 1024px) {
+    .admin-page-grid--two,
+    .admin-page-grid--three {
+        grid-template-columns: 1fr;
+    }
+}
