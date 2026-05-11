@@ -1,0 +1,96 @@
+{
+  "effective_config": {
+    "app_env": "local",
+    "app_url": "http://localhost:8000",
+    "database_default": "sqlite",
+    "database_connections": {
+      "sqlite": {
+        "driver": "sqlite",
+        "database": "C:\\nwp0203\\haber-sitesi\\database\\database.sqlite"
+      },
+      "mysql": {
+        "driver": "mysql",
+        "host": "127.0.0.1",
+        "port": "3306",
+        "database": "C:\\nwp0203\\haber-sitesi\\database\\database.sqlite"
+      },
+      "mariadb": {
+        "driver": "mariadb",
+        "host": "127.0.0.1",
+        "port": "3306",
+        "database": "C:\\nwp0203\\haber-sitesi\\database\\database.sqlite"
+      },
+      "pgsql": {
+        "driver": "pgsql",
+        "host": "127.0.0.1",
+        "port": "3306",
+        "database": "C:\\nwp0203\\haber-sitesi\\database\\database.sqlite"
+      },
+      "sqlsrv": {
+        "driver": "sqlsrv",
+        "host": "127.0.0.1",
+        "port": "3306",
+        "database": "C:\\nwp0203\\haber-sitesi\\database\\database.sqlite"
+      }
+    },
+    "queue_default": "database",
+    "cache_default": "database",
+    "config_cached": false,
+    "routes_cached": false,
+    "base_path": "C:\\nwp0203\\haber-sitesi",
+    "working_directory": "C:\\nwp0203\\haber-sitesi\\public",
+    "environment_path": "C:\\nwp0203\\haber-sitesi",
+    "environment_file": ".env",
+    "environment_file_path": "C:\\nwp0203\\haber-sitesi\\.env",
+    "php_binary": "C:\\xampp\\php\\php.exe",
+    "php_sapi": "cli-server",
+    "request_root": "http://127.0.0.1:8000",
+    "env_values": {
+      "APP_ENV": "local",
+      "APP_URL": "http://localhost:8000",
+      "DB_CONNECTION": "sqlite",
+      "DB_HOST": "127.0.0.1",
+      "DB_PORT": "3306",
+      "DB_DATABASE": "C:\\nwp0203\\haber-sitesi\\database\\database.sqlite",
+      "QUEUE_CONNECTION": "database",
+      "CACHE_STORE": "database"
+    },
+    "bootstrap_cache_files": [
+      {
+        "path": "C:\\nwp0203\\haber-sitesi\\bootstrap/cache/packages.php",
+        "exists": true,
+        "modified_at": "2026-03-30T13:49:35+03:00"
+      },
+      {
+        "path": "C:\\nwp0203\\haber-sitesi\\bootstrap/cache/services.php",
+        "exists": true,
+        "modified_at": "2026-03-30T13:49:35+03:00"
+      }
+    ]
+  },
+  "db_target": {
+    "connection_name": "sqlite",
+    "driver": "sqlite",
+    "database_name": "C:\\nwp0203\\haber-sitesi\\database\\database.sqlite",
+    "config": {
+      "database": "C:\\nwp0203\\haber-sitesi\\database\\database.sqlite"
+    },
+    "runtime_probe": [
+      {
+        "seq": 0,
+        "name": "main",
+        "file": "C:\\nwp0203\\haber-sitesi\\database\\database.sqlite"
+      }
+    ]
+  },
+  "counts": {
+    "total_news": 0,
+    "total_news_with_trashed": 0,
+    "published": 0,
+    "source_iha": 0,
+    "source_iha_published": 0
+  },
+  "latest_rows": [],
+  "category_distribution": [],
+  "city_distribution": []
+}
