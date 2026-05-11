@@ -1,7 +1,10 @@
 /.phpunit.cache
 /node_modules
 /public/build
+/public/css/filament
 /public/hot
+/public/js/filament
+/public/sitemap.xml
 /public/storage
 /storage/*.key
 /vendor
