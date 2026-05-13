@@ -3,6 +3,7 @@
 namespace Tests\Feature\Filament;
 
 use App\Filament\Pages\LayoutManager;
+use App\Filament\Pages\LayoutStudio;
 use App\Filament\Pages\MediaLibrary;
 use App\Models\Category;
 use App\Models\LayoutRevision;
@@ -17,6 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Tests\TestCase;
 
@@ -191,6 +193,52 @@ class ContentOperationsAndLayoutTest extends TestCase
         $this->assertSame('#fedcba', data_get($service->getDraftState(), 'appearance.primary_color'));
         $this->assertSame('#abcdef', Setting::get('appearance', 'primary_color'));
         $this->assertSame('#abcdef', data_get($service->getPublishedState(), 'appearance.primary_color'));
+    }
+
+    public function test_editor_can_save_layout_draft_but_cannot_publish_live_state(): void
+    {
+        Role::findOrCreate('super_admin', 'web');
+        Role::findOrCreate('editor', 'web');
+
+        $superAdmin = $this->makeAdmin();
+        $superAdmin->assignRole('super_admin');
+
+        $editor = User::factory()->create([
+            'email' => 'editor@example.test',
+            'is_active' => true,
+        ]);
+        $editor->assignRole('editor');
+
+        $service = app(LayoutConfigService::class);
+        $baseState = $service->getDraftState();
+        $publishedState = $this->withAppearanceColor($baseState, '#112233');
+
+        $service->storeDraftState($publishedState['modules'], $publishedState['appearance'], $superAdmin);
+        $service->publishDraft($superAdmin);
+
+        $this->actingAs($editor);
+
+        Livewire::test(LayoutStudio::class)
+            ->set('appearance.primary_color', '#445566')
+            ->call('saveDraft')
+            ->call('publishDraft');
+
+        $this->assertSame('#445566', data_get($service->getDraftState(), 'appearance.primary_color'));
+        $this->assertSame('#112233', Setting::get('appearance', 'primary_color'));
+        $this->assertSame('#112233', data_get($service->getPublishedState(), 'appearance.primary_color'));
+    }
+
+    public function test_layout_preview_requires_signed_url(): void
+    {
+        $admin = $this->makeAdmin();
+        $service = app(LayoutConfigService::class);
+        $draft = $service->getDraftRevision();
+
+        $this->get(route('layout.preview.home', ['revision' => $draft->id]))
+            ->assertForbidden();
+
+        $this->get($service->getPreviewUrl($draft))
+            ->assertOk();
     }
 
     public function test_media_library_deletes_only_orphan_media(): void
