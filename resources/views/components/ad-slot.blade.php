@@ -21,9 +21,9 @@
 
 @if($ad)
 <div class="ad-slot {{ $class }}" data-position="{{ $position }}"
+     data-impression-url="{{ route('ad.impression', ['ad' => $ad->id]) }}"
      style="--adh-ad-max-height: {{ $slotMeta['max_height'] }}; --adh-ad-mobile-max-height: {{ $slotMeta['mobile_max_height'] }}; --adh-ad-aspect-ratio: {{ $slotMeta['aspect_ratio'] }}; --adh-ad-mobile-aspect-ratio: {{ $slotMeta['mobile_aspect_ratio'] }};"
-     x-data
-     x-intersect.once="fetch('/api/ad-impression/{{ $ad->id }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content, 'Accept': 'application/json' } })">
+>
     @if($ad->type === \App\Models\Advertisement::TYPE_ADSENSE)
         <ins class="adsbygoogle"
              style="display:block"
@@ -62,4 +62,50 @@
         @endif
     @endif
 </div>
+
+@once
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const csrfToken = document.querySelector('meta[name=csrf-token]')?.content;
+            const track = (element) => {
+                if (element.dataset.impressionTracked === 'true') {
+                    return;
+                }
+
+                element.dataset.impressionTracked = 'true';
+                const headers = { 'Accept': 'application/json' };
+
+                if (csrfToken) {
+                    headers['X-CSRF-TOKEN'] = csrfToken;
+                }
+
+                fetch(element.dataset.impressionUrl, {
+                    method: 'POST',
+                    headers,
+                    keepalive: true,
+                }).catch(() => {});
+            };
+
+            const slots = document.querySelectorAll('.ad-slot[data-impression-url]');
+
+            if (! ('IntersectionObserver' in window)) {
+                slots.forEach(track);
+                return;
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (! entry.isIntersecting) {
+                        return;
+                    }
+
+                    track(entry.target);
+                    observer.unobserve(entry.target);
+                });
+            }, { threshold: 0.2 });
+
+            slots.forEach((slot) => observer.observe(slot));
+        });
+    </script>
+@endonce
 @endif

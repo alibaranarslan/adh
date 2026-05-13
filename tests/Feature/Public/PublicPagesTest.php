@@ -316,6 +316,8 @@ class PublicPagesTest extends TestCase
             'click_count' => 0,
         ]);
 
+        $renderedAd = Advertisement::query()->where('name', 'Header Reklami')->firstOrFail();
+
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('Header Reklami')
@@ -328,6 +330,9 @@ class PublicPagesTest extends TestCase
             ->assertSee('/storage/advertisements/sidebar-top.jpg', false)
             ->assertSee('/storage/advertisements/sidebar-bottom.jpg', false)
             ->assertSee('/storage/advertisements/footer.jpg', false)
+            ->assertSee('data-impression-url="' . route('ad.impression', ['ad' => $renderedAd->id]) . '"', false)
+            ->assertSee('IntersectionObserver', false)
+            ->assertDontSee('x-intersect', false)
             ->assertDontSee('Gelecek Reklam')
             ->assertDontSee('src=""', false)
             ->assertDontSee('src="/"', false);
