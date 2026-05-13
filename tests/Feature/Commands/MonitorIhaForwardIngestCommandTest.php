@@ -142,4 +142,78 @@ class MonitorIhaForwardIngestCommandTest extends TestCase
         $this->assertStringContainsString('health=healthy', $output);
         $this->assertStringContainsString('short_body=0', $output);
     }
+
+    public function test_running_sync_older_than_short_grace_period_reports_warn(): void
+    {
+        $category = Category::query()->create([
+            'name' => ['tr' => 'Gundem'],
+            'slug' => 'gundem',
+        ]);
+
+        IhaSyncLog::query()->create([
+            'status' => 'running',
+            'started_at' => now()->subMinutes(45),
+            'created_at' => now()->subMinutes(45),
+        ]);
+
+        NewsArticle::query()->create([
+            'iha_id' => 'iha-running-warn',
+            'title' => ['tr' => 'Running warn haber'],
+            'slug' => 'running-warn-haber',
+            'summary' => ['tr' => 'Kisa'],
+            'content' => ['tr' => str_repeat('Govde ', 80)],
+            'meta_title' => ['tr' => 'Running warn haber'],
+            'meta_description' => ['tr' => 'Kisa'],
+            'source' => 'iha',
+            'source_url' => 'https://example.com/article',
+            'category_id' => $category->id,
+            'status' => 'published',
+            'published_at' => now()->subMinutes(8),
+            'created_at' => now()->subMinutes(8),
+            'updated_at' => now()->subMinutes(8),
+        ]);
+
+        $exitCode = Artisan::call('iha:monitor-forward', ['--limit' => 1]);
+        $output = Artisan::output();
+
+        $this->assertSame(0, $exitCode);
+        $this->assertStringContainsString('health=warn sync_status=running running_age_minutes=45', $output);
+    }
+
+    public function test_stale_running_sync_reports_critical(): void
+    {
+        $category = Category::query()->create([
+            'name' => ['tr' => 'Gundem'],
+            'slug' => 'gundem',
+        ]);
+
+        IhaSyncLog::query()->create([
+            'status' => 'running',
+            'started_at' => now()->subMinutes(130),
+            'created_at' => now()->subMinutes(130),
+        ]);
+
+        NewsArticle::query()->create([
+            'iha_id' => 'iha-running-critical',
+            'title' => ['tr' => 'Running critical haber'],
+            'slug' => 'running-critical-haber',
+            'summary' => ['tr' => 'Kisa'],
+            'content' => ['tr' => str_repeat('Govde ', 80)],
+            'meta_title' => ['tr' => 'Running critical haber'],
+            'meta_description' => ['tr' => 'Kisa'],
+            'source' => 'iha',
+            'source_url' => 'https://example.com/article',
+            'category_id' => $category->id,
+            'status' => 'published',
+            'published_at' => now()->subMinutes(8),
+            'created_at' => now()->subMinutes(8),
+            'updated_at' => now()->subMinutes(8),
+        ]);
+
+        $exitCode = Artisan::call('iha:monitor-forward', ['--limit' => 1]);
+        $output = Artisan::output();
+
+        $this->assertSame(1, $exitCode);
+        $this->assertStringContainsString('health=critical sync_status=running running_age_minutes=130', $output);
+    }
 }

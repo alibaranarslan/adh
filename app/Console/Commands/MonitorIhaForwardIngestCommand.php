@@ -10,6 +10,8 @@ use Illuminate\Support\Collection;
 class MonitorIhaForwardIngestCommand extends Command
 {
     private const QUALITY_RISK_PREFIX = 'QUALITY_RISK';
+    private const RUNNING_WARN_MINUTES = 30;
+    private const RUNNING_CRITICAL_MINUTES = 120;
 
     protected $signature = 'iha:monitor-forward
         {--limit=20 : Son kac yeni IHA kaydi uzerinden kalite penceresi hesaplanacak}';
@@ -29,9 +31,10 @@ class MonitorIhaForwardIngestCommand extends Command
 
         $metrics = $this->buildMetrics($latestSync, $recentArticles, $limit);
         $summary = sprintf(
-            'IHA_FORWARD_MONITOR health=%s sync_status=%s quality_risk=%s quality_affected=%d freshness_minutes=%s fetched=%d created=%d updated=%d skipped=%d window=%d empty_content=%d weak_body=%d short_body=%d body_depth_ratio=%.2f generic_source_url_ratio=%.2f',
+            'IHA_FORWARD_MONITOR health=%s sync_status=%s running_age_minutes=%s quality_risk=%s quality_affected=%d freshness_minutes=%s fetched=%d created=%d updated=%d skipped=%d window=%d empty_content=%d weak_body=%d short_body=%d body_depth_ratio=%.2f generic_source_url_ratio=%.2f',
             $metrics['health'],
             $metrics['sync_status'],
+            $metrics['running_age_minutes'] === null ? 'none' : $metrics['running_age_minutes'],
             $metrics['quality_risk'] ? 'yes' : 'no',
             $metrics['quality_risk_affected'],
             $metrics['freshness_minutes'] === null ? 'UNVERIFIED' : $metrics['freshness_minutes'],
@@ -51,6 +54,7 @@ class MonitorIhaForwardIngestCommand extends Command
         $this->newLine();
         $this->line('Last Sync');
         $this->line(sprintf('  status: %s', $metrics['sync_status']));
+        $this->line(sprintf('  running_age_minutes: %s', $metrics['running_age_minutes'] === null ? 'none' : $metrics['running_age_minutes']));
         $this->line(sprintf('  quality_risk: %s', $metrics['quality_risk'] ? 'yes' : 'no'));
         $this->line(sprintf('  quality_affected: %d', $metrics['quality_risk_affected']));
         $this->line(sprintf('  freshness_minutes: %s', $metrics['freshness_minutes'] === null ? 'UNVERIFIED' : $metrics['freshness_minutes']));
@@ -130,13 +134,19 @@ class MonitorIhaForwardIngestCommand extends Command
             $freshnessMinutes = max(0, (int) $latestSync->started_at->diffInMinutes(now()));
         }
 
+        $runningAgeMinutes = null;
+        if ($latestSync?->status === 'running' && $latestSync->started_at) {
+            $runningAgeMinutes = max(0, (int) $latestSync->started_at->diffInMinutes(now()));
+        }
+
         $qualityRisk = $this->extractQualityRisk($latestSync?->error_message);
         $bodyDepthRatio = $windowCount > 0 ? $bodyDepthCount / $windowCount : 0.0;
         $genericSourceUrlRatio = $windowCount > 0 ? $genericSourceUrlCount / $windowCount : 0.0;
 
         return [
-            'health' => $this->determineHealth($latestSync, $freshnessMinutes, $windowCount, $emptyContentCount, $weakBodyCount, $shortBodyCount, $bodyDepthRatio, $qualityRisk),
+            'health' => $this->determineHealth($latestSync, $freshnessMinutes, $runningAgeMinutes, $windowCount, $emptyContentCount, $weakBodyCount, $shortBodyCount, $bodyDepthRatio, $qualityRisk),
             'sync_status' => $latestSync?->status ?? 'UNVERIFIED',
+            'running_age_minutes' => $runningAgeMinutes,
             'quality_risk' => $qualityRisk !== null,
             'quality_risk_affected' => $qualityRisk['affected'] ?? 0,
             'quality_risk_note' => $qualityRisk['raw'] ?? null,
@@ -158,6 +168,7 @@ class MonitorIhaForwardIngestCommand extends Command
     private function determineHealth(
         ?IhaSyncLog $latestSync,
         ?int $freshnessMinutes,
+        ?int $runningAgeMinutes,
         int $windowCount,
         int $emptyContentCount,
         int $weakBodyCount,
@@ -171,6 +182,16 @@ class MonitorIhaForwardIngestCommand extends Command
 
         if ($latestSync->status === 'failed') {
             return 'critical';
+        }
+
+        if ($latestSync->status === 'running') {
+            if ($runningAgeMinutes === null || $runningAgeMinutes >= self::RUNNING_CRITICAL_MINUTES) {
+                return 'critical';
+            }
+
+            if ($runningAgeMinutes >= self::RUNNING_WARN_MINUTES) {
+                return 'warn';
+            }
         }
 
         if ($freshnessMinutes === null || $freshnessMinutes > 24 * 60) {

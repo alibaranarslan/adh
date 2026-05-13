@@ -82,6 +82,21 @@ class VerifyDeployCommand extends Command
             return Http::timeout(10)->get("{$appUrl}/")->successful();
         }, $failed);
 
+        $this->check("Robots responds ({$appUrl}/robots.txt)", function () use ($appUrl) {
+            $response = Http::timeout(5)->get("{$appUrl}/robots.txt");
+
+            return $response->ok()
+                && str_contains($response->body(), 'Sitemap:');
+        }, $failed);
+
+        $this->check("Sitemap responds ({$appUrl}/sitemap.xml)", function () use ($appUrl) {
+            $response = Http::timeout(10)->get("{$appUrl}/sitemap.xml");
+
+            return $response->ok()
+                && str_contains($response->header('Content-Type', ''), 'xml')
+                && str_contains($response->body(), '<urlset');
+        }, $failed);
+
         if ($this->option('sentry')) {
             $this->check('Sentry test event', function () {
                 if (!config('sentry.dsn')) {
