@@ -54,6 +54,24 @@ class AdminMediaUploadHardeningTest extends TestCase
         $this->assertDatabaseMissing('media', ['id' => $orphan->id]);
     }
 
+    public function test_media_library_requires_configuration_access(): void
+    {
+        $writer = User::query()->create([
+            'name' => 'Writer',
+            'email' => 'writer@example.test',
+            'password' => 'secret-password',
+            'is_active' => true,
+        ]);
+        $orphan = $this->makeMedia(999999, 'orphan.jpg');
+
+        $this->actingAs($writer);
+
+        $this->get('/admin/media-library')
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('media', ['id' => $orphan->id]);
+    }
+
     public function test_admin_image_upload_fields_use_shared_safe_constraints(): void
     {
         foreach ([
@@ -67,6 +85,27 @@ class AdminMediaUploadHardeningTest extends TestCase
             $this->assertStringContainsString('AdminImageUploads::acceptedMimeTypes()', $content, "{$path} must use shared MIME constraints.");
             $this->assertStringContainsString('AdminImageUploads::maxSizeKb()', $content, "{$path} must use shared size constraints.");
             $this->assertStringNotContainsString('application/pdf', $content, "{$path} must not allow PDF in public image upload fields.");
+        }
+    }
+
+    public function test_admin_image_upload_mime_allowlist_stays_image_only(): void
+    {
+        $this->assertSame([
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+            'image/gif',
+        ], \App\Support\AdminImageUploads::acceptedMimeTypes());
+
+        $blockedMimeTypes = [
+            'application/pdf',
+            'image/svg+xml',
+            'text/html',
+            'application/x-php',
+        ];
+
+        foreach ($blockedMimeTypes as $mimeType) {
+            $this->assertNotContains($mimeType, \App\Support\AdminImageUploads::acceptedMimeTypes());
         }
     }
 
