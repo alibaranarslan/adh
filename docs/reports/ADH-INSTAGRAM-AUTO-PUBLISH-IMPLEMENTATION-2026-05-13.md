@@ -82,6 +82,10 @@ Before live Instagram publish:
 - Confirm generated creative URLs are public HTTPS and reachable by Meta.
 - Confirm Supervisor/systemd worker listens to `instagram`.
 
+Detailed production runbook:
+
+- `docs/reports/ADH-INSTAGRAM-PRODUCTION-RUNBOOK-2026-05-13.md`
+
 ## Remaining Production Evidence
 
 Blocked until Hetzner access:
