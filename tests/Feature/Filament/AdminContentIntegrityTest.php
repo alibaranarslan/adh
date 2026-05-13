@@ -4,6 +4,7 @@ namespace Tests\Feature\Filament;
 
 use App\Filament\Resources\HeaderThemeResource\Pages\CreateHeaderTheme;
 use App\Filament\Resources\NewsletterSubscriptionResource;
+use App\Filament\Resources\NewsArticleResource;
 use App\Filament\Resources\NewsArticleResource\Pages\CreateNewsArticle;
 use App\Filament\Resources\NewsArticleResource\Pages\EditNewsArticle;
 use App\Filament\Resources\NewsArticleResource\Pages\ListNewsArticles;
@@ -79,6 +80,29 @@ class AdminContentIntegrityTest extends TestCase
 
         Livewire::test(EditNewsArticle::class, ['record' => $ihaArticle->getKey()])
             ->assertActionHidden('delete');
+    }
+
+    public function test_iha_articles_cannot_be_deleted_or_force_deleted_by_resource_policy(): void
+    {
+        $admin = $this->admin();
+        $category = $this->category('gundem');
+        $ihaArticle = $this->article($category, [
+            'slug' => 'iha-resource-delete-korumasi',
+            'source' => 'iha',
+            'iha_id' => 'IHA-RESOURCE-DELETE-GUARD',
+        ]);
+        $manualArticle = $this->article($category, [
+            'slug' => 'manual-resource-delete-korumasi',
+            'source' => 'manuel',
+        ]);
+
+        $this->actingAs($admin);
+
+        $this->assertFalse(NewsArticleResource::canDelete($ihaArticle));
+        $this->assertFalse(NewsArticleResource::canForceDelete($ihaArticle));
+        $this->assertTrue(NewsArticleResource::canDelete($manualArticle));
+        $this->assertTrue(NewsArticleResource::canForceDelete($manualArticle));
+        $this->assertFalse(NewsArticleResource::canForceDeleteAny());
     }
 
     public function test_news_article_form_syncs_tags_relationship(): void

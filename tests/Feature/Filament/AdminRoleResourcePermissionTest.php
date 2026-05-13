@@ -6,6 +6,7 @@ use App\Filament\Resources\CategoryResource;
 use App\Filament\Resources\PageResource;
 use App\Filament\Resources\TagResource;
 use App\Filament\Resources\UserResource;
+use App\Filament\Resources\UserResource\Pages\ListUsers;
 use App\Models\Advertisement;
 use App\Models\Category;
 use App\Models\LocalInfoEntry;
@@ -16,6 +17,7 @@ use App\Models\Tag;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class AdminRoleResourcePermissionTest extends TestCase
@@ -166,6 +168,24 @@ class AdminRoleResourcePermissionTest extends TestCase
 
         $this->assertFalse(UserResource::canDelete($superAdmin));
         $this->assertTrue(UserResource::canDelete($secondSuperAdmin));
+    }
+
+    public function test_user_bulk_delete_does_not_delete_protected_accounts_or_selected_peers(): void
+    {
+        $this->seed(RoleSeeder::class);
+
+        $superAdmin = $this->userWithRole('super_admin');
+        $secondSuperAdmin = $this->userWithRole('super_admin');
+        $writer = $this->userWithRole('writer');
+
+        $this->actingAs($superAdmin);
+
+        Livewire::test(ListUsers::class)
+            ->callTableBulkAction('delete', [$superAdmin, $secondSuperAdmin, $writer]);
+
+        $this->assertDatabaseHas('users', ['id' => $superAdmin->id]);
+        $this->assertDatabaseHas('users', ['id' => $secondSuperAdmin->id]);
+        $this->assertDatabaseHas('users', ['id' => $writer->id]);
     }
 
     private function userWithRole(string $role): User
