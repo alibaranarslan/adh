@@ -2,12 +2,10 @@
 
 namespace App\Observers;
 
-use App\Jobs\PublishToInstagramJob;
 use App\Jobs\TranslateArticleJob;
 use App\Models\NewsArticle;
 use App\Models\Redirect;
-use App\Models\Setting;
-use Illuminate\Support\Facades\Log;
+use App\Services\SocialPublicationService;
 
 class NewsArticleObserver
 {
@@ -47,25 +45,7 @@ class NewsArticleObserver
 
     private function dispatchInstagramJobIfNeeded(NewsArticle $article): void
     {
-        if ($article->status !== 'published') {
-            return;
-        }
-
-        $token = Setting::get('integration', 'instagram_access_token')
-            ?: config('services.instagram.access_token');
-        $businessAccountId = Setting::get('integration', 'instagram_business_account_id')
-            ?: config('services.instagram.business_account_id');
-
-        if (empty($token) || empty($businessAccountId)) {
-            Log::info('Instagram kuyruğu atlandı: eksik kimlik bilgisi', [
-                'article_id' => $article->id,
-                'has_token' => !empty($token),
-                'has_business_account_id' => !empty($businessAccountId),
-            ]);
-            return;
-        }
-
-        PublishToInstagramJob::dispatch($article)->delay(now()->addMinutes(2));
+        app(SocialPublicationService::class)->enqueueForArticle($article);
     }
 
     private function dispatchTranslationIfNeeded(NewsArticle $article): void
@@ -76,7 +56,7 @@ class NewsArticleObserver
 
         if (
             $article->status === 'published'
-            && !empty(config('services.google_translate.api_key'))
+            && ! empty(config('services.google_translate.api_key'))
         ) {
             TranslateArticleJob::dispatch($article->id)->delay(now()->addSeconds(30));
         }

@@ -78,7 +78,7 @@ return [
         'business_account_id' => env('INSTAGRAM_BUSINESS_ACCOUNT_ID', ''),
         'facebook_page_id'    => env('FACEBOOK_PAGE_ID', ''),
         'enabled'             => env('INSTAGRAM_ENABLED', false),
-        'graph_version'       => 'v18.0',
+        'graph_version'       => env('INSTAGRAM_GRAPH_VERSION', 'v24.0'),
         'graph_url'           => 'https://graph.facebook.com',
     ],
 

@@ -315,6 +315,24 @@ class NewsArticleResource extends Resource
                         default => $state,
                     }),
 
+                BadgeColumn::make('instagramPublication.status')
+                    ->label('Instagram')
+                    ->colors([
+                        'gray' => 'pending',
+                        'info' => 'processing',
+                        'success' => 'published',
+                        'danger' => 'failed',
+                        'warning' => 'skipped',
+                    ])
+                    ->formatStateUsing(fn ($state): string => match ($state) {
+                        'pending' => 'Bekliyor',
+                        'processing' => 'İşleniyor',
+                        'published' => 'Yayınlandı',
+                        'failed' => 'Hatalı',
+                        'skipped' => 'Atlandı',
+                        default => $state ?: '-',
+                    }),
+
                 TextColumn::make('editorial_score')
                     ->label('Editoryal Puan')
                     ->sortable()
@@ -486,7 +504,7 @@ class NewsArticleResource extends Resource
     {
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([SoftDeletingScope::class])
-            ->with(['category', 'author']);
+            ->with(['category', 'author', 'instagramPublication']);
     }
 
     public static function getTranslatableLocales(): array

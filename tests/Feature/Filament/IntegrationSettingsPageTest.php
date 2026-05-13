@@ -39,6 +39,7 @@ class IntegrationSettingsPageTest extends TestCase
 
         Setting::set('integration', 'instagram_access_token', 'token-123');
         Setting::set('integration', 'instagram_business_account_id', 'acct-456');
+        Setting::set('integration', 'instagram_enabled', true);
 
         $this->actingAs($admin)
             ->get('/admin/integration-settings')

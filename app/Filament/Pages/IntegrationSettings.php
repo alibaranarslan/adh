@@ -9,6 +9,7 @@ use App\Support\AdminPrivileges;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -41,6 +42,10 @@ class IntegrationSettings extends Page implements HasForms
             'iha_user_code' => Setting::get('integration', 'iha_user_code', ''),
             'iha_username' => Setting::get('integration', 'iha_username', ''),
             'iha_password' => '',
+            'instagram_enabled' => filter_var(
+                Setting::get('integration', 'instagram_enabled', config('services.instagram.enabled', false)),
+                FILTER_VALIDATE_BOOL
+            ),
             'instagram_access_token' => '',
             'instagram_business_account_id' => Setting::get('integration', 'instagram_business_account_id', ''),
             'adsense_client_id' => Setting::get('integration', 'adsense_client_id', ''),
@@ -90,6 +95,9 @@ class IntegrationSettings extends Page implements HasForms
                         ->label('Paylaşım Akışı')
                         ->content('Yayınlanan yeni haberler 2 dakika gecikmeyle Instagram kuyruğuna alınır. Haber görseli varsa temel paylaşım akışı creative pipeline beklemeden çalışır; başlık, özet, link ve hashtag formatında caption üretilir.')
                         ->columnSpanFull(),
+                    Toggle::make('instagram_enabled')
+                        ->label('Instagram otomatik paylasim aktif')
+                        ->helperText('Aktif oldugunda yayinlanan IHA ve manuel haberler Instagram kuyruğuna alınır.'),
                     TextInput::make('instagram_access_token')
                         ->label('Instagram Access Token')
                         ->password()

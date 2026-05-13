@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
@@ -98,6 +99,17 @@ class NewsArticle extends Model implements HasMedia
     public function images(): HasMany
     {
         return $this->hasMany(NewsImage::class)->orderBy('sort_order');
+    }
+
+    public function socialPublications(): HasMany
+    {
+        return $this->hasMany(SocialPublication::class);
+    }
+
+    public function instagramPublication(): HasOne
+    {
+        return $this->hasOne(SocialPublication::class)
+            ->where('platform', SocialPublication::PLATFORM_INSTAGRAM);
     }
 
     public function pageViews()
