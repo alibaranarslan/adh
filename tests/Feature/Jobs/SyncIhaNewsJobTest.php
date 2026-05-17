@@ -5,6 +5,7 @@ namespace Tests\Feature\Jobs;
 use App\Jobs\SyncIhaNewsJob;
 use App\Jobs\TranslateArticleJob;
 use App\Models\Category;
+use App\Models\IhaSyncLog;
 use App\Models\NewsArticle;
 use App\Services\IhaApiService;
 use App\Services\IhaCategoryMapper;
@@ -21,6 +22,7 @@ class SyncIhaNewsJobTest extends TestCase
     public function test_sync_iha_news_job_creates_meta_translations_source_and_dispatches_translation_job(): void
     {
         Bus::fake();
+        config(['services.iha.min_body_length' => 1]);
 
         $category = Category::create([
             'name' => ['tr' => 'Gündem'],
@@ -67,6 +69,7 @@ class SyncIhaNewsJobTest extends TestCase
     public function test_sync_iha_news_job_updates_existing_iha_article_without_creating_duplicate(): void
     {
         Bus::fake();
+        config(['services.iha.min_body_length' => 1]);
 
         $category = Category::create([
             'name' => ['tr' => 'Gündem'],
@@ -128,5 +131,30 @@ class SyncIhaNewsJobTest extends TestCase
         $this->assertSame('Güncel özet', $existing->getTranslation('summary', 'tr'));
 
         Bus::assertDispatched(TranslateArticleJob::class, fn (TranslateArticleJob $job) => true);
+    }
+
+    public function test_sync_iha_news_job_skips_when_log_is_no_longer_running(): void
+    {
+        $syncLog = IhaSyncLog::query()->create([
+            'status' => 'failed',
+            'started_at' => now()->subHours(2),
+            'completed_at' => now(),
+            'error_message' => 'stale',
+        ]);
+
+        $apiService = $this->mock(IhaApiService::class, function (MockInterface $mock): void {
+            $mock->shouldNotReceive('fetchNews');
+        });
+
+        $categoryMapper = app(IhaCategoryMapper::class);
+        $imageService = app(IhaImageService::class);
+
+        (new SyncIhaNewsJob(null, $syncLog->id))->handle($apiService, $categoryMapper, $imageService);
+
+        $this->assertDatabaseHas('iha_sync_logs', [
+            'id' => $syncLog->id,
+            'status' => 'failed',
+            'error_message' => 'stale',
+        ]);
     }
 }

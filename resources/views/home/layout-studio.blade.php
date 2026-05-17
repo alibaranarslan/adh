@@ -61,7 +61,7 @@
                     </p>
                 </div>
                 <a
-                    href="{{ route('home', ['locale' => app()->getLocale()]) }}"
+                    href="{{ \App\Support\LocalizedUrl::route('home') }}"
                     class="inline-flex items-center rounded-full border border-current px-3 py-1.5 text-xs font-semibold transition hover:bg-amber-900/10 dark:hover:bg-white/10"
                 >
                     {{ __('Canlı sayfaya dön') }}

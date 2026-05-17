@@ -16,7 +16,7 @@ class NewsPresenter
 
         return [
             'url' => filled(data_get($article, 'slug'))
-                ? route('news.show', ['slug' => data_get($article, 'slug'), 'locale' => $locale])
+                ? LocalizedUrl::route('news.show', ['slug' => data_get($article, 'slug')], $locale)
                 : '#',
             'title' => (string) data_get($article, 'title', ''),
             'summary' => trim((string) data_get($article, 'summary', '')),
@@ -105,6 +105,7 @@ class NewsPresenter
 
         return __(':count görüntüleme', ['count' => number_format($viewCount, 0, ',', '.')]);
     }
+
     private static function updatedLabel(?CarbonInterface $updatedAt, ?CarbonInterface $publishedAt): ?string
     {
         if (! $updatedAt) {

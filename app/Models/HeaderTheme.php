@@ -19,7 +19,9 @@ class HeaderTheme extends Model
     public const MODE_AUTOMATIC = 'automatic';
     public const MODE_MANUAL_ON = 'manual_on';
     public const MODE_DISABLED = 'disabled';
-    public const ATATURK_ALLOWED_SLUGS = ['19-mayis', '30-agustos', '10-kasim'];
+    public const NATIONAL_SLUGS = ['23-nisan', '19-mayis', '30-agustos', '29-ekim', '10-kasim'];
+    public const ATATURK_ALLOWED_SLUGS = ['23-nisan', '19-mayis', '30-agustos', '29-ekim', '10-kasim'];
+    public const HOLIDAY_SLUGS = ['ramazan-bayrami', 'kurban-bayrami'];
 
     public array $translatable = ['name', 'banner_message'];
 
@@ -79,6 +81,16 @@ class HeaderTheme extends Model
         return in_array((string) $slug, self::ATATURK_ALLOWED_SLUGS, true);
     }
 
+    public static function isNationalSlug(?string $slug): bool
+    {
+        return in_array((string) $slug, self::NATIONAL_SLUGS, true);
+    }
+
+    public static function isHolidaySlug(?string $slug): bool
+    {
+        return in_array((string) $slug, self::HOLIDAY_SLUGS, true);
+    }
+
     public static function typeOptions(): array
     {
         return [
@@ -110,9 +122,18 @@ class HeaderTheme extends Model
     public static function illustrationModeOptions(): array
     {
         return [
-            'inline_svg' => 'Hazır SVG',
+            'preset_asset' => 'Wikimedia Preset',
             'custom_asset' => 'Özel Görsel',
             'none' => 'Görsel Yok',
+        ];
+    }
+
+    public static function illustrationPresetOptions(): array
+    {
+        return [
+            'ataturk-portrait-cutout' => 'Atatürk portresi (Wikimedia PD-TR)',
+            'turkish-flag-official' => 'Türk bayrağı resmi SVG (Wikimedia PD)',
+            'bayram-crescent' => 'Bayram Hilal Motifi',
         ];
     }
 

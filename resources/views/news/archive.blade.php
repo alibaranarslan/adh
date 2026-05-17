@@ -3,7 +3,7 @@
 @section('content')
     <div class="space-y-6">
         <x-breadcrumb :items="[
-            ['label' => __('Anasayfa'), 'url' => route('home')],
+            ['label' => __('Anasayfa'), 'url' => \App\Support\LocalizedUrl::route('home')],
             ['label' => __('Haber Arşivi')],
         ]" />
 

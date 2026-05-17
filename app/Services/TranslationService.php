@@ -2,87 +2,124 @@
 
 namespace App\Services;
 
+use App\Support\TranslationSettings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class TranslationService
 {
-    /**
-     * Google Cloud Translation API ile çeviri yapar.
-     * Çeviri kimliği eksikse veya servis hata verirse null döner; public yüzey fallback ile devam eder.
-     */
     public function translate(string $text, string $targetLang, string $sourceLang = 'tr'): ?string
     {
-        if (empty(trim($text))) {
+        if (trim($text) === '') {
             return $text;
         }
 
-        $cacheKey = 'translation_' . md5($text . $targetLang);
+        $providerTargetLang = $this->providerTargetLanguage($targetLang);
+        $cacheKey = 'translation_' . md5($text . $providerTargetLang . $sourceLang);
 
-        return Cache::remember($cacheKey, 86400 * 30, function () use ($text, $targetLang, $sourceLang) {
-            try {
-                $apiKey = config('services.google_translate.api_key');
+        if (($cached = Cache::get($cacheKey)) !== null) {
+            return $cached;
+        }
 
-                if (empty($apiKey)) {
-                    Log::warning('Google Translate API key not configured');
-                    return null;
-                }
+        try {
+            $apiKey = TranslationSettings::apiKey();
 
-                $response = Http::post('https://translation.googleapis.com/language/translate/v2', [
-                    'q' => $text,
+            if (empty($apiKey)) {
+                Log::warning('Google Translate API key not configured', [
                     'target' => $targetLang,
-                    'source' => $sourceLang,
-                    'key' => $apiKey,
-                    'format' => 'html',
+                    'provider_target' => $providerTargetLang,
                 ]);
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    return $data['data']['translations'][0]['translatedText'] ?? null;
-                }
-
-                Log::error('Translation API error', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-                return null;
-            } catch (\Exception $e) {
-                Log::error('Translation failed', [
-                    'error' => $e->getMessage(),
-                    'target' => $targetLang,
-                ]);
                 return null;
             }
-        });
+
+            $response = Http::post('https://translation.googleapis.com/language/translate/v2', [
+                'q' => $text,
+                'target' => $providerTargetLang,
+                'source' => $sourceLang,
+                'key' => $apiKey,
+                'format' => 'html',
+            ]);
+
+            if ($response->successful()) {
+                $translated = $response->json('data.translations.0.translatedText');
+
+                if (is_string($translated) && trim($translated) !== '') {
+                    Cache::put($cacheKey, $translated, now()->addDays(30));
+
+                    return $translated;
+                }
+            }
+
+            Log::error('Translation API error', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'target' => $targetLang,
+                'provider_target' => $providerTargetLang,
+            ]);
+
+            return null;
+        } catch (\Throwable $e) {
+            Log::error('Translation failed', [
+                'error' => $e->getMessage(),
+                'target' => $targetLang,
+                'provider_target' => $providerTargetLang,
+            ]);
+
+            return null;
+        }
     }
 
     /**
-     * Bir modelin translatable alanlarını çevir.
-     * Zaten çevrilmiş alanlar atlanır (idempotent).
+     * @return array{translated:int, failed:int, skipped:int}
      */
-    public function translateModel($model, array $fields, array $targetLangs = ['en', 'ku'], bool $force = false): void
+    public function translateModel($model, array $fields, array $targetLangs = ['en', 'ku'], bool $force = false): array
     {
+        $stats = [
+            'translated' => 0,
+            'failed' => 0,
+            'skipped' => 0,
+        ];
+
         foreach ($fields as $field) {
             $turkishValue = $model->getTranslation($field, 'tr', false);
 
-            if (empty($turkishValue)) {
+            if (blank($turkishValue)) {
+                $stats['skipped']++;
+
                 continue;
             }
 
             foreach ($targetLangs as $lang) {
                 $existing = $model->getTranslation($field, $lang, false);
-                if (! $force && ! empty($existing)) {
+
+                if (! $force && filled($existing)) {
+                    $stats['skipped']++;
+
                     continue;
                 }
 
-                $translated = $this->translate($turkishValue, $lang);
-                if ($translated) {
+                $translated = $this->translate((string) $turkishValue, $lang);
+
+                if (filled($translated)) {
                     $model->setTranslation($field, $lang, $translated);
+                    $stats['translated']++;
+                } else {
+                    $stats['failed']++;
                 }
             }
         }
 
-        $model->saveQuietly();
+        if ($model->isDirty()) {
+            $model->saveQuietly();
+        }
+
+        return $stats;
+    }
+
+    private function providerTargetLanguage(string $targetLang): string
+    {
+        return (string) config("services.google_translate.target_language_map.{$targetLang}", $targetLang);
     }
 }

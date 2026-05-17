@@ -76,6 +76,7 @@ class NewsController extends Controller
             'metaDescription' => $tag->name . ' ' . __('etiketi altındaki haberler.'),
         ]);
     }
+
     private function resolveSlug(string $localeOrSlug, ?string $slug = null): string
     {
         return $slug ?? $localeOrSlug;

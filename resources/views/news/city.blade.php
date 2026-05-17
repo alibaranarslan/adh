@@ -24,7 +24,7 @@
 
         <div class="flex flex-wrap gap-2 border-b border-adh-border pb-5 dark:border-gray-700">
             @foreach ($allCities as $citySlug => $cityLabel)
-                <a href="{{ route('city.show', $citySlug) }}"
+                <a href="{{ \App\Support\LocalizedUrl::route('city.show', ['slug' => $citySlug]) }}"
                    class="rounded-full border px-3 py-1.5 text-xs transition-colors
                           {{ $citySlug === $slug
                               ? 'border-adh-red bg-adh-red text-white'

@@ -1,3 +1,4 @@
+@if (! isset($layoutPreviewRevision) || ! $layoutPreviewRevision)
 <div
     x-data="{
         storageKey: 'adh_site_cookie_consent',
@@ -121,7 +122,8 @@
 
         <p class="text-xs text-white/75">
             {{ __('Çerez ayarlarınızı değiştirmek veya çerezleri reddetmek için tarayıcı ayarlarınızı kullanabilirsiniz.') }}
-            <a href="{{ route('page.show', ['slug' => 'cerez-politikasi']) }}" class="font-medium text-white underline hover:text-adh-red-light">{{ __('Detaylı Çerez Politikası') }}</a>
+            <a href="{{ \App\Support\LocalizedUrl::route('page.cookies') }}" class="font-medium text-white underline hover:text-adh-red-light">{{ __('Detaylı Çerez Politikası') }}</a>
         </p>
     </div>
 </div>
+@endif

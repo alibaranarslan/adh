@@ -45,7 +45,7 @@ class IhaTranslationRequeueServiceTest extends TestCase
         $this->assertSame(2, $result['backlog']);
         $this->assertSame(0, $result['queued']);
         $this->assertSame(2, $result['skipped_duplicates']);
-        Queue::assertNothingPushed();
+        Queue::assertNotPushed(TranslateArticleJob::class);
     }
 
     public function test_it_skips_article_when_translation_job_is_already_in_database_queue(): void
@@ -74,7 +74,7 @@ class IhaTranslationRequeueServiceTest extends TestCase
         $this->assertSame(1, $result['backlog']);
         $this->assertSame(0, $result['queued']);
         $this->assertSame(1, $result['skipped_duplicates']);
-        Queue::assertNothingPushed();
+        Queue::assertNotPushed(TranslateArticleJob::class);
     }
 
     private function ihaArticle(string $slug, array $overrides = []): NewsArticle

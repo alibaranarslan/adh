@@ -39,7 +39,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('contact.submit') }}" class="space-y-4">
+                <form method="POST" action="{{ \App\Support\LocalizedUrl::route('contact.submit') }}" class="space-y-4">
                     @csrf
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>

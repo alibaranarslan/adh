@@ -11,7 +11,7 @@
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
             @foreach ($categories as $category)
                 <a
-                    href="{{ route('news.category', ['slug' => $category->slug, 'locale' => app()->getLocale()]) }}"
+                    href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => $category->slug]) }}"
                     class="group flex items-center justify-between rounded-[var(--adh-radius)] border border-adh-border bg-white px-4 py-3 transition-all hover:border-adh-red hover:shadow-sm dark:border-gray-700 dark:bg-adh-blue"
                 >
                     <span class="font-serif text-sm font-semibold text-adh-text transition-colors group-hover:text-adh-red dark:text-gray-100">

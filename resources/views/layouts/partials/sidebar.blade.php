@@ -13,7 +13,7 @@
                     {{ $index + 1 }}
                 </span>
                 <div class="flex-1 min-w-0">
-                    <a href="{{ route('news.show', ['slug' => $article->slug]) }}"
+                    <a href="{{ \App\Support\LocalizedUrl::route('news.show', ['slug' => $article->slug]) }}"
                        class="text-[13px] font-semibold font-serif leading-snug hover:text-adh-red dark:text-gray-100 dark:hover:text-adh-red-light transition-colors line-clamp-2">
                         {{ $article->title }}
                     </a>

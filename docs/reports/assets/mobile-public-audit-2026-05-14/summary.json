@@ -1,0 +1,1530 @@
+{
+  "browserPath": "Browser plugin timed out during setup; Playwright fallback used.",
+  "outDir": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14",
+  "chosen": {
+    "category": {
+      "text": "Gündem",
+      "href": "http://127.0.0.1:8000/kategori/gundem"
+    },
+    "detail": {
+      "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kasten öldürme suçuna ya",
+      "href": "http://127.0.0.1:8000/narin-guran-davasinda-yeniden-yargilanan-sanik-nevzat-bahtiyar-nitelikli-kasten-oldurme-sucuna-yardim-sucundan-17-yil-hapis-cezasina-carptirildi"
+    }
+  },
+  "results": [
+    {
+      "name": "01-home-mobile-top",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/01-home-mobile-top.png",
+      "console": [],
+      "title": "Adıyaman Dijital Haber",
+      "h1": "Diyarbakır’da mezuniyet kutlamasına giden öğrenciler kaza yaptı: 6 yaralı",
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 194,
+        "height": 170,
+        "width": 390
+      },
+      "breaking": {
+        "top": 194,
+        "bottom": 238,
+        "height": 44,
+        "width": 390
+      },
+      "navVisible": false,
+      "nav": {
+        "top": 0,
+        "bottom": 0,
+        "height": 0,
+        "width": 0
+      },
+      "main": {
+        "top": 262,
+        "bottom": 10634,
+        "height": 10372,
+        "width": 390
+      },
+      "heroSide": {
+        "top": 930,
+        "bottom": 1493,
+        "height": 563,
+        "width": 358
+      },
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 263,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 2 yaralı",
+          "w": 205,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Adıyaman’da otomobil tarlaya uçtu: 4 yaralı",
+          "w": 287,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 1’i ağır 2 yaralı",
+          "w": 252,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 230,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Resmi belgede sahteciliğe 2 gözaltı",
+          "w": 231,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Şanlıurfa’da çıkan silahlı kavgada 3 kişi öldü",
+          "w": 294,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Şanlıurfa’da tır garajında korkutan yangın",
+          "w": 281,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 2 yaralı",
+          "w": 235,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 1’i ağır 2 yaralı",
+          "w": 252,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "name": "02-home-mobile-scroll-760",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/02-home-mobile-scroll-760.png",
+      "console": [],
+      "title": "Adıyaman Dijital Haber",
+      "h1": "Diyarbakır’da mezuniyet kutlamasına giden öğrenciler kaza yaptı: 6 yaralı",
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": -736,
+        "bottom": -566,
+        "height": 170,
+        "width": 390
+      },
+      "breaking": {
+        "top": -566,
+        "bottom": -522,
+        "height": 44,
+        "width": 390
+      },
+      "navVisible": false,
+      "nav": {
+        "top": 0,
+        "bottom": 0,
+        "height": 0,
+        "width": 0
+      },
+      "main": {
+        "top": -498,
+        "bottom": 9874,
+        "height": 10372,
+        "width": 390
+      },
+      "heroSide": {
+        "top": 170,
+        "bottom": 733,
+        "height": 563,
+        "width": 358
+      },
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 263,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 2 yaralı",
+          "w": 205,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Adıyaman’da otomobil tarlaya uçtu: 4 yaralı",
+          "w": 287,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 1’i ağır 2 yaralı",
+          "w": 252,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 230,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Resmi belgede sahteciliğe 2 gözaltı",
+          "w": 231,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Şanlıurfa’da çıkan silahlı kavgada 3 kişi öldü",
+          "w": 294,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Şanlıurfa’da tır garajında korkutan yangın",
+          "w": 281,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 2 yaralı",
+          "w": 235,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 1’i ağır 2 yaralı",
+          "w": 252,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "name": "03-category-mobile",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/kategori/gundem",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/03-category-mobile.png",
+      "console": [],
+      "title": "Gündem Haberleri | Adıyaman Dijital Haber",
+      "h1": "Gündem",
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 194,
+        "height": 170,
+        "width": 390
+      },
+      "breaking": {
+        "top": 194,
+        "bottom": 238,
+        "height": 44,
+        "width": 390
+      },
+      "navVisible": false,
+      "nav": {
+        "top": 0,
+        "bottom": 0,
+        "height": 0,
+        "width": 0
+      },
+      "main": {
+        "top": 262,
+        "bottom": 5415,
+        "height": 5153,
+        "width": 390
+      },
+      "heroSide": null,
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "2’nci Anne Bebek Festivali başlıyor",
+          "w": 263,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "Dicle Elektrik’ten fırtına mesaisi",
+          "w": 251,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "Başkan Duranay, mazbatasını aldı",
+          "w": 256,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "Batman’da iki otomobil çarpıştı: 9 yaralı",
+          "w": 288,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 288,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Uzm. Psikoloğu Turan: \"Çocukların sağlıklı gelişimi, yalnızca bireysel değil ayn",
+          "w": 288,
+          "h": 36
+        },
+        {
+          "tag": "A",
+          "text": "Adıyaman Valisi Abdullah Küçük göreve başladı",
+          "w": 288,
+          "h": 36
+        },
+        {
+          "tag": "A",
+          "text": "Resmi belgede sahteciliğe 2 gözaltı",
+          "w": 288,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "UAT Admin Smoke 1778376186635 Updated",
+          "w": 276,
+          "h": 24
+        },
+        {
+          "tag": "A",
+          "text": "X (Twitter)",
+          "w": 32,
+          "h": 32
+        }
+      ]
+    },
+    {
+      "name": "04-detail-mobile",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/narin-guran-davasinda-yeniden-yargilanan-sanik-nevzat-bahtiyar-nitelikli-kasten-oldurme-sucuna-yardim-sucundan-17-yil-hapis-cezasina-carptirildi",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/04-detail-mobile.png",
+      "console": [],
+      "title": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kasten öldürme suçuna yardım’’ suçundan 17 yıl hapis cezasına çarptırıldı. | Adıyaman Dijital Haber",
+      "h1": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kasten öldürme suçuna yardım’’ suçundan 17 yıl hapis cezasına çarptırıldı.",
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 194,
+        "height": 170,
+        "width": 390
+      },
+      "breaking": {
+        "top": 194,
+        "bottom": 238,
+        "height": 44,
+        "width": 390
+      },
+      "navVisible": false,
+      "nav": {
+        "top": 0,
+        "bottom": 0,
+        "height": 0,
+        "width": 0
+      },
+      "main": {
+        "top": 262,
+        "bottom": 3152,
+        "height": 2891,
+        "width": 390
+      },
+      "heroSide": null,
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Anasayfa",
+          "w": 62,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "Asayiş",
+          "w": 43,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "X",
+          "w": 54,
+          "h": 30
+        },
+        {
+          "tag": "A",
+          "text": "Facebook",
+          "w": 102,
+          "h": 30
+        },
+        {
+          "tag": "A",
+          "text": "WhatsApp",
+          "w": 106,
+          "h": 30
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Kopyala",
+          "w": 92,
+          "h": 30
+        },
+        {
+          "tag": "A",
+          "text": "X (Twitter)",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "Facebook",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "Instagram",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "YouTube",
+          "w": 32,
+          "h": 32
+        }
+      ]
+    },
+    {
+      "name": "05-search-mobile",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/arama?q=adiyaman",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/05-search-mobile.png",
+      "console": [],
+      "title": "\"adiyaman\" arama sonuçları | Adıyaman Dijital Haber",
+      "h1": null,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 194,
+        "height": 170,
+        "width": 390
+      },
+      "breaking": {
+        "top": 194,
+        "bottom": 238,
+        "height": 44,
+        "width": 390
+      },
+      "navVisible": false,
+      "nav": {
+        "top": 0,
+        "bottom": 0,
+        "height": 0,
+        "width": 0
+      },
+      "main": {
+        "top": 262,
+        "bottom": 2262,
+        "height": 2000,
+        "width": 390
+      },
+      "heroSide": null,
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Adıyaman",
+          "w": 92,
+          "h": 34
+        },
+        {
+          "tag": "A",
+          "text": "Nemrut",
+          "w": 75,
+          "h": 34
+        },
+        {
+          "tag": "A",
+          "text": "Ekonomi",
+          "w": 83,
+          "h": 34
+        },
+        {
+          "tag": "A",
+          "text": "Spor",
+          "w": 57,
+          "h": 34
+        },
+        {
+          "tag": "A",
+          "text": "Eğitim",
+          "w": 67,
+          "h": 34
+        },
+        {
+          "tag": "A",
+          "text": "Sağlık",
+          "w": 66,
+          "h": 34
+        },
+        {
+          "tag": "A",
+          "text": "Batman’da iki otomobil çarpıştı: 9 yaralı",
+          "w": 288,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 288,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Uzm. Psikoloğu Turan: \"Çocukların sağlıklı gelişimi, yalnızca bireysel değil ayn",
+          "w": 288,
+          "h": 36
+        },
+        {
+          "tag": "A",
+          "text": "Adıyaman Valisi Abdullah Küçük göreve başladı",
+          "w": 288,
+          "h": 36
+        }
+      ]
+    },
+    {
+      "name": "06-contact-mobile",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/iletisim",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/06-contact-mobile.png",
+      "console": [],
+      "title": "İletişim | Adıyaman Dijital Haber",
+      "h1": "Redaksiyon ve Okur Hattı",
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 194,
+        "height": 170,
+        "width": 390
+      },
+      "breaking": {
+        "top": 194,
+        "bottom": 238,
+        "height": 44,
+        "width": 390
+      },
+      "navVisible": false,
+      "nav": {
+        "top": 0,
+        "bottom": 0,
+        "height": 0,
+        "width": 0
+      },
+      "main": {
+        "top": 262,
+        "bottom": 3485,
+        "height": 3223,
+        "width": 390
+      },
+      "heroSide": null,
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "+90 (416) 000 00 00",
+          "w": 138,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "iletisim@adiyamandijitalhaber.com",
+          "w": 228,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "WhatsApp Haber Hattı",
+          "w": 148,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "Google Haritalarda aç →",
+          "w": 161,
+          "h": 17
+        },
+        {
+          "tag": "A",
+          "text": "Batman’da iki otomobil çarpıştı: 9 yaralı",
+          "w": 288,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 288,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Uzm. Psikoloğu Turan: \"Çocukların sağlıklı gelişimi, yalnızca bireysel değil ayn",
+          "w": 288,
+          "h": 36
+        },
+        {
+          "tag": "A",
+          "text": "Adıyaman Valisi Abdullah Küçük göreve başladı",
+          "w": 288,
+          "h": 36
+        },
+        {
+          "tag": "A",
+          "text": "Resmi belgede sahteciliğe 2 gözaltı",
+          "w": 288,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "UAT Admin Smoke 1778376186635 Updated",
+          "w": 276,
+          "h": 24
+        }
+      ]
+    },
+    {
+      "name": "07-about-mobile",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/hakkimizda",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/07-about-mobile.png",
+      "console": [],
+      "title": "Hakkımızda | Adıyaman Dijital Haber",
+      "h1": "Hakkımızda",
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 194,
+        "height": 170,
+        "width": 390
+      },
+      "breaking": {
+        "top": 194,
+        "bottom": 238,
+        "height": 44,
+        "width": 390
+      },
+      "navVisible": false,
+      "nav": {
+        "top": 0,
+        "bottom": 0,
+        "height": 0,
+        "width": 0
+      },
+      "main": {
+        "top": 262,
+        "bottom": 3197,
+        "height": 2935,
+        "width": 390
+      },
+      "heroSide": null,
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Batman’da iki otomobil çarpıştı: 9 yaralı",
+          "w": 288,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 288,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Uzm. Psikoloğu Turan: \"Çocukların sağlıklı gelişimi, yalnızca bireysel değil ayn",
+          "w": 288,
+          "h": 36
+        },
+        {
+          "tag": "A",
+          "text": "Adıyaman Valisi Abdullah Küçük göreve başladı",
+          "w": 288,
+          "h": 36
+        },
+        {
+          "tag": "A",
+          "text": "Resmi belgede sahteciliğe 2 gözaltı",
+          "w": 288,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "UAT Admin Smoke 1778376186635 Updated",
+          "w": 276,
+          "h": 24
+        },
+        {
+          "tag": "A",
+          "text": "X (Twitter)",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "Facebook",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "Instagram",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "YouTube",
+          "w": 32,
+          "h": 32
+        }
+      ]
+    },
+    {
+      "name": "08-mobile-menu-open",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/08-mobile-menu-open.png",
+      "menuHasSearch": true,
+      "menuHasCities": true,
+      "menuHasContact": true,
+      "console": []
+    },
+    {
+      "name": "09-home-mobile-dark",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/09-home-mobile-dark.png",
+      "console": [],
+      "title": "Adıyaman Dijital Haber",
+      "h1": "Diyarbakır’da mezuniyet kutlamasına giden öğrenciler kaza yaptı: 6 yaralı",
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 194,
+        "height": 170,
+        "width": 390
+      },
+      "breaking": {
+        "top": 194,
+        "bottom": 238,
+        "height": 44,
+        "width": 390
+      },
+      "navVisible": false,
+      "nav": {
+        "top": 0,
+        "bottom": 0,
+        "height": 0,
+        "width": 0
+      },
+      "main": {
+        "top": 262,
+        "bottom": 10634,
+        "height": 10372,
+        "width": 390
+      },
+      "heroSide": {
+        "top": 930,
+        "bottom": 1493,
+        "height": 563,
+        "width": 358
+      },
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 263,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 2 yaralı",
+          "w": 205,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Adıyaman’da otomobil tarlaya uçtu: 4 yaralı",
+          "w": 287,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 1’i ağır 2 yaralı",
+          "w": 252,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 230,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Resmi belgede sahteciliğe 2 gözaltı",
+          "w": 231,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Şanlıurfa’da çıkan silahlı kavgada 3 kişi öldü",
+          "w": 294,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Şanlıurfa’da tır garajında korkutan yangın",
+          "w": 281,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 2 yaralı",
+          "w": 235,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 1’i ağır 2 yaralı",
+          "w": 252,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "name": "10-detail-mobile-dark",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/narin-guran-davasinda-yeniden-yargilanan-sanik-nevzat-bahtiyar-nitelikli-kasten-oldurme-sucuna-yardim-sucundan-17-yil-hapis-cezasina-carptirildi",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/10-detail-mobile-dark.png",
+      "console": [],
+      "title": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kasten öldürme suçuna yardım’’ suçundan 17 yıl hapis cezasına çarptırıldı. | Adıyaman Dijital Haber",
+      "h1": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kasten öldürme suçuna yardım’’ suçundan 17 yıl hapis cezasına çarptırıldı.",
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 194,
+        "height": 170,
+        "width": 390
+      },
+      "breaking": {
+        "top": 194,
+        "bottom": 238,
+        "height": 44,
+        "width": 390
+      },
+      "navVisible": false,
+      "nav": {
+        "top": 0,
+        "bottom": 0,
+        "height": 0,
+        "width": 0
+      },
+      "main": {
+        "top": 262,
+        "bottom": 3152,
+        "height": 2891,
+        "width": 390
+      },
+      "heroSide": null,
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Anasayfa",
+          "w": 62,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "Asayiş",
+          "w": 43,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "X",
+          "w": 54,
+          "h": 30
+        },
+        {
+          "tag": "A",
+          "text": "Facebook",
+          "w": 102,
+          "h": 30
+        },
+        {
+          "tag": "A",
+          "text": "WhatsApp",
+          "w": 106,
+          "h": 30
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Kopyala",
+          "w": 92,
+          "h": 30
+        },
+        {
+          "tag": "A",
+          "text": "X (Twitter)",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "Facebook",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "Instagram",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "YouTube",
+          "w": 32,
+          "h": 32
+        }
+      ]
+    },
+    {
+      "name": "11-home-360",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/11-home-360.png",
+      "console": [],
+      "title": "Adıyaman Dijital Haber",
+      "h1": "Diyarbakır’da mezuniyet kutlamasına giden öğrenciler kaza yaptı: 6 yaralı",
+      "scrollWidth": 360,
+      "innerWidth": 360,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 194,
+        "height": 170,
+        "width": 360
+      },
+      "breaking": {
+        "top": 194,
+        "bottom": 238,
+        "height": 44,
+        "width": 360
+      },
+      "navVisible": false,
+      "nav": {
+        "top": 0,
+        "bottom": 0,
+        "height": 0,
+        "width": 0
+      },
+      "main": {
+        "top": 262,
+        "bottom": 10614,
+        "height": 10352,
+        "width": 360
+      },
+      "heroSide": {
+        "top": 963,
+        "bottom": 1525,
+        "height": 563,
+        "width": 328
+      },
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 2 yaralı",
+          "w": 205,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 1’i ağır 2 yaralı",
+          "w": 252,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 2 yaralı",
+          "w": 235,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 1’i ağır 2 yaralı",
+          "w": 252,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "İki otomobil çarpıştı: 1’i ağır, 2 yaralı",
+          "w": 243,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "X (Twitter)",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "Facebook",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "Instagram",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "YouTube",
+          "w": 32,
+          "h": 32
+        },
+        {
+          "tag": "A",
+          "text": "Anasayfa",
+          "w": 62,
+          "h": 17
+        }
+      ]
+    },
+    {
+      "name": "12-home-430",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/12-home-430.png",
+      "console": [],
+      "title": "Adıyaman Dijital Haber",
+      "h1": "Diyarbakır’da mezuniyet kutlamasına giden öğrenciler kaza yaptı: 6 yaralı",
+      "scrollWidth": 430,
+      "innerWidth": 430,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 171,
+        "height": 147,
+        "width": 430
+      },
+      "breaking": {
+        "top": 171,
+        "bottom": 215,
+        "height": 44,
+        "width": 430
+      },
+      "navVisible": false,
+      "nav": {
+        "top": 0,
+        "bottom": 0,
+        "height": 0,
+        "width": 0
+      },
+      "main": {
+        "top": 239,
+        "bottom": 10793,
+        "height": 10554,
+        "width": 430
+      },
+      "heroSide": {
+        "top": 937,
+        "bottom": 1500,
+        "height": 563,
+        "width": 398
+      },
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Narin Güran davasında yeniden yargılanan sanık Nevzat Bahtiyar, ’’nitelikli kast",
+          "w": 288,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 247,
+          "h": 19
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 263,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 2 yaralı",
+          "w": 205,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Adıyaman’da otomobil tarlaya uçtu: 4 yaralı",
+          "w": 287,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "İki motosiklet çarpıştı: 1’i ağır 2 yaralı",
+          "w": 252,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Batman’da iki otomobil çarpıştı: 9 yaralı",
+          "w": 266,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Kamyon ile otomobil çarpıştı: 1 ölü",
+          "w": 230,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Resmi belgede sahteciliğe 2 gözaltı",
+          "w": 231,
+          "h": 18
+        },
+        {
+          "tag": "A",
+          "text": "Batman’da iki otomobil çarpıştı: 9 yaralı",
+          "w": 303,
+          "h": 20
+        },
+        {
+          "tag": "A",
+          "text": "Şanlıurfa’da çıkan silahlı kavgada 3 kişi öldü",
+          "w": 294,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "name": "13-home-tablet",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/13-home-tablet.png",
+      "console": [],
+      "title": "Adıyaman Dijital Haber",
+      "h1": "Diyarbakır’da mezuniyet kutlamasına giden öğrenciler kaza yaptı: 6 yaralı",
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 224,
+        "height": 200,
+        "width": 768
+      },
+      "breaking": {
+        "top": 224,
+        "bottom": 272,
+        "height": 48,
+        "width": 768
+      },
+      "navVisible": true,
+      "nav": {
+        "top": 272,
+        "bottom": 319,
+        "height": 47,
+        "width": 768
+      },
+      "main": {
+        "top": 343,
+        "bottom": 9512,
+        "height": 9169,
+        "width": 768
+      },
+      "heroSide": {
+        "top": 1204,
+        "bottom": 1766,
+        "height": 563,
+        "width": 736
+      },
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Ara",
+          "w": 40,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Günün Haberleri",
+          "w": 93,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Günün Gazetesi",
+          "w": 90,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Gündem",
+          "w": 48,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Siyaset",
+          "w": 41,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "X",
+          "w": 14,
+          "h": 14
+        },
+        {
+          "tag": "A",
+          "text": "Facebook",
+          "w": 14,
+          "h": 14
+        },
+        {
+          "tag": "A",
+          "text": "Instagram",
+          "w": 14,
+          "h": 14
+        },
+        {
+          "tag": "A",
+          "text": "YouTube",
+          "w": 14,
+          "h": 14
+        },
+        {
+          "tag": "BUTTON",
+          "text": "TR",
+          "w": 34,
+          "h": 26
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Koyu Mod",
+          "w": 32,
+          "h": 24
+        },
+        {
+          "tag": "A",
+          "text": "GÜNÜN SEÇKİSİ",
+          "w": 55,
+          "h": 33
+        }
+      ]
+    },
+    {
+      "name": "14-home-desktop-reference",
+      "status": 200,
+      "url": "http://127.0.0.1:8000/",
+      "screenshot": "C:/nwp0203/haber-sitesi/docs/reports/assets/mobile-public-audit-2026-05-14/14-home-desktop-reference.png",
+      "console": [],
+      "title": "Adıyaman Dijital Haber",
+      "h1": "Diyarbakır’da mezuniyet kutlamasına giden öğrenciler kaza yaptı: 6 yaralı",
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "horizontalOverflow": false,
+      "bodyMojibake": false,
+      "header": {
+        "top": 24,
+        "bottom": 208,
+        "height": 184,
+        "width": 1280
+      },
+      "breaking": {
+        "top": 208,
+        "bottom": 256,
+        "height": 48,
+        "width": 1280
+      },
+      "navVisible": true,
+      "nav": {
+        "top": 256,
+        "bottom": 303,
+        "height": 47,
+        "width": 1280
+      },
+      "main": {
+        "top": 327,
+        "bottom": 5999,
+        "height": 5672,
+        "width": 1280
+      },
+      "heroSide": {
+        "top": 456,
+        "bottom": 1019,
+        "height": 563,
+        "width": 395
+      },
+      "smallTargets": [
+        {
+          "tag": "A",
+          "text": "Ara",
+          "w": 40,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Günün Haberleri",
+          "w": 93,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Günün Gazetesi",
+          "w": 90,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Gündem",
+          "w": 48,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Siyaset",
+          "w": 41,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Ekonomi",
+          "w": 48,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "Spor",
+          "w": 27,
+          "h": 16
+        },
+        {
+          "tag": "A",
+          "text": "X",
+          "w": 14,
+          "h": 14
+        },
+        {
+          "tag": "A",
+          "text": "Facebook",
+          "w": 14,
+          "h": 14
+        },
+        {
+          "tag": "A",
+          "text": "Instagram",
+          "w": 14,
+          "h": 14
+        },
+        {
+          "tag": "A",
+          "text": "YouTube",
+          "w": 14,
+          "h": 14
+        },
+        {
+          "tag": "BUTTON",
+          "text": "TR",
+          "w": 34,
+          "h": 26
+        }
+      ]
+    }
+  ]
+}

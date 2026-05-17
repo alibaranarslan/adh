@@ -51,7 +51,7 @@ class HomePageController extends Controller
             'layoutPreviewRevision' => $previewRevision,
             'showFallbackNotice' => $showFallbackNotice,
             'metaTitle' => null,
-            'metaDescription' => __('Adiyaman ve cevresinden en guncel haberler.'),
+            'metaDescription' => __('Adıyaman ve çevresinden en güncel haberler.'),
             'ogImage' => $heroMain?->featured_image,
         ]));
     }

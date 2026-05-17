@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\NewsArticle;
 use App\Services\TranslationService;
+use App\Support\TranslationSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,10 +21,18 @@ class TranslateArticleJob implements ShouldQueue
     public function __construct(
         private int $articleId,
         private bool $force = false,
-    ) {}
+    ) {
+        $this->onQueue('default');
+    }
 
     public function handle(TranslationService $translationService): void
     {
+        if (! TranslationSettings::ready()) {
+            $this->delete();
+
+            return;
+        }
+
         $article = NewsArticle::find($this->articleId);
 
         if (!$article) {

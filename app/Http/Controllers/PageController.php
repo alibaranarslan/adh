@@ -24,9 +24,9 @@ class PageController extends Controller
         ]);
     }
 
-    public function show(string $slug)
+    public function show(string $localeOrSlug, ?string $slug = null)
     {
-        return $this->renderPage($slug);
+        return $this->renderPage($slug ?? $localeOrSlug);
     }
 
     public function about()
@@ -52,8 +52,8 @@ class PageController extends Controller
     public function contact()
     {
         return view('pages.contact')->with([
-            'metaTitle' => 'İletişim',
-            'metaDescription' => 'Adıyaman Dijital Haber ile iletişime geçin.',
+            'metaTitle' => __('İletişim'),
+            'metaDescription' => __('Adıyaman Dijital Haber ile haber ihbarı, reklam iş birlikleri ve okur geri bildirimleri için iletişime geçin.'),
         ]);
     }
 
@@ -75,7 +75,7 @@ class PageController extends Controller
 
             return back()
                 ->withInput()
-                ->withErrors(['contact' => 'Mesaj alici e-posta adresi yapilandirilmamis. Lutfen daha sonra tekrar deneyin.']);
+                ->withErrors(['contact' => __('Mesaj alıcı e-posta adresi yapılandırılmamış. Lütfen daha sonra tekrar deneyin.')]);
         }
 
         try {
@@ -91,7 +91,7 @@ class PageController extends Controller
 
             return back()
                 ->withInput()
-                ->withErrors(['contact' => 'Mesaj gonderilemedi. Lutfen daha sonra tekrar deneyin.']);
+                ->withErrors(['contact' => __('Mesaj gönderilemedi. Lütfen daha sonra tekrar deneyin.')]);
         }
 
         Log::channel('single')->info('Iletisim formu gonderildi', [

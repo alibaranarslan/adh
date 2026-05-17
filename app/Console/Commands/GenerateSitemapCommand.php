@@ -6,8 +6,8 @@ use App\Models\Category;
 use App\Models\NewsArticle;
 use App\Models\Page;
 use App\Models\Tag;
+use App\Support\LocalizedUrl;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
 
 class GenerateSitemapCommand extends Command
 {
@@ -16,52 +16,66 @@ class GenerateSitemapCommand extends Command
 
     public function handle(): int
     {
-        $baseUrl = config('app.url');
+        $baseUrl = rtrim((string) config('app.url'), '/');
         $urls    = [];
 
         // Homepage
-        $urls[] = ['loc' => $baseUrl, 'priority' => '1.0', 'changefreq' => 'hourly'];
+        foreach (LocalizedUrl::SUPPORTED_LOCALES as $locale) {
+            $urls[] = ['loc' => $this->localizedUrl($baseUrl, '', $locale), 'priority' => '1.0', 'changefreq' => 'hourly'];
+        }
 
         // Published news articles
         NewsArticle::published()
             ->orderByDesc('published_at')
-            ->select(['slug', 'published_at', 'updated_at'])
+            ->select(['id', 'slug', 'title', 'content', 'published_at', 'updated_at'])
             ->chunk(500, function ($articles) use ($baseUrl, &$urls) {
                 foreach ($articles as $article) {
-                    $urls[] = [
-                        'loc'        => "{$baseUrl}/{$article->slug}",
-                        'lastmod'    => ($article->updated_at ?? $article->published_at)?->toAtomString(),
-                        'priority'   => '0.8',
-                        'changefreq' => 'weekly',
-                    ];
+                    foreach (LocalizedUrl::SUPPORTED_LOCALES as $locale) {
+                        if (! LocalizedUrl::articleHasLocaleContent($article, $locale)) {
+                            continue;
+                        }
+
+                        $urls[] = [
+                            'loc'        => $this->localizedUrl($baseUrl, $article->slug, $locale),
+                            'lastmod'    => ($article->updated_at ?? $article->published_at)?->toAtomString(),
+                            'priority'   => '0.8',
+                            'changefreq' => 'weekly',
+                        ];
+                    }
                 }
             });
 
         // Categories
         Category::active()->select(['slug'])->get()->each(function ($cat) use ($baseUrl, &$urls) {
-            $urls[] = [
-                'loc'        => "{$baseUrl}/kategori/{$cat->slug}",
-                'priority'   => '0.6',
-                'changefreq' => 'daily',
-            ];
+            foreach (LocalizedUrl::SUPPORTED_LOCALES as $locale) {
+                $urls[] = [
+                    'loc'        => $this->localizedUrl($baseUrl, "kategori/{$cat->slug}", $locale),
+                    'priority'   => '0.6',
+                    'changefreq' => 'daily',
+                ];
+            }
         });
 
         // Tags
         Tag::select(['slug'])->get()->each(function ($tag) use ($baseUrl, &$urls) {
-            $urls[] = [
-                'loc'        => "{$baseUrl}/etiket/{$tag->slug}",
-                'priority'   => '0.4',
-                'changefreq' => 'weekly',
-            ];
+            foreach (LocalizedUrl::SUPPORTED_LOCALES as $locale) {
+                $urls[] = [
+                    'loc'        => $this->localizedUrl($baseUrl, "etiket/{$tag->slug}", $locale),
+                    'priority'   => '0.4',
+                    'changefreq' => 'weekly',
+                ];
+            }
         });
 
         // Published pages
         Page::published()->select(['slug'])->get()->each(function ($page) use ($baseUrl, &$urls) {
-            $urls[] = [
-                'loc'        => "{$baseUrl}/sayfa/{$page->slug}",
-                'priority'   => '0.5',
-                'changefreq' => 'monthly',
-            ];
+            foreach (LocalizedUrl::SUPPORTED_LOCALES as $locale) {
+                $urls[] = [
+                    'loc'        => $this->localizedUrl($baseUrl, 'sayfa/' . $page->slug, $locale),
+                    'priority'   => '0.5',
+                    'changefreq' => 'monthly',
+                ];
+            }
         });
 
         $xml = $this->buildXml($urls);
@@ -89,5 +103,10 @@ class GenerateSitemapCommand extends Command
         $lines[] = '</urlset>';
 
         return implode("\n", $lines);
+    }
+
+    private function localizedUrl(string $baseUrl, string $path, string $locale): string
+    {
+        return $baseUrl . LocalizedUrl::path($path, $locale);
     }
 }

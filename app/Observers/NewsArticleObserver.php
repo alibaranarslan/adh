@@ -6,6 +6,7 @@ use App\Jobs\TranslateArticleJob;
 use App\Models\NewsArticle;
 use App\Models\Redirect;
 use App\Services\SocialPublicationService;
+use App\Support\TranslationSettings;
 
 class NewsArticleObserver
 {
@@ -56,7 +57,7 @@ class NewsArticleObserver
 
         if (
             $article->status === 'published'
-            && ! empty(config('services.google_translate.api_key'))
+            && TranslationSettings::ready()
         ) {
             TranslateArticleJob::dispatch($article->id)->delay(now()->addSeconds(30));
         }

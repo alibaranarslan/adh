@@ -1,0 +1,77 @@
+﻿url=http://127.0.0.1:8000/admin/layout-studio
+
+﻿
+ADH
+﻿
+Yerleşim Stüdyosu
+Taslak -> Önizleme -> Yayın
+10/10 aktif modül
+Anasayfa Yerleşim Stüdyosu
+
+Editoryal blok akışını, görünüm belirteçlerini ve yayın kontrolünü tek bir çalışma yüzeyinde yönetin. Taslaklar burada şekillenir, önizleme ile doğrulanır ve onaydan sonra güvenli biçimde canlıya aktarılır.
+
+Manset akışı korunur
+TR / EN / KU önizleme hazır
+Geri alma destekli yayın
+
+Taslak
+
+18.04.2026 19:46
+
+Veritabanı ile senkron
+
+Canlı Sürüm
+
+Henüz yok
+
+İlk yayın bekleniyor
+
+Modül Durumu
+
+10 blok / 10 aktif
+
+Blok sırası taslakta güncellenir, yayın anında tek seferde uygulanır.
+
+Önizleme
+
+TR önizleme
+EN önizleme
+KU önizleme
+
+Kayıtlı taslak imzalı önizleme ile açılır.
+
+Canlı Önizleme ve Yayın Hazırlığı
+
+Kayıtlı taslak aynı ekranda imzalı public önizleme ile gösterilir. Kaydedilmemiş değişiklikler önce taslağa yazılmalıdır.
+
+Yayına hazır mı?
+
+Taslak yayınlanabilir
+READY
+Yan panel modülü aktif; mobil önizlemede aşağı akışta kontrol edilmeli.
+Reklam modülü aktif; yayından önce render edilebilir reklam kaydı olduğu kontrol edilmeli.
+
+Önizleme cihazı
+
+Desktop ve 390px mobil kırılım aynı imzalı taslak URL'sinden kontrol edilir.
+
+Desktop
+Mobil 390px
+TR harici önizleme
+EN harici önizleme
+KU harici önizleme
+Modül Akışı
+
+Modülleri seçin, yerel sıra kontrolleriyle taslakta yukarı-aşağı taşıyın ve kaydettikten sonra önizleme alın.
+
+Manşet düzeni ve haber akışı burada yeniden kurgulanır. Bir modül seçin, önce taslakta yerini ve yoğunluğunu düzenleyin, sonra önizleme ile yayına çıkacak akışı kontrol edin.
+01
+
+Son Dakika Bandi
+
+breaking_bar
+Varsayılan
+
+Ustteki acil gundem satiri.
+
+Masaüstü 3

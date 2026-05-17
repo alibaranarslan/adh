@@ -5,6 +5,11 @@
     $draftRevision = $this->getDraftRevision();
     $previewUrls = $this->getPreviewUrls();
     $revisionOptions = $this->getRevisionOptions();
+    $layoutReadiness = $this->getLayoutReadiness();
+    $previewDevice = $this->previewDevice;
+    $previewFrameClass = $previewDevice === 'mobile'
+        ? 'mx-auto h-[720px] w-[390px] max-w-full'
+        : 'h-[720px] w-full';
     $moduleCount = count($modules);
     $activeModuleCount = collect($modules)->where('is_active', true)->count();
     $selectedSettings = $selectedModule['settings'] ?? [];
@@ -128,6 +133,26 @@
 
             .dark .adh-layout-shell .studio-section-note {
                 color: #fcd34d;
+            }
+
+            .adh-layout-shell .studio-preview-frame {
+                overflow: hidden;
+                border-radius: 1.35rem;
+                border: 1px solid rgba(15, 23, 42, 0.12);
+                background: #ffffff;
+                box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+            }
+
+            .dark .adh-layout-shell .studio-preview-frame {
+                border-color: rgba(148, 163, 184, 0.18);
+                background: #0f172a;
+                box-shadow: none;
+            }
+
+            .adh-layout-shell .studio-readiness-item {
+                border-radius: 0.9rem;
+                border: 1px solid rgba(148, 163, 184, 0.18);
+                padding: 0.65rem 0.85rem;
             }
         </style>
     @endonce
@@ -264,6 +289,81 @@
                     </div>
                 </div>
             </div>
+            </div>
+        </x-filament::section>
+
+        <x-filament::section heading="Canlı Önizleme ve Yayın Hazırlığı" description="Kayıtlı taslak aynı ekranda imzalı public önizleme ile gösterilir. Kaydedilmemiş değişiklikler önce taslağa yazılmalıdır.">
+            <div class="grid gap-6 xl:grid-cols-[minmax(0,0.55fr)_minmax(0,1fr)]">
+                <div class="space-y-4">
+                    <div class="studio-panel px-5 py-5">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-600 dark:text-amber-300">Yayına hazır mı?</p>
+                                <h3 class="mt-1 text-lg font-semibold text-gray-950 dark:text-white">
+                                    {{ $layoutReadiness['status'] === 'ready' ? 'Taslak yayınlanabilir' : 'Yayın kalite kapısı blokluyor' }}
+                                </h3>
+                            </div>
+
+                            <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $layoutReadiness['status'] === 'ready' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300' }}">
+                                {{ strtoupper($layoutReadiness['status']) }}
+                            </span>
+                        </div>
+
+                        @if ($this->hasUnsavedChanges)
+                            <div class="studio-readiness-item mt-4 bg-amber-50 text-sm text-amber-800 dark:bg-amber-400/10 dark:text-amber-200">
+                                Önizleme son kaydedilen taslağı gösteriyor. Bu ekrandaki değişiklikleri görmek için önce taslağı kaydedin.
+                            </div>
+                        @endif
+
+                        @if ($layoutReadiness['errors'])
+                            <div class="mt-4 space-y-2">
+                                @foreach ($layoutReadiness['errors'] as $error)
+                                    <div class="studio-readiness-item bg-red-50 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-200">{{ $error }}</div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if ($layoutReadiness['warnings'])
+                            <div class="mt-4 space-y-2">
+                                @foreach ($layoutReadiness['warnings'] as $warning)
+                                    <div class="studio-readiness-item bg-amber-50 text-sm text-amber-800 dark:bg-amber-400/10 dark:text-amber-200">{{ $warning }}</div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="studio-panel px-5 py-5">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white">Önizleme cihazı</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Desktop ve 390px mobil kırılım aynı imzalı taslak URL'sinden kontrol edilir.</p>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <x-filament::button type="button" size="sm" color="{{ $previewDevice === 'desktop' ? 'primary' : 'gray' }}" wire:click="setPreviewDevice('desktop')">
+                                Desktop
+                            </x-filament::button>
+                            <x-filament::button type="button" size="sm" color="{{ $previewDevice === 'mobile' ? 'primary' : 'gray' }}" wire:click="setPreviewDevice('mobile')">
+                                Mobil 390px
+                            </x-filament::button>
+                        </div>
+
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            @foreach ($previewUrls as $locale => $url)
+                                <a href="{{ $url }}" target="_blank" rel="noreferrer" class="inline-flex items-center rounded-full border border-amber-200 px-3 py-1 text-xs font-semibold text-amber-700 transition hover:border-amber-400 hover:bg-amber-50 dark:border-amber-400/20 dark:text-amber-300 dark:hover:bg-amber-400/10">
+                                    {{ strtoupper($locale) }} harici önizleme
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <div class="studio-panel px-4 py-4">
+                    <div class="{{ $previewFrameClass }} studio-preview-frame">
+                        <iframe
+                            src="{{ $previewUrls['tr'] ?? '#' }}"
+                            title="Layout Studio canlı önizleme"
+                            class="h-full w-full bg-white"
+                            loading="lazy"
+                        ></iframe>
+                    </div>
+                </div>
             </div>
         </x-filament::section>
 
@@ -672,7 +772,7 @@
                         <x-filament::button wire:click="saveDraft" color="gray" icon="heroicon-o-pencil-square">
                             Taslağı Kaydet
                         </x-filament::button>
-                        <x-filament::button wire:click="publishDraft" color="primary" icon="heroicon-o-rocket-launch" :disabled="$this->isPublishRestricted()">
+                        <x-filament::button wire:click="publishDraft" color="primary" icon="heroicon-o-rocket-launch" :disabled="$this->isPublishRestricted() || $layoutReadiness['status'] === 'blocked'">
                             Canlıya Al
                         </x-filament::button>
                     </div>
@@ -737,7 +837,7 @@
                         Taslağı Kaydet
                     </x-filament::button>
 
-                    <x-filament::button wire:click="publishDraft" color="primary" size="sm" icon="heroicon-o-rocket-launch" :disabled="$this->isPublishRestricted()">
+                    <x-filament::button wire:click="publishDraft" color="primary" size="sm" icon="heroicon-o-rocket-launch" :disabled="$this->isPublishRestricted() || $layoutReadiness['status'] === 'blocked'">
                         Canlıya Al
                     </x-filament::button>
                 </div>

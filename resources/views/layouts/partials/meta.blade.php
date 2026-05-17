@@ -7,6 +7,7 @@
     :type="$ogType ?? 'website'"
     :canonical="$canonical ?? null"
     :noindex="$noindex ?? false"
+    :article="$article ?? null"
 />
 @php
     $branding = \App\Support\SiteBranding::current();

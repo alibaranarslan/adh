@@ -228,6 +228,98 @@ class ContentOperationsAndLayoutTest extends TestCase
         $this->assertSame('#112233', data_get($service->getPublishedState(), 'appearance.primary_color'));
     }
 
+    public function test_layout_publish_quality_gate_blocks_invalid_draft_state(): void
+    {
+        Role::findOrCreate('super_admin', 'web');
+
+        $superAdmin = $this->makeAdmin();
+        $superAdmin->assignRole('super_admin');
+        $this->actingAs($superAdmin);
+
+        $service = app(LayoutConfigService::class);
+        $baseState = $service->getDraftState();
+        $publishedState = $this->withAppearanceColor($baseState, '#111111');
+
+        $service->storeDraftState($publishedState['modules'], $publishedState['appearance'], $superAdmin);
+        $service->publishDraft($superAdmin);
+
+        $invalidState = $this->withAppearanceColor($service->getDraftState(), '#222222');
+        $invalidState['modules'] = collect($invalidState['modules'])
+            ->map(function (array $module): array {
+                if (in_array($module['key'], ['hero', 'local_news', 'highlights', 'most_read', 'region_news', 'latest_news', 'category_shortcuts'], true)) {
+                    $module['is_active'] = false;
+                }
+
+                return $module;
+            })
+            ->all();
+
+        Livewire::test(LayoutStudio::class)
+            ->set('modules', $invalidState['modules'])
+            ->set('appearance.primary_color', '#222222')
+            ->call('publishDraft');
+
+        $this->assertSame('#111111', Setting::get('appearance', 'primary_color'));
+        $this->assertSame('#111111', data_get($service->getPublishedState(), 'appearance.primary_color'));
+    }
+
+    public function test_layout_publish_quality_gate_blocks_cta_without_required_fields(): void
+    {
+        Role::findOrCreate('super_admin', 'web');
+
+        $superAdmin = $this->makeAdmin();
+        $superAdmin->assignRole('super_admin');
+        $this->actingAs($superAdmin);
+
+        $service = app(LayoutConfigService::class);
+        $baseState = $service->getDraftState();
+        $publishedState = $this->withAppearanceColor($baseState, '#333333');
+
+        $service->storeDraftState($publishedState['modules'], $publishedState['appearance'], $superAdmin);
+        $service->publishDraft($superAdmin);
+
+        $invalidState = $this->withAppearanceColor($service->getDraftState(), '#444444');
+        $invalidState['modules'] = collect($invalidState['modules'])
+            ->map(function (array $module): array {
+                if ($module['key'] === 'latest_news') {
+                    $module['is_active'] = true;
+                    $module['settings']['cta_enabled'] = true;
+                    $module['settings']['cta_label']['tr'] = '';
+                    $module['settings']['cta_url'] = '';
+                }
+
+                return $module;
+            })
+            ->all();
+
+        Livewire::test(LayoutStudio::class)
+            ->set('modules', $invalidState['modules'])
+            ->set('appearance.primary_color', '#444444')
+            ->call('publishDraft');
+
+        $this->assertSame('#333333', Setting::get('appearance', 'primary_color'));
+        $this->assertSame('#333333', data_get($service->getPublishedState(), 'appearance.primary_color'));
+    }
+
+    public function test_layout_studio_renders_panel_preview_and_device_toggle(): void
+    {
+        $admin = $this->makeAdmin();
+
+        $this->actingAs($admin)
+            ->get('/admin/layout-studio')
+            ->assertOk()
+            ->assertSee('Canlı Önizleme ve Yayın Hazırlığı')
+            ->assertSee('Yayına hazır mı?')
+            ->assertSee('Mobil 390px');
+
+        Livewire::test(LayoutStudio::class)
+            ->assertSet('previewDevice', 'desktop')
+            ->call('setPreviewDevice', 'mobile')
+            ->assertSet('previewDevice', 'mobile')
+            ->call('setPreviewDevice', 'desktop')
+            ->assertSet('previewDevice', 'desktop');
+    }
+
     public function test_layout_preview_requires_signed_url(): void
     {
         $admin = $this->makeAdmin();
@@ -238,7 +330,8 @@ class ContentOperationsAndLayoutTest extends TestCase
             ->assertForbidden();
 
         $this->get($service->getPreviewUrl($draft))
-            ->assertOk();
+            ->assertOk()
+            ->assertDontSee('adh_site_cookie_consent');
     }
 
     public function test_media_library_deletes_only_orphan_media(): void

@@ -33,7 +33,7 @@ class IhaSyncTriggerServiceTest extends TestCase
         $result = app(IhaSyncTriggerService::class)->triggerQueued();
 
         $this->assertSame('running', $result['status']);
-        $this->assertSame('IHA senkronu kuyruga alindi', $result['title']);
+        $this->assertSame('İHA senkronu kuyruğa alındı', $result['title']);
         $this->assertStringContainsString('Log #', $result['body']);
         $this->assertStringContainsString('Durum: running', $result['body']);
     }
@@ -58,7 +58,8 @@ class IhaSyncTriggerServiceTest extends TestCase
         $result = app(IhaSyncTriggerService::class)->triggerQueued();
 
         $this->assertSame('skipped', $result['status']);
-        $this->assertStringContainsString('zaten calisiyor', $result['title']);
+        $this->assertStringContainsString('zaten çalışıyor', $result['title']);
+        $this->assertStringContainsString('Queue worker', $result['body']);
     }
 
     public function test_trigger_queued_surfaces_failed_log_status(): void

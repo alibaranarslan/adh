@@ -69,61 +69,122 @@
 
 @layer components {
   .adh-theme-banner {
-    @apply bg-adh-red text-white;
     position: relative;
     overflow: hidden;
+    color: #fff;
+    isolation: isolate;
   }
 
   .adh-theme-banner__inner {
-    @apply flex items-center justify-center gap-3 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.18em];
+    @apply relative z-10 flex items-center gap-5 py-2;
+    min-height: 46px;
+  }
+
+  .adh-event-strip__identity {
+    @apply flex shrink-0 items-center gap-2.5;
+  }
+
+  .adh-event-strip__badge {
+    @apply inline-flex items-center justify-center;
+    min-width: 34px;
+    height: 34px;
+  }
+
+  .adh-event-seal {
+    @apply relative inline-flex items-center justify-center overflow-visible;
+    min-width: 34px;
+    height: 34px;
+    filter: drop-shadow(0 7px 14px rgba(0, 0, 0, 0.2));
+  }
+
+  .adh-event-seal--flag {
+    width: 38px;
+  }
+
+  .adh-event-seal--portrait {
+    width: 30px;
+  }
+
+  .adh-event-seal--crescent {
+    width: 28px;
+  }
+
+  .adh-event-seal__accent {
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    width: 22px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transform: translateX(-50%);
+    opacity: 0.9;
+  }
+
+  .adh-event-badge__img {
+    position: relative;
+    z-index: 1;
+    display: block;
+    object-fit: contain;
+  }
+
+  .adh-event-badge__img--flag {
+    width: 32px;
+    height: 21px;
+    border-radius: 2px;
+    box-shadow:
+      0 3px 10px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(255, 255, 255, 0.22);
+  }
+
+  .adh-event-badge__img--portrait {
+    width: 28px;
+    height: 34px;
+    object-fit: contain;
+    object-position: center bottom;
+    border-radius: 0;
+    filter: grayscale(1) contrast(1.08);
+  }
+
+  .adh-event-badge__img--crescent {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+    opacity: 0.92;
+  }
+
+  .adh-event-badge__mark {
+    @apply ml-1 hidden text-[10px] font-black leading-none tracking-[-0.04em] sm:inline;
+  }
+
+  .adh-event-strip__label {
+    @apply whitespace-nowrap text-[11px] font-black uppercase tracking-[0.2em];
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.18);
+  }
+
+  .adh-event-strip__message {
+    @apply relative min-w-0 flex-1 truncate text-center text-[11px] font-semibold uppercase tracking-[0.18em];
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.16);
+  }
+
+  .adh-event-strip__message::before,
+  .adh-event-strip__message::after {
+    content: "";
+    display: inline-block;
+    width: 28px;
+    height: 1px;
+    margin: 0 14px 3px;
+    background: rgba(255, 255, 255, 0.42);
   }
 
   .adh-theme-preview-badge {
     @apply inline-flex items-center rounded-full border border-white/25 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em];
+    flex-shrink: 0;
   }
 
-  .adh-theme-visual {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    color: currentColor;
-  }
-
-  .adh-theme-accent,
-  .adh-theme-accent-bayram,
-  .adh-theme-accent-solemn {
-    position: absolute;
-    right: -1rem;
-    top: 0.25rem;
-    width: min(17rem, 36vw);
-    height: auto;
-  }
-
-  .adh-theme-flag {
-    position: absolute;
-    right: 1.25rem;
-    top: 1rem;
-    width: 4.5rem;
-    height: auto;
-    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.15));
-  }
-
-  .adh-theme-ataturk {
-    position: absolute;
-    right: 5.5rem;
-    bottom: 0.15rem;
-    width: min(10rem, 20vw);
-    height: auto;
-  }
-
-  .adh-theme-custom-visual {
-    position: absolute;
-    right: 1rem;
-    top: 0.5rem;
-    width: min(10rem, 22vw);
-    height: auto;
-    object-fit: contain;
-    opacity: 0.9;
+  .adh-theme-visual,
+  .adh-theme-composition {
+    display: none;
   }
 
   #adh-site-header.adh-header-theme {
@@ -135,30 +196,62 @@
     overflow: hidden;
   }
 
-  #adh-site-header.adh-header-theme.decor-soft .adh-theme-visual {
-    opacity: 0.72;
-  }
-
-  #adh-site-header.adh-header-theme.decor-medium .adh-theme-visual {
-    opacity: 0.88;
-  }
-
-  #adh-site-header.adh-header-theme.decor-strong .adh-theme-visual {
-    opacity: 1;
-  }
-
   #adh-site-header.adh-tone-national {
     color: #9f1239;
   }
 
   #adh-site-header.adh-tone-national .adh-theme-banner {
-    background: linear-gradient(90deg, #9f1239 0%, #dc2626 60%, #b91c1c 100%);
+    background-image:
+      radial-gradient(circle at 9% 50%, rgba(255, 255, 255, 0.18), transparent 20%),
+      linear-gradient(90deg, rgba(127, 29, 29, 0.98), rgba(220, 38, 38, 0.98)),
+      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.11) 0 1px, transparent 1px 18px);
   }
 
-  #adh-site-header.adh-tone-national #adh-masthead {
+  #adh-site-header.adh-theme-23-nisan .adh-theme-banner {
     background-image:
-      linear-gradient(135deg, rgba(220, 38, 38, 0.08), transparent 55%),
-      linear-gradient(0deg, rgba(153, 27, 27, 0.05), transparent 70%);
+      radial-gradient(circle at 10% 50%, rgba(255, 255, 255, 0.22), transparent 19%),
+      linear-gradient(90deg, #b91c1c, #e11d48 55%, #fb4a4a);
+  }
+
+  #adh-site-header.adh-theme-23-nisan .adh-event-seal {
+    color: #fecdd3;
+    transform: translateY(-1px) rotate(-2deg);
+  }
+
+  #adh-site-header.adh-theme-19-mayis .adh-theme-banner {
+    background-image:
+      radial-gradient(circle at 10% 45%, rgba(96, 165, 250, 0.25), transparent 22%),
+      linear-gradient(90deg, #0f1e46, #1e3a8a 36%, #b91c1c 78%, #dc2626);
+  }
+
+  #adh-site-header.adh-theme-19-mayis .adh-event-seal {
+    color: #60a5fa;
+  }
+
+  #adh-site-header.adh-theme-19-mayis .adh-event-seal__accent {
+    background: #ef4444;
+  }
+
+  #adh-site-header.adh-theme-30-agustos .adh-theme-banner {
+    background-image:
+      linear-gradient(90deg, #4a0c0c, #7f1d1d 46%, #b91c1c 82%, #dc2626),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px 22px);
+  }
+
+  #adh-site-header.adh-theme-30-agustos .adh-event-seal {
+    color: #fca5a5;
+    filter: drop-shadow(0 8px 16px rgba(69, 10, 10, 0.36));
+  }
+
+  #adh-site-header.adh-theme-29-ekim .adh-theme-banner {
+    background-image:
+      radial-gradient(circle at 10% 50%, rgba(255, 255, 255, 0.24), transparent 18%),
+      linear-gradient(90deg, #7f1029, #dc2626 46%, #b91c1c 78%, #7f1d1d);
+  }
+
+  #adh-site-header.adh-theme-29-ekim .adh-event-seal {
+    color: #ffffff;
+    filter: drop-shadow(0 8px 18px rgba(127, 29, 29, 0.3));
   }
 
   #adh-site-header.adh-tone-commemoration {
@@ -166,13 +259,18 @@
   }
 
   #adh-site-header.adh-tone-commemoration .adh-theme-banner {
-    background: linear-gradient(90deg, #1e293b 0%, #475569 100%);
+    background-image:
+      linear-gradient(90deg, #05070d, #1f2937 54%, #475569),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 26px);
   }
 
-  #adh-site-header.adh-tone-commemoration #adh-masthead {
-    background-image:
-      linear-gradient(180deg, rgba(30, 41, 59, 0.08), transparent 65%),
-      linear-gradient(90deg, rgba(220, 38, 38, 0.08), transparent 38%);
+  #adh-site-header.adh-tone-commemoration .adh-event-seal {
+    color: #dc2626;
+    filter: drop-shadow(0 7px 14px rgba(0, 0, 0, 0.28));
+  }
+
+  #adh-site-header.adh-tone-commemoration .adh-event-badge__img--mono {
+    opacity: 0.86;
   }
 
   #adh-site-header.adh-tone-bayram {
@@ -180,13 +278,24 @@
   }
 
   #adh-site-header.adh-tone-bayram .adh-theme-banner {
-    background: linear-gradient(90deg, #b45309 0%, #d97706 55%, #f59e0b 100%);
+    background-image:
+      radial-gradient(circle at 10% 50%, rgba(254, 243, 199, 0.24), transparent 19%),
+      linear-gradient(90deg, #7c2d12, #c2410c 48%, #f59e0b);
   }
 
-  #adh-site-header.adh-tone-bayram #adh-masthead {
+  #adh-site-header.adh-tone-bayram .adh-event-seal {
+    color: #fde68a;
+    filter: drop-shadow(0 7px 14px rgba(92, 45, 12, 0.2));
+  }
+
+  #adh-site-header.adh-theme-kurban-bayrami .adh-theme-banner {
     background-image:
-      linear-gradient(135deg, rgba(245, 158, 11, 0.08), transparent 55%),
-      linear-gradient(0deg, rgba(180, 83, 9, 0.05), transparent 70%);
+      radial-gradient(circle at 10% 50%, rgba(253, 230, 138, 0.18), transparent 20%),
+      linear-gradient(90deg, #5f2a0c, #92400e 48%, #d97706);
+  }
+
+  #adh-site-header.adh-theme-kurban-bayrami .adh-event-seal {
+    color: #fcd34d;
   }
 
   html.dark #adh-site-header.adh-tone-national #adh-masthead,
@@ -225,36 +334,72 @@
     }
 
     #adh-site-header > .bg-adh-navy .flex.items-center.gap-2 > button[aria-label="Koyu Mod"]::before {
-      content: "◐";
+      content: "\25CF";
     }
 
     #adh-site-header > .bg-adh-navy .flex.items-center.gap-2 > button[aria-label="Açık Mod"]::before {
-      content: "☀";
+      content: "\2600";
     }
 
     .adh-theme-banner__inner {
-      @apply py-2 text-[10px];
+      @apply justify-between py-2;
+      min-height: 52px;
+    }
+
+    .adh-event-strip__identity {
+      @apply min-w-0 flex-1;
+    }
+
+    .adh-event-strip__badge {
+      min-width: 30px;
+      height: 32px;
+    }
+
+    .adh-event-seal {
+      min-width: 30px;
+      height: 30px;
+    }
+
+    .adh-event-seal__accent {
+      width: 16px;
+      bottom: -3px;
+    }
+
+    .adh-event-badge__img--flag {
+      width: 27px;
+      height: 18px;
+    }
+
+    .adh-event-badge__img--portrait {
+      width: 24px;
+      height: 29px;
+    }
+
+    .adh-event-badge__img--crescent {
+      width: 20px;
+      height: 20px;
+    }
+
+    .adh-event-strip__label {
+      @apply truncate text-[10px];
+      letter-spacing: 0.16em;
+    }
+
+    .adh-event-strip__message {
+      @apply hidden;
+    }
+
+    .adh-theme-preview-badge {
+      @apply px-2 py-1 text-[9px];
       letter-spacing: 0.12em;
     }
 
-    .adh-theme-accent,
-    .adh-theme-accent-bayram,
-    .adh-theme-accent-solemn {
-      width: 8.75rem;
-      right: -1.5rem;
-      top: 0.75rem;
-    }
-
-    .adh-theme-flag {
-      width: 3.2rem;
-      right: 0.75rem;
-      top: 0.75rem;
-    }
-
-    .adh-theme-ataturk {
-      width: 4.8rem;
-      right: 3.8rem;
-      bottom: 0;
+    .adh-theme-flag,
+    .adh-theme-ataturk,
+    .adh-theme-holiday-symbol,
+    .adh-theme-custom-visual,
+    .adh-theme-neutral-accent {
+      display: none;
     }
   }
 }

@@ -34,6 +34,17 @@ class AdminOperationsReadinessTest extends TestCase
         $this->assertTrue($stats['iha_credentials_ready']);
     }
 
+    public function test_iha_health_uses_admin_google_translate_api_key_for_translation_readiness(): void
+    {
+        config(['services.google_translate.api_key' => null]);
+
+        $this->assertFalse(app(IhaHealth::class)->getViewData()['stats']['translation_credentials_ready']);
+
+        Setting::set('integration', 'google_translate_api_key', 'admin-google-key');
+
+        $this->assertTrue(app(IhaHealth::class)->getViewData()['stats']['translation_credentials_ready']);
+    }
+
     public function test_contact_form_sends_to_configured_recipient_email(): void
     {
         Mail::fake();
@@ -148,6 +159,7 @@ class AdminOperationsReadinessTest extends TestCase
                 'iha_user_code' => 'IHA-CODE',
                 'iha_username' => 'IHA-USER',
                 'iha_password' => 'IHA-PASS',
+                'google_translate_api_key' => 'GOOGLE-KEY',
                 'instagram_enabled' => true,
                 'instagram_access_token' => 'IG-TOKEN',
                 'instagram_business_account_id' => 'IG-BUSINESS',
@@ -172,6 +184,7 @@ class AdminOperationsReadinessTest extends TestCase
         $this->assertSame('{title} - ADH', Setting::get('seo', 'default_meta_title'));
         $this->assertSame('IHA-CODE', Setting::get('integration', 'iha_user_code'));
         $this->assertSame('IHA-PASS', Setting::get('integration', 'iha_password'));
+        $this->assertSame('GOOGLE-KEY', Setting::get('integration', 'google_translate_api_key'));
         $this->assertSame('IG-TOKEN', Setting::get('integration', 'instagram_access_token'));
         $this->assertSame('smtp-pass', Setting::get('email', 'smtp_password'));
         $this->assertSame('noreply@adh.test', Setting::get('email', 'from_email'));
@@ -182,8 +195,10 @@ class AdminOperationsReadinessTest extends TestCase
             ->assertFormSet([
                 'iha_user_code' => 'IHA-CODE',
                 'iha_password' => '',
+                'google_translate_api_key' => '',
                 'instagram_access_token' => '',
             ])
+            ->assertSee('Google Translation API Key')
             ->assertSee('Google AdSense scriptinde public istemci kimliği olarak kullanılır');
         Livewire::test(EmailSettings::class)
             ->assertFormSet([
@@ -197,6 +212,7 @@ class AdminOperationsReadinessTest extends TestCase
         $this->actingAs($this->admin());
 
         Setting::set('integration', 'iha_password', 'existing-iha-pass');
+        Setting::set('integration', 'google_translate_api_key', 'existing-google-key');
         Setting::set('integration', 'instagram_access_token', 'existing-ig-token');
         Setting::set('email', 'smtp_password', 'existing-smtp-pass');
 
@@ -205,6 +221,7 @@ class AdminOperationsReadinessTest extends TestCase
                 'iha_user_code' => 'IHA-CODE',
                 'iha_username' => 'IHA-USER',
                 'iha_password' => '',
+                'google_translate_api_key' => '',
                 'instagram_enabled' => true,
                 'instagram_access_token' => '',
                 'instagram_business_account_id' => 'IG-BUSINESS',
@@ -227,6 +244,7 @@ class AdminOperationsReadinessTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertSame('existing-iha-pass', Setting::get('integration', 'iha_password'));
+        $this->assertSame('existing-google-key', Setting::get('integration', 'google_translate_api_key'));
         $this->assertSame('existing-ig-token', Setting::get('integration', 'instagram_access_token'));
         $this->assertSame('existing-smtp-pass', Setting::get('email', 'smtp_password'));
     }

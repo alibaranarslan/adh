@@ -1,10 +1,10 @@
-﻿<nav class="bg-white dark:bg-adh-blue border-b border-adh-border dark:border-adh-blue sticky top-0 z-20 shadow-sm"
+<nav class="sticky top-0 z-20 hidden border-b border-adh-border bg-white shadow-sm dark:border-adh-blue dark:bg-adh-blue md:block"
      x-data="{ illerOpen: false }">
     <div class="max-w-7xl mx-auto px-4">
         <div class="overflow-x-auto scrollbar-hide">
             <ul class="flex items-center gap-0.5 min-w-max py-0">
                 <li>
-                    <a href="{{ route('home') }}"
+                    <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
                        class="inline-block text-sm font-medium px-3 py-3 border-b-2 transition-colors
                               {{ request()->routeIs('home')
                                   ? 'text-adh-red border-adh-red'
@@ -16,7 +16,7 @@
                 @foreach ($navCategories ?? collect() as $item)
                     @php $catSlug = data_get($item, 'slug'); @endphp
                     <li>
-                        <a href="{{ route('news.category', ['slug' => $catSlug]) }}"
+                        <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => $catSlug]) }}"
                            class="inline-block text-sm font-medium px-3 py-3 border-b-2 transition-colors
                                   {{ request()->is("*/$catSlug*") || (request()->route('slug') === $catSlug)
                                       ? 'text-adh-red border-adh-red'
@@ -68,13 +68,13 @@
                          "
                          class="fixed w-52 bg-white dark:bg-adh-blue border border-adh-border dark:border-gray-700 rounded-lg shadow-xl z-40 py-1 max-h-72 overflow-y-auto"
                          style="display:none;">
-                        <a href="{{ route('city.index') }}"
+                        <a href="{{ \App\Support\LocalizedUrl::route('city.index') }}"
                            @click="illerOpen = false"
                            class="block px-4 py-2.5 text-xs font-semibold text-adh-red border-b border-adh-border dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
                             {{ __('Tüm İller') }} &rarr;
                         </a>
                         @foreach (\App\Services\IhaCategoryMapper::getActiveCities() as $citySlug => $cityLabel)
-                            <a href="{{ route('city.show', $citySlug) }}"
+                            <a href="{{ \App\Support\LocalizedUrl::route('city.show', ['slug' => $citySlug]) }}"
                                @click="illerOpen = false"
                                class="block px-4 py-2 text-sm transition-colors
                                       {{ request()->is("*/il/$citySlug*") || (request()->route('slug') === $citySlug && request()->routeIs('city.show'))

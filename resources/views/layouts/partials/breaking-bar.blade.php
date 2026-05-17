@@ -4,39 +4,36 @@
 @endphp
 
 @if ($showBreakingBar && ($breakingNews ?? collect())->isNotEmpty())
-    <section class="bg-adh-red text-white overflow-hidden" aria-label="{{ __('Son dakika haberleri') }}" aria-live="polite">
-        <div class="max-w-7xl mx-auto px-4 py-2 flex items-center gap-4">
-            {{-- "Son Dakika" etiketi — pulse animasyonlu --}}
-            <span class="flex items-center gap-2 shrink-0">
+    <section class="overflow-hidden bg-adh-red text-white" aria-label="{{ __('Son dakika haberleri') }}" aria-live="polite">
+        <div class="mx-auto flex min-h-11 max-w-7xl items-center gap-3 px-4 py-1.5 md:gap-4 md:py-2">
+            <span class="flex shrink-0 items-center gap-2">
                 <span class="relative flex h-2.5 w-2.5">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+                    <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-white"></span>
                 </span>
-                <span class="font-bold uppercase tracking-widest text-xs whitespace-nowrap">{{ __('Son Dakika') }}</span>
+                <span class="whitespace-nowrap text-[11px] font-bold uppercase tracking-widest md:text-xs">{{ __('Son Dakika') }}</span>
             </span>
 
-            <div class="h-4 w-px bg-white/40 shrink-0"></div>
+            <div class="h-4 w-px shrink-0 bg-white/40"></div>
 
-            {{-- Marquee — hover'da duruyor --}}
-            <div class="overflow-hidden flex-1"
+            <div class="min-w-0 flex-1 overflow-hidden"
                  x-data="{ paused: false }"
                  @mouseenter="paused = true"
                  @mouseleave="paused = false">
-                <div class="flex gap-0 whitespace-nowrap"
+                <div class="flex whitespace-nowrap"
                      :class="paused ? 'animate-none' : 'animate-marquee'">
                     @foreach ($breakingNews as $item)
-                        <span class="mx-8 text-sm inline-flex items-center gap-1.5">
-                            <span class="text-white/60">●</span>
-                            <a href="{{ route('news.show', ['slug' => $item->slug]) }}"
-                               class="hover:underline font-medium">{{ $item->title }}</a>
+                        <span class="mx-4 inline-flex min-h-8 items-center gap-1.5 text-xs md:mx-8 md:text-sm">
+                            <span class="text-white/60">•</span>
+                            <a href="{{ \App\Support\LocalizedUrl::route('news.show', ['slug' => $item->slug]) }}"
+                               class="max-w-[18rem] truncate font-medium hover:underline md:max-w-none">{{ $item->title }}</a>
                         </span>
                     @endforeach
-                    {{-- Duplicate for seamless loop --}}
                     @foreach ($breakingNews as $item)
-                        <span class="mx-8 text-sm inline-flex items-center gap-1.5" aria-hidden="true">
-                            <span class="text-white/60">●</span>
-                            <a href="{{ route('news.show', ['slug' => $item->slug]) }}"
-                               class="hover:underline font-medium">{{ $item->title }}</a>
+                        <span class="mx-4 inline-flex min-h-8 items-center gap-1.5 text-xs md:mx-8 md:text-sm" aria-hidden="true">
+                            <span class="text-white/60">•</span>
+                            <a href="{{ \App\Support\LocalizedUrl::route('news.show', ['slug' => $item->slug]) }}"
+                               class="max-w-[18rem] truncate font-medium hover:underline md:max-w-none">{{ $item->title }}</a>
                         </span>
                     @endforeach
                 </div>

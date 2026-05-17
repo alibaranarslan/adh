@@ -27,6 +27,10 @@ return [
 
     'google_translate' => [
         'api_key' => env('GOOGLE_TRANSLATE_API_KEY'),
+        'target_language_map' => [
+            'en' => env('GOOGLE_TRANSLATE_TARGET_EN', 'en'),
+            'ku' => env('GOOGLE_TRANSLATE_TARGET_KU', 'ku'),
+        ],
     ],
 
     // ── IHA Haber Ajansı ────────────────────────────────────────────────────

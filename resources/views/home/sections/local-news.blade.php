@@ -12,7 +12,7 @@
             :title="$title"
             :subtitle="$subtitle"
             :cta-label="__('Tümünü Gör')"
-            :cta-url="route('news.category', ['slug' => 'gundem', 'locale' => app()->getLocale()])"
+            :cta-url="\App\Support\LocalizedUrl::route('news.category', ['slug' => 'gundem'])"
         />
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">

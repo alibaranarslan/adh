@@ -20,7 +20,7 @@ class HeaderThemeTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_republic_day_theme_renders_on_matching_day(): void
+    public function test_republic_day_theme_renders_editorial_strip_without_masthead_overlay(): void
     {
         HeaderTheme::query()->create([
             'slug' => '29-ekim',
@@ -31,11 +31,12 @@ class HeaderThemeTest extends TestCase
             'priority' => 190,
             'is_enabled' => true,
             'mode' => HeaderTheme::MODE_AUTOMATIC,
-            'banner_message' => ['tr' => 'Cumhuriyet Bayramı mesajı'],
+            'banner_message' => ['tr' => '29 Ekim Cumhuriyet Bayramı kutlu olsun.'],
             'style_variant' => 'national',
-            'illustration_mode' => 'inline_svg',
-            'illustration_asset' => 'star-crescent',
+            'illustration_mode' => 'preset_asset',
+            'illustration_asset' => 'ataturk-portrait-cutout',
             'show_flag' => true,
+            'show_ataturk' => true,
             'decor_intensity' => 'strong',
         ]);
 
@@ -45,11 +46,16 @@ class HeaderThemeTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('adh-theme-29-ekim', false)
-            ->assertSee('Cumhuriyet Bayramı mesajı')
-            ->assertSee('adh-theme-flag', false);
+            ->assertSee('adh-event-strip__badge', false)
+            ->assertSee('adh-event-seal--republic', false)
+            ->assertSee('29 Ekim')
+            ->assertSee('29 Ekim Cumhuriyet Bayramı kutlu olsun.')
+            ->assertSee('turkish-flag-official.svg', false)
+            ->assertDontSee('adh-theme-visual', false)
+            ->assertDontSee('adh-theme-ataturk', false);
     }
 
-    public function test_signed_preview_renders_commemoration_theme(): void
+    public function test_signed_preview_renders_commemoration_strip(): void
     {
         $theme = HeaderTheme::query()->create([
             'slug' => '10-kasim',
@@ -60,10 +66,10 @@ class HeaderThemeTest extends TestCase
             'priority' => 200,
             'is_enabled' => true,
             'mode' => HeaderTheme::MODE_DISABLED,
-            'banner_message' => ['tr' => '10 Kasım önizleme mesajı'],
+            'banner_message' => ['tr' => 'Saygı, özlem ve minnetle anıyoruz.'],
             'style_variant' => 'commemoration',
-            'illustration_mode' => 'inline_svg',
-            'illustration_asset' => '10-kasim',
+            'illustration_mode' => 'preset_asset',
+            'illustration_asset' => 'ataturk-portrait-cutout',
             'show_flag' => true,
             'show_ataturk' => true,
             'decor_intensity' => 'soft',
@@ -78,12 +84,14 @@ class HeaderThemeTest extends TestCase
         $this->get($url)
             ->assertOk()
             ->assertSee('adh-tone-commemoration', false)
-            ->assertSee('10 Kasım önizleme mesajı')
+            ->assertSee('Saygı, özlem ve minnetle anıyoruz.')
             ->assertSee('Önizleme')
-            ->assertSee('adh-theme-ataturk', false);
+            ->assertSee('adh-event-seal--remembrance', false)
+            ->assertSee('ataturk-pd-tr-cutout.png', false)
+            ->assertDontSee('kutlu olsun');
     }
 
-    public function test_bayram_theme_does_not_render_ataturk_markup(): void
+    public function test_bayram_theme_does_not_render_ataturk_or_flag_markup(): void
     {
         HeaderTheme::query()->create([
             'slug' => 'ramazan-bayrami',
@@ -94,11 +102,11 @@ class HeaderThemeTest extends TestCase
             'priority' => 170,
             'is_enabled' => true,
             'mode' => HeaderTheme::MODE_AUTOMATIC,
-            'banner_message' => ['tr' => 'Ramazan Bayramı mesajı'],
+            'banner_message' => ['tr' => 'Ramazan Bayramınız mübarek olsun.'],
             'style_variant' => 'bayram',
-            'illustration_mode' => 'inline_svg',
-            'illustration_asset' => 'hilal',
-            'show_flag' => false,
+            'illustration_mode' => 'preset_asset',
+            'illustration_asset' => 'bayram-crescent',
+            'show_flag' => true,
             'show_ataturk' => true,
             'decor_intensity' => 'soft',
         ]);
@@ -109,7 +117,10 @@ class HeaderThemeTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('adh-tone-bayram', false)
-            ->assertDontSee('adh-theme-ataturk', false);
+            ->assertSee('adh-event-seal--ramazan', false)
+            ->assertSee('bayram-crescent.svg', false)
+            ->assertDontSee('ataturk-pd-tr-cutout.png', false)
+            ->assertDontSee('turkish-flag-official.svg', false);
     }
 
     public function test_english_locale_uses_translated_theme_message(): void
@@ -125,8 +136,8 @@ class HeaderThemeTest extends TestCase
             'mode' => HeaderTheme::MODE_AUTOMATIC,
             'banner_message' => ['tr' => 'Türkçe tema mesajı', 'en' => 'English republic message'],
             'style_variant' => 'national',
-            'illustration_mode' => 'inline_svg',
-            'illustration_asset' => 'star-crescent',
+            'illustration_mode' => 'preset_asset',
+            'illustration_asset' => 'ataturk-portrait-cutout',
             'show_flag' => true,
             'decor_intensity' => 'medium',
         ]);

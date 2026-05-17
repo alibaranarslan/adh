@@ -5,6 +5,7 @@ namespace Tests\Unit\Jobs;
 use App\Jobs\TranslateArticleJob;
 use App\Models\Category;
 use App\Models\NewsArticle;
+use App\Models\Setting;
 use App\Services\TranslationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
@@ -16,6 +17,8 @@ class TranslateArticleJobTest extends TestCase
 
     public function test_translate_article_job_includes_meta_fields_and_force_flag(): void
     {
+        Setting::set('integration', 'google_translate_api_key', 'google-key');
+
         $category = Category::create([
             'name' => ['tr' => 'Genel'],
             'slug' => 'genel',
@@ -47,5 +50,20 @@ class TranslateArticleJobTest extends TestCase
         });
 
         (new TranslateArticleJob($article->id, true))->handle($service);
+    }
+
+    public function test_translate_article_job_deletes_itself_when_google_api_key_is_missing(): void
+    {
+        config(['services.google_translate.api_key' => null]);
+
+        $job = new TranslateArticleJob(123, true);
+
+        $service = $this->mock(TranslationService::class, function (MockInterface $mock): void {
+            $mock->shouldNotReceive('translateModel');
+        });
+
+        $job->withFakeQueueInteractions();
+        $job->handle($service);
+        $job->assertDeleted();
     }
 }

@@ -12,7 +12,7 @@ $tags = \App\Models\Tag::withCount('articles')
     </h3>
     <div class="flex flex-wrap gap-2">
         @foreach($tags as $tag)
-        <a href="{{ route('news.tag', ['slug' => $tag->slug]) }}"
+        <a href="{{ \App\Support\LocalizedUrl::route('news.tag', ['slug' => $tag->slug]) }}"
            class="inline-block px-3 py-1 text-xs font-medium rounded-full
                   bg-adh-gray-light dark:bg-gray-700 text-adh-text dark:text-gray-300
                   hover:bg-adh-red hover:text-white transition-colors"

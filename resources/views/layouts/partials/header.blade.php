@@ -10,7 +10,15 @@
     @if (data_get($headerTheme, 'message'))
         <div class="adh-theme-banner">
             <div class="max-w-7xl mx-auto px-4 adh-theme-banner__inner">
-                <span>{{ data_get($headerTheme, 'message') }}</span>
+                <div class="adh-event-strip__identity">
+                    @if (data_get($headerTheme, 'event_badge_markup'))
+                        <span class="adh-event-strip__badge" aria-hidden="true">
+                            {!! data_get($headerTheme, 'event_badge_markup') !!}
+                        </span>
+                    @endif
+                    <span class="adh-event-strip__label">{{ data_get($headerTheme, 'event_label') }}</span>
+                </div>
+                <p class="adh-event-strip__message">{{ data_get($headerTheme, 'message') }}</p>
                 @if (data_get($headerTheme, 'is_preview'))
                     <span class="adh-theme-preview-badge">{{ __('Önizleme') }}</span>
                 @endif
@@ -19,29 +27,29 @@
     @endif
 
     <div class="bg-adh-navy dark:bg-adh-navy text-white">
-        <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between gap-2 text-xs">
+        <div class="max-w-7xl mx-auto flex h-11 items-center justify-between gap-2 px-4 text-xs md:h-auto md:py-1.5">
             <div class="flex items-center gap-3">
-                <a href="{{ route('search') }}"
-                   class="flex items-center gap-1.5 hover:text-adh-red-light transition-colors"
+                <a href="{{ \App\Support\LocalizedUrl::route('search') }}"
+                   class="-ml-3 inline-flex h-11 w-11 items-center justify-center rounded transition-colors hover:bg-white/10 hover:text-adh-red-light md:ml-0 md:h-auto md:w-auto md:gap-1.5 md:rounded-none md:hover:bg-transparent"
                    aria-label="{{ __('Arama') }}">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="h-4 w-4 md:h-3.5 md:w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                     <span class="hidden sm:inline">{{ __('Ara') }}</span>
                 </a>
                 <span class="hidden md:inline text-white/30">|</span>
-                <a href="{{ route('home') }}"
+                <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
                    class="hidden md:inline hover:text-adh-red-light transition-colors">{{ __('Günün Haberleri') }}</a>
-                <a href="{{ route('home') }}"
+                <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
                    class="hidden md:inline hover:text-adh-red-light transition-colors">{{ __('Günün Gazetesi') }}</a>
-                <a href="{{ route('news.category', ['slug' => 'gundem']) }}"
+                <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => 'gundem']) }}"
                    class="hidden md:inline hover:text-adh-red-light transition-colors">{{ __('Gündem') }}</a>
-                <a href="{{ route('news.category', ['slug' => 'siyaset']) }}"
+                <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => 'siyaset']) }}"
                    class="hidden md:inline hover:text-adh-red-light transition-colors">{{ __('Siyaset') }}</a>
-                <a href="{{ route('news.category', ['slug' => 'ekonomi']) }}"
+                <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => 'ekonomi']) }}"
                    class="hidden lg:inline hover:text-adh-red-light transition-colors">{{ __('Ekonomi') }}</a>
-                <a href="{{ route('news.category', ['slug' => 'spor']) }}"
+                <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => 'spor']) }}"
                    class="hidden lg:inline hover:text-adh-red-light transition-colors">{{ __('Spor') }}</a>
             </div>
 
@@ -97,10 +105,10 @@
                     <span class="sr-only md:not-sr-only" x-show="!$store.darkMode.on">{{ __('Koyu Mod') }}</span>
                     <span class="sr-only md:not-sr-only" x-show="$store.darkMode.on" x-cloak>{{ __('Açık Mod') }}</span>
                 </button>
-                <button class="md:hidden ml-0.5 p-1 rounded hover:bg-white/10"
+                <button class="md:hidden -mr-3 inline-flex h-11 w-11 items-center justify-center rounded hover:bg-white/10"
                         @click="mobileOpen = !mobileOpen"
                         aria-label="{{ __('Menü') }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               x-show="!mobileOpen" d="M4 6h16M4 12h16M4 18h16"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -112,14 +120,8 @@
     </div>
 
     <div id="adh-masthead" class="border-b border-adh-border bg-white dark:border-adh-blue dark:bg-adh-blue">
-        <div class="max-w-7xl mx-auto px-4 py-4 md:py-6">
-            <div class="relative grid grid-cols-3 items-center gap-3 overflow-hidden rounded-sm sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-6">
-                @if (data_get($headerTheme, 'visual_markup'))
-                    <div class="adh-theme-visual" aria-hidden="true">
-                        {!! data_get($headerTheme, 'visual_markup') !!}
-                    </div>
-                @endif
-
+        <div class="max-w-7xl mx-auto px-4 py-3 sm:py-4 md:py-6">
+            <div class="relative grid grid-cols-1 items-center gap-3 overflow-hidden rounded-sm sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-6">
                 <div class="hidden sm:block text-left">
                     <p class="text-xs font-medium uppercase tracking-[0.14em] text-adh-text dark:text-gray-200 leading-snug">
                         {{ now()->locale(app()->getLocale())->translatedFormat('d F Y') }}
@@ -127,38 +129,28 @@
                     <p class="mt-1 text-xs text-adh-gray dark:text-gray-400">
                         {{ now()->locale(app()->getLocale())->translatedFormat('l') }}
                     </p>
-                    <a href="{{ route('home') }}"
+                    <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
                        class="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-adh-red transition hover:text-red-700">{{ __('Günün Seçkisi') }}</a>
                 </div>
 
-                <div class="sm:hidden">
-                    <a href="{{ route('search') }}" aria-label="{{ __('Arama') }}"
-                       class="p-1.5 inline-block text-adh-text dark:text-gray-200">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </a>
-                </div>
-
-                <div class="col-span-1 text-center">
-                    <a href="{{ route('home') }}" class="inline-block" aria-label="{{ $siteName }}">
+                <div class="text-center">
+                    <a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="inline-block" aria-label="{{ $siteName }}">
                         @if (($branding['has_custom_light_logo'] ?? false) || ($branding['has_custom_dark_logo'] ?? false))
                             <div class="mb-3 flex justify-center">
                                 <img src="{{ $branding['logo_light_url'] }}" alt="{{ $siteName }}" class="h-10 w-auto dark:hidden">
                                 <img src="{{ $branding['logo_dark_url'] }}" alt="{{ $siteName }}" class="hidden h-10 w-auto dark:block">
                             </div>
                         @endif
-                        <p class="font-serif font-bold tracking-[0.08em] text-adh-navy dark:text-white
-                                  text-[1.75rem] sm:text-3xl md:text-[2.7rem] lg:text-[3rem] leading-[0.94] uppercase text-balance">
+                        <p class="font-serif font-bold uppercase leading-[0.92] tracking-[0.08em] text-adh-navy text-balance dark:text-white
+                                  text-[1.55rem] sm:text-3xl md:text-[2.7rem] lg:text-[3rem]">
                             {{ $siteName }}
                         </p>
-                        <div class="relative my-2">
+                        <div class="relative my-1.5 sm:my-2">
                             <div class="h-px bg-adh-red w-full"></div>
                             <div class="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-adh-red rounded-sm"></div>
                         </div>
                         @if ($siteTagline)
-                            <p class="mx-auto max-w-md text-[11px] sm:text-xs text-adh-gray dark:text-gray-300 tracking-[0.12em] uppercase">
+                            <p class="mx-auto max-w-[16rem] text-[10px] uppercase leading-5 tracking-[0.12em] text-adh-gray dark:text-gray-300 sm:max-w-md sm:text-xs">
                                 {{ $siteTagline }}
                             </p>
                         @endif
@@ -188,27 +180,43 @@
          x-transition:leave-end="opacity-0 -translate-y-1"
         class="bg-white dark:bg-adh-blue border-t border-adh-border dark:border-adh-blue md:hidden"
          style="display: none;">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
+        <div class="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4">
+            <a href="{{ \App\Support\LocalizedUrl::route('search') }}"
+               class="inline-flex min-h-11 items-center justify-center gap-2 rounded border border-adh-border bg-slate-50 px-3 py-2 text-sm font-semibold text-adh-text transition hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/60 dark:text-gray-100">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                {{ __('Haber ara') }}
+            </a>
             <button
                 type="button"
-                class="mb-2 inline-flex items-center justify-center gap-2 rounded border border-adh-border bg-adh-gray-light px-3 py-2 text-sm font-medium text-adh-text dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                class="inline-flex min-h-11 items-center justify-center gap-2 rounded border border-adh-border bg-adh-gray-light px-3 py-2 text-sm font-medium text-adh-text dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                 @click="$store.darkMode.toggle()"
             >
                 <span x-show="!$store.darkMode.on">{{ __('Koyu Mod') }}</span>
                 <span x-show="$store.darkMode.on" x-cloak>{{ __('Açık Mod') }}</span>
             </button>
-            <a href="{{ route('home') }}"
-               class="py-2 px-2 text-sm font-medium border-b border-adh-border dark:border-gray-700 dark:text-gray-100
+            <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
+               class="min-h-11 py-2.5 px-2 text-sm font-medium border-b border-adh-border dark:border-gray-700 dark:text-gray-100
                       {{ request()->routeIs('home') ? 'text-adh-red' : 'text-adh-text' }}">
                 {{ __('Anasayfa') }}
             </a>
             @foreach ($navCategories ?? collect() as $item)
-                <a href="{{ route('news.category', ['slug' => data_get($item, 'slug')]) }}"
-                   class="py-2 px-2 text-sm border-b border-adh-border dark:border-gray-700 dark:text-gray-100
+                <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => data_get($item, 'slug')]) }}"
+                   class="min-h-11 py-2.5 px-2 text-sm border-b border-adh-border dark:border-gray-700 dark:text-gray-100
                           {{ request()->route('slug') === data_get($item, 'slug') ? 'text-adh-red font-semibold' : 'text-adh-text hover:text-adh-red' }}">
                     {{ data_get($item, 'name') }}
                 </a>
             @endforeach
+            <a href="{{ \App\Support\LocalizedUrl::route('city.index') }}"
+               class="min-h-11 py-2.5 px-2 text-sm border-b border-adh-border text-adh-text hover:text-adh-red dark:border-gray-700 dark:text-gray-100">
+                {{ __('İller') }}
+            </a>
+            <div class="grid grid-cols-2 gap-2 pt-2 text-sm">
+                <a href="{{ \App\Support\LocalizedUrl::route('page.about') }}" class="rounded border border-adh-border px-3 py-2.5 text-center text-adh-text hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:text-gray-100">{{ __('Hakkımızda') }}</a>
+                <a href="{{ \App\Support\LocalizedUrl::route('contact') }}" class="rounded border border-adh-border px-3 py-2.5 text-center text-adh-text hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:text-gray-100">{{ __('İletişim') }}</a>
+            </div>
         </div>
     </div>
 </header>

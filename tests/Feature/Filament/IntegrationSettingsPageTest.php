@@ -23,6 +23,8 @@ class IntegrationSettingsPageTest extends TestCase
         $this->actingAs($admin)
             ->get('/admin/integration-settings')
             ->assertOk()
+            ->assertSee('Google Translation Durumu')
+            ->assertSee('Eksik: Çeviri işleri kuyrukta bekler')
             ->assertSee('Instagram Durumu')
             ->assertSee('Eksik yapılandırma')
             ->assertSee('Business account ID');
@@ -40,10 +42,12 @@ class IntegrationSettingsPageTest extends TestCase
         Setting::set('integration', 'instagram_access_token', 'token-123');
         Setting::set('integration', 'instagram_business_account_id', 'acct-456');
         Setting::set('integration', 'instagram_enabled', true);
+        Setting::set('integration', 'google_translate_api_key', 'google-key-123');
 
         $this->actingAs($admin)
             ->get('/admin/integration-settings')
             ->assertOk()
+            ->assertSee('Hazır: Çeviri kuyruğu gerçek API ile işlenebilir.')
             ->assertSee('Instagram Durumu')
             ->assertSee('Hazır: Yeni yayınlanan haberler Instagram kuyruğuna alınabilir.');
     }

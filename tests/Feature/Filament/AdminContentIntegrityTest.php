@@ -263,6 +263,7 @@ class AdminContentIntegrityTest extends TestCase
         $paths = [
             'app/Filament/Resources/NewsArticleResource.php',
             'app/Filament/Resources/AdvertisementResource.php',
+            'app/Filament/Resources/HeaderThemeResource.php',
             'app/Filament/Pages/GeneralSettings.php',
             'app/Filament/Pages/SeoSettings.php',
         ];

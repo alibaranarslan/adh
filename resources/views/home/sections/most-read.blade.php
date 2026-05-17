@@ -15,7 +15,7 @@
                         <span class="w-7 shrink-0 font-serif text-2xl font-bold leading-none text-adh-red/35">{{ $index + 1 }}</span>
                         <div class="min-w-0 flex-1">
                             <h3 class="line-clamp-3 font-serif text-[14px] font-semibold leading-snug text-adh-text dark:text-gray-100">
-                                <a href="{{ route('news.show', ['slug' => $article->slug, 'locale' => app()->getLocale()]) }}" class="transition-colors hover:text-adh-red">
+                                <a href="{{ \App\Support\LocalizedUrl::route('news.show', ['slug' => $article->slug]) }}" class="transition-colors hover:text-adh-red">
                                     {{ $article->title }}
                                 </a>
                             </h3>

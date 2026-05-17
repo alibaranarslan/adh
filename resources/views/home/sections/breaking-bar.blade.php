@@ -24,7 +24,7 @@
                 <div class="grid grid-cols-1 gap-2 md:[grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))]">
                     @foreach ($breakingNews as $article)
                         <a
-                            href="{{ route('news.show', ['slug' => $article->slug, 'locale' => app()->getLocale()]) }}"
+                            href="{{ \App\Support\LocalizedUrl::route('news.show', ['slug' => $article->slug]) }}"
                             class="rounded-[var(--adh-radius)] border border-adh-red/15 bg-white/90 px-4 py-3 text-sm font-semibold leading-6 text-adh-text transition hover:border-adh-red hover:text-adh-red dark:border-red-400/10 dark:bg-adh-blue/80 dark:text-gray-100"
                         >
                             {{ $article->getTranslation('title', app()->getLocale(), false) ?: $article->title }}

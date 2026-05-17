@@ -4,9 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\HeaderThemeResource\Pages;
 use App\Models\HeaderTheme;
+use App\Support\AdminImageUploads;
 use App\Support\AdminPrivileges;
 use App\Support\HeaderThemeResolver;
+use App\Support\HeaderThemeVisuals;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -51,7 +54,7 @@ class HeaderThemeResource extends Resource
                         ->required()
                         ->maxLength(120)
                         ->unique(HeaderTheme::class, 'slug', ignoreRecord: true)
-                        ->helperText('Atatürk öğesi yalnız belirli anahtarlarda açılabilir.'),
+                        ->helperText('Atatürk öğesi yalnız milli gün anahtarlarında açılabilir.'),
                     Select::make('mode')
                         ->label('Çalışma modu')
                         ->options(HeaderTheme::modeOptions())
@@ -114,6 +117,7 @@ class HeaderThemeResource extends Resource
                 ])->columns(3),
 
             Section::make('Görsel tavır')
+                ->description('Varsayılan preset görseller Wikimedia kaynaklıdır; kaynak ve lisans kaydı repo manifestinde tutulur.')
                 ->schema([
                     Select::make('style_variant')
                         ->label('Stil')
@@ -122,30 +126,48 @@ class HeaderThemeResource extends Resource
                     Select::make('illustration_mode')
                         ->label('İllüstrasyon tipi')
                         ->options(HeaderTheme::illustrationModeOptions())
-                        ->default('inline_svg')
+                        ->default('preset_asset')
                         ->live(),
-                    TextInput::make('illustration_asset')
-                        ->label('Görsel anahtarı / yolu')
-                        ->visible(fn (Get $get) => $get('illustration_mode') !== 'none'),
+                    Select::make('illustration_asset')
+                        ->label('Wikimedia preset')
+                        ->options(HeaderTheme::illustrationPresetOptions())
+                        ->searchable()
+                        ->default('ataturk-portrait-cutout')
+                        ->helperText('Milli günlerde Atatürk ve bayrak assetleri sistem tarafından dengeli yerleştirilir; bayramlarda yalnız hilal motifi önerilir.')
+                        ->visible(fn (Get $get) => $get('illustration_mode') === 'preset_asset'),
+                    FileUpload::make('illustration_asset')
+                        ->label('Özel görsel')
+                        ->image()
+                        ->directory('header-themes')
+                        ->visibility('public')
+                        ->acceptedFileTypes(AdminImageUploads::acceptedMimeTypes())
+                        ->maxSize(AdminImageUploads::maxSizeKb())
+                        ->visible(fn (Get $get) => $get('illustration_mode') === 'custom_asset'),
                     Select::make('decor_intensity')
                         ->label('Yoğunluk')
                         ->options(HeaderTheme::decorIntensityOptions())
                         ->default('medium'),
                     Toggle::make('show_flag')
                         ->label('Türk bayrağı aksanı')
-                        ->default(true),
+                        ->default(true)
+                        ->helperText('Bayram temalarında public çıktıda otomatik kapalı tutulur.'),
                     Toggle::make('show_ataturk')
                         ->label('Atatürk öğesi')
-                        ->helperText('Yalnız 19 Mayıs, 30 Ağustos ve 10 Kasım temalarında açılabilir.')
+                        ->helperText('Varsayılan olarak milli günlerde kullanılabilir; bayram temalarında kapalı kalır.')
                         ->disabled(fn (Get $get) => ! HeaderTheme::allowsAtaturkForSlug($get('slug')))
                         ->dehydrateStateUsing(fn ($state, Get $get) => HeaderTheme::allowsAtaturkForSlug($get('slug')) ? (bool) $state : false),
+                    Placeholder::make('asset_license_hint')
+                        ->label('Kaynak / lisans')
+                        ->content(fn (Get $get): string => self::assetLicenseHint($get('illustration_asset')))
+                        ->visible(fn (Get $get) => $get('illustration_mode') === 'preset_asset')
+                        ->columnSpanFull(),
                     Textarea::make('notes')
                         ->label('Notlar')
                         ->rows(2)
                         ->columnSpanFull(),
                     Placeholder::make('preview_hint')
                         ->label('Önizleme')
-                        ->content('Kayıt listesindeki “Önizle” aksiyonu locale ve tarih seçerek signed preview açar.')
+                        ->content('Kayıt listesindeki “Önizle” aksiyonu seçilen dil ve tarihle public header görünümünü simüle eder.')
                         ->columnSpanFull(),
                 ])->columns(2),
         ]);
@@ -239,5 +261,21 @@ class HeaderThemeResource extends Resource
     public static function canDelete($record): bool
     {
         return AdminPrivileges::canManageSystemSettings(auth()->user());
+    }
+
+    private static function assetLicenseHint(mixed $key): string
+    {
+        $key = is_array($key) ? (string) reset($key) : (string) $key;
+        $asset = HeaderThemeVisuals::assetDefinition($key);
+
+        if (! $asset) {
+            return 'Preset kaydı bulunamadı; public yüzey nötr fallback kullanır.';
+        }
+
+        return sprintf(
+            '%s. Kaynak: %s',
+            data_get($asset, 'license', 'Lisans bilgisi eksik'),
+            data_get($asset, 'source_url', 'Kaynak bilgisi eksik'),
+        );
     }
 }

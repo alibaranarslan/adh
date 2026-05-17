@@ -14,7 +14,7 @@ class LocalizationSurfaceTest extends TestCase
         $this->get('/en/')
             ->assertOk()
             ->assertSee('Today&#039;s Brief', false)
-            ->assertSee('Today&#039;s Paper', false)
+            ->assertSee('Today&#039;s Edition', false)
             ->assertSee('All Cities', false)
             ->assertDontSee('/tr/en', false);
     }

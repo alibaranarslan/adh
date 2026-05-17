@@ -1,0 +1,46 @@
+[
+  {
+    "key": "ataturk-portrait-original",
+    "type": "source",
+    "local_path": "public/images/header-themes/ataturk-pd-tr-original.png",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Mustafa_Kemal_Atat%C3%BCrk.png",
+    "license": "Public domain / PD-TR",
+    "author_source": "The Prime Ministry of Turkey; source listed by Wikimedia Commons as Ataturk High Institute of Culture, Language and History",
+    "downloaded_at": "2026-05-13",
+    "derivative_of": null,
+    "notes": "Original high-resolution Wikimedia Commons Ataturk portrait retained for license traceability."
+  },
+  {
+    "key": "ataturk-portrait-cutout",
+    "type": "portrait",
+    "local_path": "public/images/header-themes/ataturk-pd-tr-cutout.png",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Mustafa_Kemal_Atat%C3%BCrk.png",
+    "license": "Public domain / PD-TR",
+    "author_source": "The Prime Ministry of Turkey; source listed by Wikimedia Commons as Ataturk High Institute of Culture, Language and History",
+    "downloaded_at": "2026-05-13",
+    "derivative_of": "ataturk-portrait-original",
+    "notes": "Local transparent-background derivative generated from the original portrait for ADH header composition."
+  },
+  {
+    "key": "turkish-flag-official",
+    "type": "flag",
+    "local_path": "public/images/header-themes/turkish-flag-official.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Flag_of_Turkey.svg",
+    "license": "Public domain / PD-TR; simple geometry public domain",
+    "author_source": "David Benbennick; based on Turkish Flag Law dimensions listed by Wikimedia Commons",
+    "downloaded_at": "2026-05-13",
+    "derivative_of": null,
+    "notes": "Official Turkish flag SVG is stored unchanged; movement and placement are handled only with CSS."
+  },
+  {
+    "key": "bayram-crescent",
+    "type": "holiday_symbol",
+    "local_path": "public/images/header-themes/bayram-crescent.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Crescent.svg",
+    "license": "Public domain; ineligible for copyright as simple geometry",
+    "author_source": "Lorenzarius / Wikimedia Commons file history",
+    "downloaded_at": "2026-05-13",
+    "derivative_of": null,
+    "notes": "Public-domain crescent symbol used only for religious holiday header themes."
+  }
+]

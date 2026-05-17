@@ -5,10 +5,11 @@ namespace App\Filament\Pages;
 use App\Filament\Resources\IhaSyncLogResource;
 use App\Models\IhaSyncLog;
 use App\Models\Setting;
-use App\Services\IhaTranslationRequeueService;
 use App\Services\IhaSyncTriggerService;
+use App\Services\IhaTranslationRequeueService;
 use App\Support\AdminPrivileges;
 use App\Support\AdminSafeText;
+use App\Support\TranslationSettings;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -55,12 +56,22 @@ class IhaHealth extends Page
 
                     $notification->send();
                 }),
-            Action::make('requeue_translations')
-                ->label('Eksik Çevirileri Kuyruğa Al')
+            Action::make('start_translation_flow')
+                ->label('Çeviri Sürecini Başlat')
                 ->icon('heroicon-o-language')
                 ->color('warning')
                 ->requiresConfirmation()
                 ->action(function (): void {
+                    if (! TranslationSettings::ready()) {
+                        Notification::make()
+                            ->danger()
+                            ->title('Google Translation API key eksik')
+                            ->body('Önce Entegrasyon Ayarları ekranından Google Translation API key kaydedilmelidir. Key olmadan çeviri kuyruğu işlenmez.')
+                            ->send();
+
+                        return;
+                    }
+
                     $result = app(IhaTranslationRequeueService::class)->requeueMissingTranslations();
                     $queued = $result['queued'];
                     $skippedDuplicates = $result['skipped_duplicates'];
@@ -68,9 +79,9 @@ class IhaHealth extends Page
                     $this->flushHealthCache();
 
                     Notification::make()
-                    ->title($queued > 0 ? 'Eksik çeviriler kuyruğa alındı' : 'Eksik çeviri bulunmadı')
+                        ->title($queued > 0 ? 'Çeviri süreci başlatıldı' : 'Çeviri kuyruğu güncel')
                         ->body($queued > 0
-                            ? "{$queued} İHA haberi için yeniden çeviri işi kuyruğa gönderildi. {$skippedDuplicates} tekrar kayıt atlandı."
+                            ? "{$queued} İHA haberi için çeviri işi kuyruğa gönderildi. {$skippedDuplicates} tekrar kayıt atlandı. Sunucu queue worker çalışıyorsa işlem arka planda tamamlanır."
                             : 'Şu anda yeniden kuyruğa alınması gereken bir İHA haberi görünmüyor.')
                         ->color($queued > 0 ? 'success' : 'gray')
                         ->send();
@@ -108,12 +119,11 @@ class IhaHealth extends Page
             now()->addMinutes(5),
             fn (): int => $this->countTranslationBacklog()
         );
+        $queuedTranslationJobs = $this->countQueuedTranslationJobs();
 
         $rollingWindow = IhaSyncLog::query()
             ->where('started_at', '>=', now()->subDay())
             ->get();
-
-        $ihaCredentialsReady = $this->ihaCredentialsReady();
 
         return [
             'stats' => [
@@ -137,14 +147,14 @@ class IhaHealth extends Page
                     'images' => (int) $rollingWindow->sum('images_downloaded'),
                 ],
                 'translation_backlog' => $translationBacklog,
-                'queued_translation_jobs' => $this->countQueuedTranslationJobs(),
-                'iha_credentials_ready' => $ihaCredentialsReady,
-                'translation_credentials_ready' => filled(config('services.google_translate.api_key')),
+                'queued_translation_jobs' => $queuedTranslationJobs,
+                'iha_credentials_ready' => $this->ihaCredentialsReady(),
+                'translation_credentials_ready' => TranslationSettings::ready(),
                 'last_error' => AdminSafeText::redact($lastFailedSync?->error_message),
                 'last_error_at' => $lastFailedSync?->completed_at,
                 'retry_note' => $this->buildRetryNote(
                     translationBacklog: $translationBacklog,
-                    queuedTranslationJobs: $this->countQueuedTranslationJobs(),
+                    queuedTranslationJobs: $queuedTranslationJobs,
                     lastFailedSync: $lastFailedSync,
                 ),
             ],
@@ -167,12 +177,16 @@ class IhaHealth extends Page
 
     private function buildRetryNote(int $translationBacklog, int $queuedTranslationJobs, ?IhaSyncLog $lastFailedSync): string
     {
+        if (! TranslationSettings::ready()) {
+            return 'Google Translation API key eksik. Key Entegrasyon Ayarları ekranından kaydedildiğinde eksik çeviriler otomatik kuyruğa alınır.';
+        }
+
         if ($translationBacklog > 0) {
-            return "Eksik çeviri birikimi var ({$translationBacklog}). \"Eksik Çevirileri Kuyruğa Al\" aksiyonu kullanılabilir.";
+            return "Eksik çeviri birikimi var ({$translationBacklog}). \"Çeviri Sürecini Başlat\" aksiyonu panelden kullanılabilir.";
         }
 
         if ($queuedTranslationJobs > 0) {
-            return "Çeviri kuyruğunda bekleyen {$queuedTranslationJobs} iş var. Tekrar kuyruğa alma yerine önce queue akışına bakılması önerilir.";
+            return "Çeviri kuyruğunda bekleyen {$queuedTranslationJobs} iş var. Tekrar kuyruğa alma yerine önce queue worker akışı kontrol edilmelidir.";
         }
 
         if ($lastFailedSync !== null) {

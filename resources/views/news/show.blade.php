@@ -97,7 +97,7 @@
     ]" />
 
     <article class="overflow-hidden rounded-[var(--adh-radius)] border border-adh-border bg-white shadow-[var(--adh-shadow)] dark:border-gray-700 dark:bg-adh-blue">
-        <header class="border-b border-adh-border/80 px-5 py-7 dark:border-gray-700 md:px-8 md:py-10">
+        <header class="border-b border-adh-border/80 px-4 py-5 dark:border-gray-700 md:px-8 md:py-10">
             <div class="mx-auto max-w-4xl">
                 <div class="flex flex-wrap items-center gap-2">
                     @if ($story['category_name'])
@@ -113,12 +113,12 @@
                     @endif
                 </div>
 
-                <h1 class="mt-4 text-balance font-serif text-3xl font-bold leading-tight text-adh-text dark:text-gray-100 md:text-4xl xl:text-[3.2rem]">
+                <h1 class="mt-4 text-balance font-serif text-[1.62rem] font-bold leading-[1.1] text-adh-text dark:text-gray-100 sm:text-3xl md:text-4xl xl:text-[3.2rem]">
                     {{ $article->title }}
                 </h1>
 
                 @if ($article->summary)
-                    <p class="mt-4 max-w-3xl text-lg leading-8 text-adh-gray dark:text-gray-300">
+                    <p class="mt-4 max-w-3xl text-sm leading-6 text-adh-gray dark:text-gray-300 md:text-lg md:leading-8">
                         {{ $article->summary }}
                     </p>
                 @endif
@@ -160,12 +160,12 @@
             >
         </figure>
 
-        <x-ad-slot position="article-top" class="mx-auto mt-6 max-w-3xl px-5 md:px-0" />
+        <x-ad-slot position="article-top" class="mx-auto mt-4 max-w-3xl px-4 md:mt-6 md:px-0" />
 
-        <div class="px-5 py-8 md:px-8 md:py-10">
+        <div class="px-4 py-6 md:px-8 md:py-10">
             <div class="mx-auto max-w-3xl">
                 @if ($articleBody !== '')
-                    <div class="adh-article-body-card rounded-[var(--adh-radius)] border border-adh-border/70 bg-white px-5 py-6 dark:border-gray-700 dark:bg-adh-blue md:px-8 md:py-8">
+                    <div class="adh-article-body-card rounded-[var(--adh-radius)] border border-adh-border/70 bg-white px-4 py-5 dark:border-gray-700 dark:bg-adh-blue md:px-8 md:py-8">
                         @if ($bodySource === 'summary')
                             <div class="mb-6 rounded border border-adh-red/20 bg-adh-red/5 px-4 py-3 text-sm leading-6 text-adh-text dark:border-red-500/20 dark:bg-red-500/5 dark:text-gray-200">
                                 <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-adh-red">{{ __('Haber Özeti') }}</p>
@@ -173,7 +173,7 @@
                             </div>
                         @endif
 
-                        <div class="prose prose-slate max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-adh-text dark:prose-headings:text-gray-100 prose-p:text-[1.08rem] prose-p:leading-8 md:prose-p:text-[1.13rem]">
+                        <div class="prose prose-slate max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-adh-text dark:prose-headings:text-gray-100 prose-p:text-[1.06rem] prose-p:leading-8 md:prose-p:text-[1.13rem]">
                             {!! $articleBody !!}
                         </div>
                     </div>

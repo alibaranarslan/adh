@@ -22,6 +22,18 @@ class LayoutStudio extends Page
 
     protected static string $view = 'filament.pages.layout-studio';
 
+    private const EDITORIAL_MODULE_KEYS = [
+        'hero',
+        'local_news',
+        'highlights',
+        'most_read',
+        'region_news',
+        'latest_news',
+        'category_shortcuts',
+    ];
+
+    private const ACTION_URL_PREFIXES = ['/', '#', 'http://', 'https://', 'mailto:', 'tel:'];
+
     public array $modules = [];
 
     public array $appearance = [];
@@ -31,6 +43,8 @@ class LayoutStudio extends Page
     public ?string $restoreRevisionId = null;
 
     public bool $hasUnsavedChanges = false;
+
+    public string $previewDevice = 'desktop';
 
     public function mount(LayoutConfigService $layoutConfigService): void
     {
@@ -105,6 +119,15 @@ class LayoutStudio extends Page
     public function moveModuleDown(int $id): void
     {
         $this->moveModule($id, 1);
+    }
+
+    public function setPreviewDevice(string $device): void
+    {
+        if (! in_array($device, ['desktop', 'mobile'], true)) {
+            return;
+        }
+
+        $this->previewDevice = $device;
     }
 
     public function applyModulePreset(string $preset): void
@@ -286,6 +309,82 @@ class LayoutStudio extends Page
         return $warnings;
     }
 
+    public function getLayoutReadiness(): array
+    {
+        $errors = [];
+        $warnings = [];
+        $activeModules = collect($this->modules)
+            ->filter(fn (array $module): bool => (bool) ($module['is_active'] ?? true))
+            ->values();
+
+        if ($activeModules->whereIn('key', self::EDITORIAL_MODULE_KEYS)->isEmpty()) {
+            $errors[] = 'En az bir editoryal anasayfa modülü aktif olmalı.';
+        }
+
+        $hero = collect($this->modules)->firstWhere('key', 'hero');
+        $heroSettings = $hero['settings'] ?? [];
+
+        if (
+            ! $hero
+            || ! (bool) ($hero['is_active'] ?? true)
+            || (
+                ! data_get($heroSettings, 'show_on_mobile', true)
+                && ! data_get($heroSettings, 'show_on_tablet', true)
+                && ! data_get($heroSettings, 'show_on_desktop', true)
+            )
+        ) {
+            $errors[] = 'Hero modülü en az bir cihaz kırılımında görünür kalmalı.';
+        }
+
+        foreach ($activeModules as $module) {
+            $settings = $module['settings'] ?? [];
+            $moduleName = (string) ($module['name'] ?? $module['key'] ?? 'Modul');
+
+            if (
+                ! data_get($settings, 'show_on_mobile', true)
+                && ! data_get($settings, 'show_on_tablet', true)
+                && ! data_get($settings, 'show_on_desktop', true)
+            ) {
+                $errors[] = "{$moduleName} aktif, ancak hiçbir cihazda görünür değil.";
+            }
+
+            if ((int) data_get($settings, 'content_limit', 1) < 1) {
+                $errors[] = "{$moduleName} içerik limiti en az 1 olmalı.";
+            }
+
+            if ((bool) data_get($settings, 'cta_enabled', false)) {
+                $ctaUrl = trim((string) data_get($settings, 'cta_url', ''));
+                $ctaLabel = trim((string) data_get($settings, 'cta_label.tr', ''));
+
+                if ($ctaLabel === '') {
+                    $errors[] = "{$moduleName} CTA açık, ancak TR buton etiketi yok.";
+                }
+
+                if ($ctaUrl === '' || ! $this->isAllowedActionUrl($ctaUrl)) {
+                    $errors[] = "{$moduleName} CTA açık, ancak geçerli bir bağlantı yok.";
+                }
+            }
+
+            if ((int) data_get($settings, 'content_limit', 0) > 16) {
+                $warnings[] = "{$moduleName} içerik limiti mobil yoğunluk riski oluşturabilir.";
+            }
+
+            if (($module['key'] ?? null) === 'ads') {
+                $warnings[] = 'Reklam modülü aktif; yayından önce render edilebilir reklam kaydı olduğu kontrol edilmeli.';
+            }
+
+            if (($module['key'] ?? null) === 'sidebar_widgets') {
+                $warnings[] = 'Yan panel modülü aktif; mobil önizlemede aşağı akışta kontrol edilmeli.';
+            }
+        }
+
+        return [
+            'status' => $errors === [] ? 'ready' : 'blocked',
+            'errors' => array_values(array_unique($errors)),
+            'warnings' => array_values(array_unique($warnings)),
+        ];
+    }
+
     public function saveDraft(): void
     {
         app(LayoutConfigService::class)->storeDraftState($this->modules, $this->appearance, auth()->user());
@@ -310,15 +409,33 @@ class LayoutStudio extends Page
             return;
         }
 
+        $readiness = $this->getLayoutReadiness();
+
+        if ($readiness['errors'] !== []) {
+            Notification::make()
+                ->danger()
+                ->title('Yayın kalite kapısı geçilmedi')
+                ->body(implode(' ', $readiness['errors']))
+                ->send();
+
+            return;
+        }
+
         $service = app(LayoutConfigService::class);
         $service->storeDraftState($this->modules, $this->appearance, auth()->user());
         $revision = $service->publishDraft(auth()->user());
         $this->refreshFromDraft($service);
 
+        $body = 'Yeni düzen yayınlandı: '.$revision->name;
+
+        if ($readiness['warnings'] !== []) {
+            $body .= ' Uyarılar: '.implode(' ', $readiness['warnings']);
+        }
+
         Notification::make()
             ->success()
             ->title('Canlıya alındı')
-            ->body('Yeni düzen yayınlandı: '.$revision->name)
+            ->body($body)
             ->send();
     }
 
@@ -458,6 +575,17 @@ class LayoutStudio extends Page
         $this->hasUnsavedChanges = true;
 
         Notification::make()->success()->title('Modül sırası taslakta güncellendi')->send();
+    }
+
+    private function isAllowedActionUrl(string $value): bool
+    {
+        foreach (self::ACTION_URL_PREFIXES as $prefix) {
+            if (str_starts_with($value, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function getHeaderActions(): array

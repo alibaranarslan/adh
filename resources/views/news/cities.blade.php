@@ -12,7 +12,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             @foreach ($allCities as $citySlug => $cityLabel)
                 @php $count = $cityCounts[$citySlug] ?? 0; @endphp
-                <a href="{{ route('city.show', $citySlug) }}"
+                <a href="{{ \App\Support\LocalizedUrl::route('city.show', ['slug' => $citySlug]) }}"
                    class="group relative flex flex-col items-center justify-center p-5 rounded-lg border border-adh-border dark:border-gray-700 hover:border-adh-red hover:shadow-md transition-all duration-200
                           {{ $citySlug === 'adiyaman' ? 'bg-adh-red/5 dark:bg-adh-red/10 border-adh-red/30' : 'bg-white dark:bg-adh-blue' }}">
                     <svg class="w-6 h-6 mb-2 text-adh-gray dark:text-gray-400 group-hover:text-adh-red transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">

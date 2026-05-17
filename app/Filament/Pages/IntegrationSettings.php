@@ -4,8 +4,10 @@ namespace App\Filament\Pages;
 
 use App\Models\Setting;
 use App\Services\IhaApiService;
+use App\Services\IhaTranslationRequeueService;
 use App\Services\InstagramService;
 use App\Support\AdminPrivileges;
+use App\Support\TranslationSettings;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -42,6 +44,7 @@ class IntegrationSettings extends Page implements HasForms
             'iha_user_code' => Setting::get('integration', 'iha_user_code', ''),
             'iha_username' => Setting::get('integration', 'iha_username', ''),
             'iha_password' => '',
+            'google_translate_api_key' => '',
             'instagram_enabled' => filter_var(
                 Setting::get('integration', 'instagram_enabled', config('services.instagram.enabled', false)),
                 FILTER_VALIDATE_BOOL
@@ -58,7 +61,7 @@ class IntegrationSettings extends Page implements HasForms
     {
         return $form->schema([
             Section::make('İHA API')
-                ->description('Bu alanlar public sitede görünmez; yalnız senkron ve çeviri operasyonunu besler.')
+                ->description('Bu alanlar public sitede görünmez; yalnız senkron ve içerik operasyonlarını besler.')
                 ->schema([
                     TextInput::make('iha_user_code')
                         ->label('Kullanıcı Kodu')
@@ -74,7 +77,27 @@ class IntegrationSettings extends Page implements HasForms
                         ->helperText('Boş bırakırsanız mevcut şifre korunur; yeni değer yalnız kaydetme sırasında yazılır.'),
                     Placeholder::make('iha_sync_interval_notice')
                         ->label('Efektif Senkron Aralığı')
-                        ->content('İHA senkronu operasyonel olarak her 15 dakikada bir cron ile çalışır. Bu değer panelden değiştirilmez; güncel durum için “İHA Sağlığı” ekranını kullanın.'),
+                        ->content('İHA senkronu operasyonel olarak her 15 dakikada bir cron ile çalışır. Güncel durum için "İHA Sağlığı" ekranını kullanın.'),
+                ])->columns(2),
+
+            Section::make('Google Çeviri')
+                ->description('İngilizce ve Kürtçe haber çevirileri için Google Cloud Translation API anahtarı burada yönetilir.')
+                ->schema([
+                    Placeholder::make('google_translate_status')
+                        ->label('Google Translation Durumu')
+                        ->content(fn (): string => TranslationSettings::ready()
+                            ? 'Hazır: Çeviri kuyruğu gerçek API ile işlenebilir.'
+                            : 'Eksik: Çeviri işleri kuyrukta bekler, haberler Türkçe fallback ile görüntülenir.'),
+                    TextInput::make('google_translate_api_key')
+                        ->label('Google Translation API Key')
+                        ->password()
+                        ->revealable()
+                        ->placeholder(fn (): string => $this->secretConfigured('integration', 'google_translate_api_key', config('services.google_translate.api_key')) ? 'Kayıtlı API key korunuyor' : 'API key girilmedi')
+                        ->helperText('Boş bırakırsanız mevcut API key korunur. Key Google Cloud Console içinde yalnız Cloud Translation API ile sınırlandırılmalıdır.'),
+                    Placeholder::make('google_translate_flow')
+                        ->label('Çeviri Akışı')
+                        ->content('API key kaydedildiğinde eksik haber çevirileri otomatik olarak kuyruğa alınır. Ayrıca "İHA Sağlığı" ekranındaki "Çeviri Sürecini Başlat" aksiyonu aynı süreci panelden yeniden tetikler. Sunucuda çalışan queue worker işleri arka planda tamamlar.')
+                        ->columnSpanFull(),
                 ])->columns(2),
 
             Section::make('Diğer Entegrasyonlar')
@@ -93,11 +116,11 @@ class IntegrationSettings extends Page implements HasForms
                         ->columnSpan(1),
                     Placeholder::make('instagram_flow')
                         ->label('Paylaşım Akışı')
-                        ->content('Yayınlanan yeni haberler 2 dakika gecikmeyle Instagram kuyruğuna alınır. Haber görseli varsa temel paylaşım akışı creative pipeline beklemeden çalışır; başlık, özet, link ve hashtag formatında caption üretilir.')
+                        ->content('Yayınlanan yeni haberler 2 dakika gecikmeyle Instagram kuyruğuna alınır. Haber görseli varsa başlık, özet, link ve hashtag formatında caption üretilir.')
                         ->columnSpanFull(),
                     Toggle::make('instagram_enabled')
-                        ->label('Instagram otomatik paylasim aktif')
-                        ->helperText('Aktif oldugunda yayinlanan IHA ve manuel haberler Instagram kuyruğuna alınır.'),
+                        ->label('Instagram otomatik paylaşım aktif')
+                        ->helperText('Aktif olduğunda yayınlanan İHA ve manuel haberler Instagram kuyruğuna alınır.'),
                     TextInput::make('instagram_access_token')
                         ->label('Instagram Access Token')
                         ->password()
@@ -118,7 +141,7 @@ class IntegrationSettings extends Page implements HasForms
     public function save(): void
     {
         $data = $this->form->getState();
-        $writeOnlySecrets = ['iha_password', 'instagram_access_token'];
+        $writeOnlySecrets = ['iha_password', 'google_translate_api_key', 'instagram_access_token'];
 
         foreach ($data as $key => $value) {
             if (in_array($key, $writeOnlySecrets, true) && blank($value)) {
@@ -126,6 +149,11 @@ class IntegrationSettings extends Page implements HasForms
             }
 
             Setting::set('integration', $key, $value);
+        }
+
+        $translationResult = null;
+        if (TranslationSettings::ready()) {
+            $translationResult = app(IhaTranslationRequeueService::class)->requeueMissingTranslations();
         }
 
         IhaApiService::bumpFeedCacheVersion();
@@ -138,14 +166,24 @@ class IntegrationSettings extends Page implements HasForms
 
         Artisan::call('config:clear');
 
-        Notification::make()->success()->title('Entegrasyon ayarları kaydedildi')->send();
+        $notification = Notification::make()
+            ->success()
+            ->title('Entegrasyon ayarları kaydedildi');
+
+        if ($translationResult !== null) {
+            $notification->body(
+                $translationResult['queued'] > 0
+                    ? "{$translationResult['queued']} eksik haber çevirisi kuyruğa alındı; {$translationResult['skipped_duplicates']} tekrar kayıt atlandı."
+                    : 'Google çeviri hazır. Eksik çeviri kuyruğu zaten güncel görünüyor.'
+            );
+        }
+
+        $notification->send();
     }
 
     private function instagramStatus(): array
     {
-        $service = app(InstagramService::class);
-
-        return $service->configurationStatus();
+        return app(InstagramService::class)->configurationStatus();
     }
 
     private function secretConfigured(string $group, string $key, ?string $fallback = null): bool

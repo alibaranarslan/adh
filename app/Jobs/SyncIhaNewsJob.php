@@ -46,6 +46,15 @@ class SyncIhaNewsJob implements ShouldQueue
     ): void {
         $syncLog = IhaSyncLog::find($this->syncLogId);
 
+        if ($syncLog !== null && $syncLog->status !== 'running') {
+            Log::info('IHA sync job atlandi; log artik aktif degil', [
+                'sync_log_id' => $this->syncLogId,
+                'status' => $syncLog->status,
+            ]);
+
+            return;
+        }
+
         $stats = [
             'articles_fetched' => 0,
             'articles_created' => 0,
@@ -241,7 +250,7 @@ class SyncIhaNewsJob implements ShouldQueue
 
             $existing->save();
 
-            if ($shouldRetranslate) {
+            if ($shouldRetranslate && $existing->status === 'published') {
                 $this->dispatchTranslation($existing->id, true);
             }
 
@@ -284,7 +293,9 @@ class SyncIhaNewsJob implements ShouldQueue
             'published_at' => $articleData['published_at'] ?? now(),
         ]);
 
-        $this->dispatchTranslation($article->id);
+        if ($article->status === 'published') {
+            $this->dispatchTranslation($article->id);
+        }
         $articleMeta['slug'] = $article->slug;
 
         return ['result' => 'created', 'quality' => $quality, 'article' => $articleMeta];
