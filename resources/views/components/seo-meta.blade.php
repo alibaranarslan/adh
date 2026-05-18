@@ -20,7 +20,11 @@
         ? (str_contains((string) $title, (string) $siteName) ? (string) $title : $title . ' | ' . $siteName)
         : $siteName;
     $metaDescription = $description ?? $defaultDescription;
-    $metaImage = $image ?? $defaultImage;
+    $articleStory = $article ? \App\Support\NewsPresenter::present($article) : null;
+    $metaImage = $image ?? (($articleStory && $articleStory['has_image']) ? $articleStory['image_url'] : $defaultImage);
+    if (\App\Support\NewsPresenter::isPlaceholderImage($metaImage)) {
+        $metaImage = null;
+    }
     $metaImageUrl = $metaImage ? (str_starts_with($metaImage, 'http') ? $metaImage : asset($metaImage)) : null;
     $canonicalUrl = $canonical ?? \App\Support\LocalizedUrl::current(app()->getLocale());
     $locale = app()->getLocale() === 'tr' ? 'tr_TR' : (app()->getLocale() === 'en' ? 'en_US' : 'ku_TR');

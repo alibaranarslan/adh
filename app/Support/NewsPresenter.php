@@ -54,7 +54,9 @@ class NewsPresenter
             ?: data_get($article, 'featured_image')
             ?: data_get($article, 'image');
 
-        return $image ?: asset('images/news/placeholder-news.jpg');
+        return self::isPlaceholderImage($image)
+            ? asset('images/news/placeholder-news.jpg')
+            : ($image ?: asset('images/news/placeholder-news.jpg'));
     }
 
     private static function hasArticleImage(mixed $article): bool
@@ -62,12 +64,28 @@ class NewsPresenter
         if (is_object($article) && method_exists($article, 'getFirstMediaUrl')) {
             $mediaUrl = $article->getFirstMediaUrl('featured_image');
 
-            if (filled($mediaUrl)) {
+            if (filled($mediaUrl) && ! self::isPlaceholderImage($mediaUrl)) {
                 return true;
             }
         }
 
-        return filled(data_get($article, 'featured_image')) || filled(data_get($article, 'image'));
+        $featuredImage = data_get($article, 'featured_image');
+        $image = data_get($article, 'image');
+
+        return (filled($featuredImage) && ! self::isPlaceholderImage($featuredImage))
+            || (filled($image) && ! self::isPlaceholderImage($image));
+    }
+
+    public static function isPlaceholderImage(mixed $image): bool
+    {
+        if (blank($image)) {
+            return false;
+        }
+
+        $normalized = str_replace('\\', '/', mb_strtolower((string) $image));
+
+        return str_contains($normalized, 'placeholder-news.jpg')
+            || str_contains($normalized, 'images/news/placeholder');
     }
 
     private static function resolveDate(mixed $value): ?CarbonInterface

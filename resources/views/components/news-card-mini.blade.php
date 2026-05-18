@@ -6,14 +6,20 @@
 
 <article class="group -mx-2 flex items-start gap-3 rounded px-2 py-2.5 transition-colors hover:bg-gray-50 dark:hover:bg-adh-navy/40">
     <a href="{{ $story['url'] }}" class="shrink-0 overflow-hidden rounded">
-        <img
-            src="{{ $story['image_url'] }}"
-            alt="{{ $story['title'] }}"
-            width="224"
-            height="160"
-            class="h-16 w-20 object-cover transition-transform duration-200 group-hover:scale-105 sm:h-[72px] sm:w-24"
-            loading="lazy"
-        >
+        @if ($story['has_image'])
+            <img
+                src="{{ $story['image_url'] }}"
+                alt="{{ $story['title'] }}"
+                width="224"
+                height="160"
+                class="h-16 w-20 object-cover transition-transform duration-200 group-hover:scale-105 sm:h-[72px] sm:w-24"
+                loading="lazy"
+            >
+        @else
+            <span class="flex h-16 w-20 items-center justify-center rounded bg-gradient-to-br from-adh-navy/10 to-adh-red/15 px-2 text-center text-[9px] font-black uppercase leading-tight tracking-[0.12em] text-adh-red transition-transform duration-200 group-hover:scale-105 dark:from-adh-navy/70 dark:to-red-950/40 dark:text-red-200 sm:h-[72px] sm:w-24">
+                {{ $story['category_name'] ?: __('Haber') }}
+            </span>
+        @endif
     </a>
 
     <div class="min-w-0 flex-1">

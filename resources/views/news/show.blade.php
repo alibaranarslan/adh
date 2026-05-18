@@ -149,16 +149,18 @@
             </div>
         </header>
 
-        <figure class="border-b border-adh-border/80 dark:border-gray-700">
-            <img
-                src="{{ $story['image_url'] }}"
-                alt="{{ $story['title'] }}"
-                width="1200"
-                height="760"
-                class="aspect-[16/9] w-full object-cover"
-                fetchpriority="high"
-            >
-        </figure>
+        @if ($story['has_image'])
+            <figure class="border-b border-adh-border/80 dark:border-gray-700">
+                <img
+                    src="{{ $story['image_url'] }}"
+                    alt="{{ $story['title'] }}"
+                    width="1200"
+                    height="760"
+                    class="aspect-[16/9] w-full object-cover"
+                    fetchpriority="high"
+                >
+            </figure>
+        @endif
 
         <x-ad-slot position="article-top" class="mx-auto mt-4 max-w-3xl px-4 md:mt-6 md:px-0" />
 

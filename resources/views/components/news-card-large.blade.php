@@ -6,14 +6,22 @@
 
 <article class="group relative min-h-[320px] w-full overflow-hidden rounded-[var(--adh-radius)] bg-slate-900 shadow-[var(--adh-shadow)] lg:min-h-[440px]">
     <a href="{{ $story['url'] }}" class="block h-full">
-        <img
-            src="{{ $story['image_url'] }}"
-            alt="{{ $story['title'] }}"
-            width="1200"
-            height="760"
-            class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-            loading="eager"
-        >
+        @if ($story['has_image'])
+            <img
+                src="{{ $story['image_url'] }}"
+                alt="{{ $story['title'] }}"
+                width="1200"
+                height="760"
+                class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                loading="eager"
+            >
+        @else
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_16%,rgba(255,255,255,0.18),transparent_25%),linear-gradient(135deg,#0a1632_0%,#172554_48%,#7f1d1d_100%)] transition-transform duration-500 group-hover:scale-[1.02]"></div>
+            <div class="absolute inset-x-6 top-6 flex items-center justify-between border-t border-white/20 pt-5">
+                <span class="text-[10px] font-black uppercase tracking-[0.34em] text-white/70">{{ $story['category_name'] ?: __('Haber') }}</span>
+                <span class="h-2 w-2 rounded-full bg-adh-red"></span>
+            </div>
+        @endif
 
         <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/5"></div>
 

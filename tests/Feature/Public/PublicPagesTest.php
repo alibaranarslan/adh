@@ -718,4 +718,39 @@ class PublicPagesTest extends TestCase
             ->assertDontSee('max-h-[34dvh]', false)
             ->assertDontSee('sticky -top-3', false);
     }
+
+    public function test_public_news_surfaces_do_not_render_stock_placeholder_as_article_image(): void
+    {
+        $category = Category::create([
+            'name' => ['tr' => 'Gundem'],
+            'slug' => 'gundem',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $article = NewsArticle::create([
+            'title' => ['tr' => 'Gorselsiz kamu haberi'],
+            'slug' => 'gorselsiz-kamu-haberi',
+            'summary' => ['tr' => 'Ozet bilgi'],
+            'content' => ['tr' => 'Detayli haber icerigi'],
+            'featured_image' => '/images/news/placeholder-news.jpg',
+            'source' => 'manuel',
+            'category_id' => $category->id,
+            'status' => 'published',
+            'published_at' => now(),
+            'editorial_score' => 80,
+            'city_slug' => 'adiyaman',
+            'city_code' => 3,
+        ]);
+
+        $this->get(route('news.category', ['slug' => $category->slug]))
+            ->assertOk()
+            ->assertSee('Gorselsiz kamu haberi')
+            ->assertDontSee('placeholder-news.jpg', false);
+
+        $this->get(route('news.show', ['slug' => $article->slug]))
+            ->assertOk()
+            ->assertSee('Gorselsiz kamu haberi')
+            ->assertDontSee('placeholder-news.jpg', false);
+    }
 }
