@@ -80,7 +80,7 @@
     @include('layouts.partials.nav')
     <x-ad-slot position="header" class="mx-auto mt-3 w-full max-w-7xl px-4 md:mt-4" />
 
-    <main id="main-content" tabindex="-1" class="mx-auto px-4 py-0 focus:outline-none md:py-4" style="max-width: var(--adh-content-width);">
+    <main id="main-content" tabindex="-1" class="mx-auto px-4 py-0 focus:outline-none md:py-2" style="max-width: var(--adh-content-width);">
         @hasSection('hero')
             @yield('hero')
         @endif
