@@ -642,7 +642,7 @@ class PublicPagesTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('adh_site_cookie_consent', false)
-            ->assertSee('max-h-[46dvh]', false)
+            ->assertSee('max-h-[34dvh]', false)
             ->assertSee('md:max-h-[min(70dvh,calc(100dvh-2rem))]', false)
             ->assertSee('overflow-y-auto', false)
             ->assertSee('sticky -top-3', false);

@@ -53,6 +53,14 @@
                    class="hidden lg:inline hover:text-adh-red-light transition-colors">{{ __('Spor') }}</a>
             </div>
 
+            <div class="flex min-w-0 flex-1 justify-center md:hidden">
+                <div class="inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-semibold leading-none text-white/90">
+                    <span>{{ now()->locale(app()->getLocale())->translatedFormat('H:i') }}</span>
+                    <span class="h-3 w-px bg-white/25"></span>
+                    <span class="truncate">{{ __('Adıyaman') }} {{ $weather['temp'] ?? '--' }}&deg;</span>
+                </div>
+            </div>
+
             <div class="hidden md:flex items-center gap-2.5">
                 @foreach ($socialProfiles as $profile)
                     <a href="{{ $profile['url'] }}" target="_blank" rel="noopener"
@@ -87,7 +95,17 @@
                 @endforeach
             </div>
 
-            <div class="flex items-center gap-1 sm:gap-2">
+            <div class="flex shrink-0 items-center gap-1 sm:gap-2">
+                <button class="md:hidden inline-flex h-11 w-11 items-center justify-center rounded hover:bg-white/10"
+                        @click="mobileOpen = !mobileOpen"
+                        aria-label="{{ __('Menü') }}">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              x-show="!mobileOpen" d="M4 6h16M4 12h16M4 18h16"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              x-show="mobileOpen" d="M6 18L18 6M6 6l12 12" style="display:none"/>
+                    </svg>
+                </button>
                 <x-language-switcher />
                 <button
                     type="button"
@@ -105,22 +123,12 @@
                     <span class="sr-only md:not-sr-only" x-show="!$store.darkMode.on">{{ __('Koyu Mod') }}</span>
                     <span class="sr-only md:not-sr-only" x-show="$store.darkMode.on" x-cloak>{{ __('Açık Mod') }}</span>
                 </button>
-                <button class="md:hidden -mr-3 inline-flex h-11 w-11 items-center justify-center rounded hover:bg-white/10"
-                        @click="mobileOpen = !mobileOpen"
-                        aria-label="{{ __('Menü') }}">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              x-show="!mobileOpen" d="M4 6h16M4 12h16M4 18h16"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              x-show="mobileOpen" d="M6 18L18 6M6 6l12 12" style="display:none"/>
-                    </svg>
-                </button>
             </div>
         </div>
     </div>
 
     <div id="adh-masthead" class="border-b border-adh-border bg-white dark:border-adh-blue dark:bg-adh-blue">
-        <div class="max-w-7xl mx-auto px-4 py-3 sm:py-4 md:py-6">
+        <div class="max-w-7xl mx-auto px-3 py-2.5 sm:px-4 sm:py-4 md:py-6">
             <div class="relative grid grid-cols-1 items-center gap-3 overflow-hidden rounded-sm sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-6">
                 <div class="hidden sm:block text-left">
                     <p class="text-xs font-medium uppercase tracking-[0.14em] text-adh-text dark:text-gray-200 leading-snug">
@@ -133,16 +141,16 @@
                        class="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-adh-red transition hover:text-red-700">{{ __('Günün Seçkisi') }}</a>
                 </div>
 
-                <div class="text-center">
-                    <a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="inline-block" aria-label="{{ $siteName }}">
+                <div class="min-w-0 text-center">
+                    <a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="inline-block max-w-full" aria-label="{{ $siteName }}">
                         @if (($branding['has_custom_light_logo'] ?? false) || ($branding['has_custom_dark_logo'] ?? false))
                             <div class="mb-3 flex justify-center">
                                 <img src="{{ $branding['logo_light_url'] }}" alt="{{ $siteName }}" class="h-10 w-auto dark:hidden">
                                 <img src="{{ $branding['logo_dark_url'] }}" alt="{{ $siteName }}" class="hidden h-10 w-auto dark:block">
                             </div>
                         @endif
-                        <p class="font-serif font-bold uppercase leading-[0.92] tracking-[0.08em] text-adh-navy text-balance dark:text-white
-                                  text-[1.55rem] sm:text-3xl md:text-[2.7rem] lg:text-[3rem]">
+                        <p class="mx-auto max-w-[calc(100vw-1.5rem)] whitespace-nowrap font-serif font-bold uppercase leading-[0.92] tracking-[0.015em] text-adh-navy dark:text-white
+                                  text-[clamp(0.98rem,4.72vw,1.22rem)] sm:text-3xl sm:tracking-[0.08em] md:text-[2.7rem] lg:text-[3rem]">
                             {{ $siteName }}
                         </p>
                         <div class="relative my-1.5 sm:my-2">
@@ -150,7 +158,7 @@
                             <div class="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-adh-red rounded-sm"></div>
                         </div>
                         @if ($siteTagline)
-                            <p class="mx-auto max-w-[16rem] text-[10px] uppercase leading-5 tracking-[0.12em] text-adh-gray dark:text-gray-300 sm:max-w-md sm:text-xs">
+                            <p class="mx-auto max-w-[14rem] text-[9px] uppercase leading-4 tracking-[0.1em] text-adh-gray dark:text-gray-300 sm:max-w-md sm:text-xs sm:leading-5 sm:tracking-[0.12em]">
                                 {{ $siteTagline }}
                             </p>
                         @endif

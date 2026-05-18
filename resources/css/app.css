@@ -12,6 +12,63 @@
   }
 }
 
+@layer components {
+  @media (max-width: 768px) {
+    html,
+    body {
+      overflow-x: hidden;
+    }
+
+    #adh-site-header,
+    #adh-masthead {
+      overflow-x: clip;
+    }
+
+    #adh-site-header [aria-label="Arama"],
+    #adh-site-header [aria-label="Menü"] {
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    #adh-site-header > .bg-adh-navy .flex.items-center.gap-2 > button[aria-label="Açık Mod"],
+    #adh-site-header > .bg-adh-navy .flex.items-center.gap-2 > button[aria-label="Koyu Mod"] {
+      position: relative;
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    #adh-site-header > .bg-adh-navy .flex.items-center.gap-2 > button[aria-label="Açık Mod"] span,
+    #adh-site-header > .bg-adh-navy .flex.items-center.gap-2 > button[aria-label="Koyu Mod"] span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    #adh-site-header > .bg-adh-navy .flex.items-center.gap-2 > button[aria-label="Açık Mod"]::before,
+    #adh-site-header > .bg-adh-navy .flex.items-center.gap-2 > button[aria-label="Koyu Mod"]::before {
+      display: block;
+      font-size: 0.85rem;
+      line-height: 1;
+    }
+
+    #adh-site-header > .bg-adh-navy .flex.items-center.gap-2 > button[aria-label="Koyu Mod"]::before {
+      content: "\25CF";
+    }
+
+    #adh-site-header > .bg-adh-navy .flex.items-center.gap-2 > button[aria-label="Açık Mod"]::before {
+      content: "\2600";
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

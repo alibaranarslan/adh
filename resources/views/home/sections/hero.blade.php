@@ -6,7 +6,7 @@
 @endphp
 
 @if ($heroMain && $heroStory)
-    <section class="mb-8 border-b-2 border-adh-text pb-8 dark:border-gray-700 md:mb-14 md:pb-12" aria-label="{{ __('Manşet Haberleri') }}">
+    <section class="mb-7 border-b-2 border-adh-text pb-7 dark:border-gray-700 md:mb-14 md:pb-12" aria-label="{{ __('Manşet Haberleri') }}">
         <x-section-heading :title="$title" :subtitle="$subtitle" eyebrow="{{ __('Bugünün Editör Seçimi') }}" />
 
         <div class="grid grid-cols-1 gap-5 md:gap-8 lg:grid-cols-12 lg:items-start lg:gap-x-8">
@@ -18,23 +18,23 @@
                             alt="{{ $heroStory['title'] }}"
                             width="1200"
                             height="760"
-                            class="aspect-[4/3] h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] sm:aspect-[16/10]"
+                            class="h-[178px] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] sm:h-auto sm:aspect-[16/10]"
                             loading="eager"
                             fetchpriority="high"
                         >
                     </div>
 
-                    <div class="mt-4 space-y-3 pb-2 md:mt-5 md:space-y-4 md:pb-3">
+                    <div class="relative z-10 mx-2 -mt-5 space-y-2.5 rounded-[calc(var(--adh-radius)*0.9)] border border-adh-border/80 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-adh-blue md:mx-0 md:mt-5 md:space-y-4 md:border-0 md:bg-transparent md:p-0 md:shadow-none md:dark:bg-transparent">
                         @if ($heroStory['category_name'])
                             <span class="text-[10px] font-bold uppercase tracking-[0.24em] text-adh-red">{{ $heroStory['category_name'] }}</span>
                         @endif
 
-                        <h1 class="text-balance font-serif text-[1.55rem] font-bold leading-tight text-adh-text transition-colors group-hover:text-adh-red dark:text-gray-100 md:text-3xl lg:text-[2.7rem]">
+                        <h1 class="text-balance font-serif text-[1.25rem] font-bold leading-tight text-adh-text transition-colors group-hover:text-adh-red dark:text-gray-100 sm:text-[1.65rem] md:text-3xl lg:text-[2.7rem]">
                             {{ $heroStory['title'] }}
                         </h1>
 
                         @if ($heroStory['summary'])
-                            <p class="max-w-3xl text-sm leading-6 text-adh-gray dark:text-gray-400 md:text-base md:leading-7">
+                            <p class="line-clamp-2 max-w-3xl text-sm leading-6 text-adh-gray dark:text-gray-400 sm:line-clamp-3 md:line-clamp-none md:text-base md:leading-7">
                                 {{ $heroStory['summary'] }}
                             </p>
                         @endif
@@ -45,7 +45,7 @@
             </div>
 
             @if ($heroSide->isNotEmpty())
-            <div class="clear-both lg:col-span-4 lg:self-start lg:pl-8">
+            <div class="clear-both mt-5 lg:col-span-4 lg:mt-0 lg:self-start lg:pl-8">
                 <div class="relative z-0 rounded-[var(--adh-radius)] border border-adh-border/80 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-adh-blue/80">
                     <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-adh-red">{{ __('Hızlı Gündem Akışı') }}</p>
                     <div class="mt-3 divide-y divide-adh-border dark:divide-gray-700">
