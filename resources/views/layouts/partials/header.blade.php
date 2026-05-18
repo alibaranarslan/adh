@@ -128,7 +128,7 @@
     </div>
 
     <div id="adh-masthead" class="border-b border-adh-border bg-white dark:border-adh-blue dark:bg-adh-blue">
-        <div class="max-w-7xl mx-auto px-3 py-2.5 sm:px-4 sm:py-4 md:py-6">
+        <div class="max-w-7xl mx-auto px-3 py-2 sm:px-4 sm:py-4 md:py-6">
             <div class="relative grid grid-cols-1 items-center gap-3 overflow-hidden rounded-sm sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-6">
                 <div class="hidden sm:block text-left">
                     <p class="text-xs font-medium uppercase tracking-[0.14em] text-adh-text dark:text-gray-200 leading-snug">
@@ -149,16 +149,16 @@
                                 <img src="{{ $branding['logo_dark_url'] }}" alt="{{ $siteName }}" class="hidden h-10 w-auto dark:block">
                             </div>
                         @endif
-                        <p class="mx-auto max-w-[calc(100vw-1.5rem)] whitespace-nowrap font-serif font-bold uppercase leading-[0.92] tracking-[0.015em] text-adh-navy dark:text-white
-                                  text-[clamp(0.98rem,4.72vw,1.22rem)] sm:text-3xl sm:tracking-[0.08em] md:text-[2.7rem] lg:text-[3rem]">
+                        <p class="adh-mobile-wordmark mx-auto max-w-[calc(100vw-1.5rem)] whitespace-nowrap font-serif font-black uppercase leading-[0.9] tracking-[0.018em] text-adh-navy dark:text-white
+                                  text-[clamp(1rem,4.45vw,1.16rem)] sm:text-3xl sm:font-bold sm:tracking-[0.08em] md:text-[2.7rem] lg:text-[3rem]">
                             {{ $siteName }}
                         </p>
-                        <div class="relative my-1.5 sm:my-2">
-                            <div class="h-px bg-adh-red w-full"></div>
-                            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-adh-red rounded-sm"></div>
+                        <div class="relative my-1 sm:my-2">
+                            <div class="h-[2px] w-full bg-adh-red sm:h-px"></div>
+                            <div class="absolute left-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-sm bg-adh-red sm:h-2 sm:w-2"></div>
                         </div>
                         @if ($siteTagline)
-                            <p class="mx-auto max-w-[14rem] text-[9px] uppercase leading-4 tracking-[0.1em] text-adh-gray dark:text-gray-300 sm:max-w-md sm:text-xs sm:leading-5 sm:tracking-[0.12em]">
+                            <p class="mx-auto max-w-[15.5rem] text-[9px] font-semibold uppercase leading-4 tracking-[0.11em] text-slate-600 dark:text-gray-300 sm:max-w-md sm:text-xs sm:font-normal sm:leading-5 sm:tracking-[0.12em]">
                                 {{ $siteTagline }}
                             </p>
                         @endif
@@ -182,26 +182,26 @@
     <nav class="border-b border-adh-border bg-white dark:border-adh-blue dark:bg-adh-blue md:hidden"
          aria-label="{{ __('Haber kategorileri') }}"
          data-testid="mobile-category-strip">
-        <div class="scrollbar-hide flex min-h-[3.25rem] items-center gap-2 overflow-x-auto px-3 py-2">
+        <div class="scrollbar-hide flex min-h-[2.5rem] items-center gap-1.5 overflow-x-auto px-2.5 py-1.5">
             <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
-               class="inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-[13px] font-semibold transition-colors
+               class="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-lg border px-3 text-[12px] font-semibold transition-colors
                       {{ request()->routeIs('home')
-                          ? 'border-adh-red bg-adh-red text-white'
-                          : 'border-adh-border bg-slate-50 text-adh-text hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100' }}">
+                          ? 'border-adh-red/30 bg-adh-red/10 text-adh-red'
+                          : 'border-adh-border bg-white text-adh-text hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100' }}">
                 {{ __('Ana Sayfa') }}
             </a>
             @foreach ($navCategories ?? collect() as $item)
                 @php $catSlug = data_get($item, 'slug'); @endphp
                 <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => $catSlug]) }}"
-                   class="inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-[13px] font-semibold transition-colors
+                   class="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-lg border px-3 text-[12px] font-semibold transition-colors
                           {{ request()->route('slug') === $catSlug
-                              ? 'border-adh-red bg-adh-red text-white'
-                              : 'border-adh-border bg-slate-50 text-adh-text hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100' }}">
+                              ? 'border-adh-red/30 bg-adh-red/10 text-adh-red'
+                              : 'border-adh-border bg-white text-adh-text hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100' }}">
                     {{ data_get($item, 'name') }}
                 </a>
             @endforeach
             <a href="{{ \App\Support\LocalizedUrl::route('city.index') }}"
-               class="inline-flex min-h-11 shrink-0 items-center rounded-full border border-adh-border bg-slate-50 px-4 text-[13px] font-semibold text-adh-text transition-colors hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100">
+               class="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-lg border border-adh-border bg-white px-3 text-[12px] font-semibold text-adh-text transition-colors hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100">
                 {{ __('İller') }}
             </a>
         </div>
