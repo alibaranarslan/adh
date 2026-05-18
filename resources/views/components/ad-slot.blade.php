@@ -32,6 +32,14 @@
     $contactLabel = filled($contactPhone)
         ? __('İletişim: :value', ['value' => $contactPhone])
         : (filled($contactEmail) ? __('İletişim: :value', ['value' => $contactEmail]) : __('İletişim sayfası'));
+    $positionLabel = \App\Support\AdvertisementPlacement::options()[$position] ?? __('Reklam Alanı');
+    $isHomeInventory = in_array($position, ['home-top', 'home-feed', 'home-lower', 'between-news'], true);
+    $houseAdHeadline = $isHomeInventory
+        ? __('Bu alanda markanızı öne çıkarın')
+        : __('Buraya reklam verebilirsiniz');
+    $houseAdCopy = $isHomeInventory
+        ? __('Ana sayfa haber akışı içinde görünür, ölçülebilir ve profesyonel reklam alanı.')
+        : __('Adıyaman Dijital Haber’de işletmenizi görünür kılın.');
 @endphp
 
 @if($ad)
@@ -130,10 +138,10 @@
         aria-label="{{ __('Reklam alanı') }}"
     >
         <div class="adh-house-ad__inner">
-            <span class="adh-house-ad__label">{{ __('Reklam Alanı') }}</span>
+            <span class="adh-house-ad__label">{{ $positionLabel }}</span>
             <div class="adh-house-ad__copy">
-                <strong>{{ __('Buraya reklam verebilirsiniz') }}</strong>
-                <span>{{ __('Adıyaman Dijital Haber’de işletmenizi görünür kılın.') }}</span>
+                <strong>{{ $houseAdHeadline }}</strong>
+                <span>{{ $houseAdCopy }}</span>
             </div>
             <a href="{{ $contactUrl }}" class="adh-house-ad__cta">
                 {{ $contactLabel }}

@@ -271,6 +271,9 @@ class PublicPagesTest extends TestCase
 
         foreach ([
             ['Header Reklami', 'header', 'advertisements/header.jpg'],
+            ['Ana Sayfa Ust Reklami', 'home-top', 'advertisements/home-top.jpg'],
+            ['Ana Sayfa Haber Arasi Reklam', 'home-feed', 'advertisements/home-feed.jpg'],
+            ['Ana Sayfa Alt Reklam', 'home-lower', 'advertisements/home-lower.jpg'],
             ['Haberler Arasi Reklam', 'between-news', 'advertisements/between.jpg'],
             ['Sidebar Ust Reklami', 'sidebar-top', 'advertisements/sidebar-top.jpg'],
             ['Sidebar Alt Reklami', 'sidebar-bottom', 'storage/advertisements/sidebar-bottom.jpg'],
@@ -322,11 +325,17 @@ class PublicPagesTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('Header Reklami')
+            ->assertSee('Ana Sayfa Ust Reklami')
+            ->assertSee('Ana Sayfa Haber Arasi Reklam')
+            ->assertSee('Ana Sayfa Alt Reklam')
             ->assertSee('Haberler Arasi Reklam')
             ->assertSee('Sidebar Ust Reklami')
             ->assertSee('Sidebar Alt Reklami')
             ->assertSee('Footer Reklami')
             ->assertSee('/storage/advertisements/header.jpg', false)
+            ->assertSee('/storage/advertisements/home-top.jpg', false)
+            ->assertSee('/storage/advertisements/home-feed.jpg', false)
+            ->assertSee('/storage/advertisements/home-lower.jpg', false)
             ->assertSee('/storage/advertisements/between.jpg', false)
             ->assertSee('/storage/advertisements/sidebar-top.jpg', false)
             ->assertSee('/storage/advertisements/sidebar-bottom.jpg', false)
@@ -422,8 +431,10 @@ class PublicPagesTest extends TestCase
 
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('Buraya reklam verebilirsiniz')
-            ->assertSee('Reklam Alanı')
+            ->assertSee('Bu alanda markanızı öne çıkarın')
+            ->assertSee('Ana Sayfa Üst Sponsor')
+            ->assertSee('Ana Sayfa Haber Arası')
+            ->assertSee('Ana Sayfa Alt Sponsor')
             ->assertSee('İletişim: 0416 000 00 00')
             ->assertSee('tel:0416000000', false)
             ->assertDontSee('data-impression-url="', false);
@@ -458,7 +469,8 @@ class PublicPagesTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertDontSee('Buraya reklam verebilirsiniz')
-            ->assertDontSee('Reklam Alanı');
+            ->assertDontSee('Bu alanda markanızı öne çıkarın')
+            ->assertDontSee('Ana Sayfa Üst Sponsor');
     }
 
     public function test_manual_banner_renders_mobile_source_when_mobile_image_is_available(): void
@@ -691,8 +703,8 @@ class PublicPagesTest extends TestCase
             ->assertOk()
             ->assertSee('Tek haberli ana sayfa')
             ->assertDontSee('Hızlı Gündem Akışı')
-            ->assertSee('Sponsorlu Alanlar')
-            ->assertSee('Buraya reklam verebilirsiniz')
+            ->assertSee('Reklam Verilebilir Alanlar')
+            ->assertSee('Bu alanda markanızı öne çıkarın')
             ->assertDontSee('Article Detail Only Reklami');
     }
 

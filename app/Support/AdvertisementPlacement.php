@@ -19,6 +19,33 @@ final class AdvertisementPlacement
                 'mobile_max_height' => '150px',
                 'purpose' => 'Header altında premium yatay görünürlük.',
             ],
+            'home-top' => [
+                'desktop' => '1200x180, 970x120 veya 970x250',
+                'mobile' => '720x220 veya 640x200',
+                'aspect_ratio' => '6.6 / 1',
+                'mobile_aspect_ratio' => '3.2 / 1',
+                'max_height' => '190px',
+                'mobile_max_height' => '150px',
+                'purpose' => 'Ana sayfada manşet sonrasında en görünür premium sponsor alanı.',
+            ],
+            'home-feed' => [
+                'desktop' => '1200x180 veya 970x250',
+                'mobile' => '720x260 veya 640x240',
+                'aspect_ratio' => '5.5 / 1',
+                'mobile_aspect_ratio' => '2.8 / 1',
+                'max_height' => '230px',
+                'mobile_max_height' => '190px',
+                'purpose' => 'Ana sayfa haber akışı içinde yüksek görünürlüklü kampanya alanı.',
+            ],
+            'home-lower' => [
+                'desktop' => '1200x160 veya 970x120',
+                'mobile' => '720x220 veya 640x200',
+                'aspect_ratio' => '6 / 1',
+                'mobile_aspect_ratio' => '3.2 / 1',
+                'max_height' => '180px',
+                'mobile_max_height' => '150px',
+                'purpose' => 'Ana sayfa alt akışta kurumsal sponsor ve yerel işletme alanı.',
+            ],
             'sidebar-top' => [
                 'desktop' => '520x320, 336x280 veya 300x250',
                 'mobile' => '720x260 veya 640x240',
@@ -71,7 +98,7 @@ final class AdvertisementPlacement
                 'mobile_aspect_ratio' => '2.8 / 1',
                 'max_height' => '260px',
                 'mobile_max_height' => '220px',
-                'purpose' => 'Ana sayfa haber akışı içinde geniş kampanya alanı.',
+                'purpose' => 'Sponsor modülü içinde geniş kampanya alanı.',
             ],
         ];
     }
@@ -115,12 +142,15 @@ final class AdvertisementPlacement
     {
         return [
             'header' => 'Header',
+            'home-top' => 'Ana Sayfa Üst Sponsor',
+            'home-feed' => 'Ana Sayfa Haber Arası',
+            'home-lower' => 'Ana Sayfa Alt Sponsor',
             'sidebar-top' => 'Sidebar Üst',
             'sidebar-bottom' => 'Sidebar Alt',
             'article-top' => 'Haber Üstü',
             'article-bottom' => 'Haber Altı',
             'footer' => 'Footer',
-            'between-news' => 'Haberler Arası',
+            'between-news' => 'Sponsor Modülü Geniş',
         ];
     }
 
@@ -136,6 +166,9 @@ final class AdvertisementPlacement
     {
         return [
             'between-news',
+            'home-top',
+            'home-feed',
+            'home-lower',
             'sidebar-top',
             'sidebar-bottom',
         ];
@@ -153,6 +186,9 @@ final class AdvertisementPlacement
     {
         return [
             'between-news',
+            'home-top',
+            'home-feed',
+            'home-lower',
             'sidebar-top',
             'sidebar-bottom',
             'footer',

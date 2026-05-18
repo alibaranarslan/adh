@@ -87,6 +87,10 @@
                 'heroMain' => $heroMain,
                 'heroSide' => $heroSide,
             ])
+
+            <div class="mx-auto mt-2.5 w-full max-w-7xl px-4 sm:px-6 md:mt-3">
+                <x-ad-slot position="home-top" />
+            </div>
         </div>
     @endif
 @endsection
@@ -129,6 +133,9 @@
 
                         @case('local_news')
                             @include('home.sections.local-news', ['settings' => $settings, 'localNews' => $localNews])
+                            <div class="mt-3 md:mt-4">
+                                <x-ad-slot position="home-feed" />
+                            </div>
                             @break
 
                         @case('highlights')
@@ -141,6 +148,9 @@
 
                         @case('region_news')
                             @include('home.sections.region-news-v2', ['settings' => $settings, 'regionNews' => $regionNews])
+                            <div class="mt-3 md:mt-4">
+                                <x-ad-slot position="home-lower" />
+                            </div>
                             @break
 
                         @case('latest_news')

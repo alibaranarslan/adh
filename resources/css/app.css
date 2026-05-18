@@ -215,34 +215,46 @@
 @layer components {
   .adh-house-ad {
     display: block;
-    border: 1px dashed rgba(153, 27, 27, 0.28);
+    border: 1px solid rgba(153, 27, 27, 0.26);
     border-radius: var(--adh-radius);
     background:
-      linear-gradient(135deg, rgba(153, 27, 27, 0.06), rgba(255, 255, 255, 0.92)),
-      repeating-linear-gradient(135deg, rgba(153, 27, 27, 0.06) 0 1px, transparent 1px 14px);
+      radial-gradient(circle at 12% 20%, rgba(153, 27, 27, 0.12), transparent 28%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.9)),
+      repeating-linear-gradient(135deg, rgba(153, 27, 27, 0.045) 0 1px, transparent 1px 16px);
     color: #111827;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
   }
 
   .adh-house-ad__inner {
     display: flex;
-    min-height: 5rem;
+    min-height: 5.5rem;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 0.875rem 1rem;
+    gap: 1.1rem;
+    padding: 1rem 1.1rem;
   }
 
   .adh-house-ad__label {
     flex-shrink: 0;
     border-radius: 999px;
-    background: rgba(153, 27, 27, 0.1);
-    padding: 0.35rem 0.65rem;
-    color: #991b1b;
-    font-size: 0.62rem;
-    font-weight: 800;
-    letter-spacing: 0.18em;
+    background: #991b1b;
+    padding: 0.42rem 0.7rem;
+    color: #fff;
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
+  }
+
+  .adh-house-ad__label::before {
+    content: "";
+    display: inline-block;
+    width: 0.42rem;
+    height: 0.42rem;
+    margin-right: 0.45rem;
+    border-radius: 999px;
+    background: #fff;
+    opacity: 0.86;
   }
 
   .adh-house-ad__copy {
@@ -257,38 +269,60 @@
 
   .adh-house-ad__copy strong {
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 1rem;
-    line-height: 1.15;
+    font-size: 1.08rem;
+    line-height: 1.14;
   }
 
   .adh-house-ad__copy span {
     margin-top: 0.15rem;
     color: #64748b;
-    font-size: 0.78rem;
-    line-height: 1.35;
+    font-size: 0.8rem;
+    line-height: 1.38;
   }
 
   .adh-house-ad__cta {
     flex-shrink: 0;
     border-radius: 999px;
-    background: #991b1b;
-    padding: 0.55rem 0.8rem;
+    background: #111827;
+    padding: 0.62rem 0.86rem;
     color: #fff;
     font-size: 0.72rem;
-    font-weight: 800;
+    font-weight: 900;
     letter-spacing: 0.02em;
     transition: background-color 0.2s ease;
   }
 
   .adh-house-ad__cta:hover {
-    background: #7f1d1d;
+    background: #991b1b;
+  }
+
+  .adh-house-ad[data-position="home-top"],
+  .adh-house-ad[data-position="home-feed"],
+  .adh-house-ad[data-position="home-lower"] {
+    background:
+      radial-gradient(circle at 8% 18%, rgba(153, 27, 27, 0.18), transparent 24%),
+      linear-gradient(135deg, #fff 0%, #fff7ed 46%, #f8fafc 100%),
+      repeating-linear-gradient(135deg, rgba(153, 27, 27, 0.05) 0 1px, transparent 1px 18px);
+  }
+
+  .adh-house-ad[data-position="home-top"] .adh-house-ad__inner,
+  .adh-house-ad[data-position="home-feed"] .adh-house-ad__inner,
+  .adh-house-ad[data-position="home-lower"] .adh-house-ad__inner {
+    min-height: 6.25rem;
+  }
+
+  .adh-house-ad[data-position="home-top"] .adh-house-ad__copy strong,
+  .adh-house-ad[data-position="home-feed"] .adh-house-ad__copy strong,
+  .adh-house-ad[data-position="home-lower"] .adh-house-ad__copy strong {
+    font-size: 1.18rem;
   }
 
   html.dark .adh-house-ad {
-    border-color: rgba(248, 113, 113, 0.3);
+    border-color: rgba(248, 113, 113, 0.26);
     background:
-      linear-gradient(135deg, rgba(248, 113, 113, 0.11), rgba(15, 23, 42, 0.9)),
-      repeating-linear-gradient(135deg, rgba(248, 113, 113, 0.06) 0 1px, transparent 1px 14px);
+      radial-gradient(circle at 12% 20%, rgba(248, 113, 113, 0.13), transparent 28%),
+      linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.88)),
+      repeating-linear-gradient(135deg, rgba(248, 113, 113, 0.05) 0 1px, transparent 1px 16px);
     color: #f8fafc;
   }
 
@@ -297,26 +331,43 @@
     color: #fca5a5;
   }
 
+  html.dark .adh-house-ad__cta {
+    background: #991b1b;
+  }
+
+  html.dark .adh-house-ad__cta:hover {
+    background: #7f1d1d;
+  }
+
+  html.dark .adh-house-ad[data-position="home-top"],
+  html.dark .adh-house-ad[data-position="home-feed"],
+  html.dark .adh-house-ad[data-position="home-lower"] {
+    background:
+      radial-gradient(circle at 8% 18%, rgba(248, 113, 113, 0.18), transparent 24%),
+      linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.9)),
+      repeating-linear-gradient(135deg, rgba(248, 113, 113, 0.045) 0 1px, transparent 1px 18px);
+  }
+
   html.dark .adh-house-ad__copy span {
     color: #cbd5e1;
   }
 
   @media (max-width: 767px) {
     .adh-house-ad__inner {
-      min-height: 4rem;
+      min-height: 4.35rem;
       align-items: flex-start;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.55rem;
       padding: 0.75rem;
     }
 
     .adh-house-ad__label {
-      padding: 0.3rem 0.55rem;
-      font-size: 0.56rem;
+      padding: 0.34rem 0.58rem;
+      font-size: 0.54rem;
     }
 
     .adh-house-ad__copy strong {
-      font-size: 0.9rem;
+      font-size: 0.94rem;
     }
 
     .adh-house-ad__copy span {
@@ -325,9 +376,15 @@
 
     .adh-house-ad__cta {
       width: 100%;
-      padding: 0.5rem 0.65rem;
+      padding: 0.54rem 0.68rem;
       text-align: center;
       font-size: 0.7rem;
+    }
+
+    .adh-house-ad[data-position="home-top"] .adh-house-ad__inner,
+    .adh-house-ad[data-position="home-feed"] .adh-house-ad__inner,
+    .adh-house-ad[data-position="home-lower"] .adh-house-ad__inner {
+      min-height: 5.25rem;
     }
   }
 
