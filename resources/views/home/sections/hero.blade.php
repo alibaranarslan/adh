@@ -6,7 +6,7 @@
 @endphp
 
 @if ($heroMain && $heroStory)
-    <section class="mb-4 border-b-2 border-adh-text pb-4 dark:border-gray-700 md:mb-14 md:pb-12" aria-label="{{ __('Manşet Haberleri') }}">
+    <section class="mb-3 border-b border-adh-red/20 pb-3 dark:border-red-400/20 md:mb-14 md:border-b-2 md:border-adh-text md:pb-12 md:dark:border-gray-700" aria-label="{{ __('Manşet Haberleri') }}">
         <x-section-heading :title="$title" :subtitle="$subtitle" eyebrow="{{ __('Bugünün Editör Seçimi') }}" />
 
         <div class="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-12 lg:items-start lg:gap-x-8">
