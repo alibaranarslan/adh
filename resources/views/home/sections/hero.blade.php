@@ -12,34 +12,37 @@
         <div class="grid grid-cols-1 gap-5 md:gap-8 lg:grid-cols-12 lg:items-start lg:gap-x-8">
             <div class="border-adh-border dark:border-gray-700 {{ $heroSide->isNotEmpty() ? 'lg:col-span-8 lg:border-r lg:pr-8' : 'lg:col-span-12' }}">
                 <a href="{{ $heroStory['url'] }}" class="group block">
-                    <div class="overflow-hidden rounded-[var(--adh-radius)] shadow-[var(--adh-shadow)]">
+                    <div class="relative overflow-hidden rounded-[var(--adh-radius)] bg-adh-navy shadow-[var(--adh-shadow)]">
                         <img
                             src="{{ $heroStory['image_url'] }}"
                             alt="{{ $heroStory['title'] }}"
                             width="1200"
                             height="760"
-                            class="h-[178px] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] sm:h-auto sm:aspect-[16/10]"
+                            class="h-[255px] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] sm:h-[330px] lg:h-[360px]"
                             loading="eager"
                             fetchpriority="high"
                         >
-                    </div>
+                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-adh-navy via-adh-navy/88 to-transparent px-4 pb-4 pt-16 text-white sm:px-6 sm:pb-5 sm:pt-24 lg:px-7 lg:pb-6">
+                            <div class="max-w-3xl space-y-2 sm:space-y-2.5">
+                                @if ($heroStory['category_name'])
+                                    <span class="inline-flex rounded-full bg-adh-red px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white shadow-sm">
+                                        {{ $heroStory['category_name'] }}
+                                    </span>
+                                @endif
 
-                    <div class="relative z-10 mx-2 -mt-5 space-y-2.5 rounded-[calc(var(--adh-radius)*0.9)] border border-adh-border/80 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-adh-blue md:mx-0 md:mt-5 md:space-y-4 md:border-0 md:bg-transparent md:p-0 md:shadow-none md:dark:bg-transparent">
-                        @if ($heroStory['category_name'])
-                            <span class="text-[10px] font-bold uppercase tracking-[0.24em] text-adh-red">{{ $heroStory['category_name'] }}</span>
-                        @endif
+                                <h1 class="line-clamp-2 text-balance font-serif text-[1.22rem] font-bold leading-tight text-white transition-colors group-hover:text-red-100 sm:text-2xl lg:text-[2rem]">
+                                    {{ $heroStory['title'] }}
+                                </h1>
 
-                        <h1 class="text-balance font-serif text-[1.25rem] font-bold leading-tight text-adh-text transition-colors group-hover:text-adh-red dark:text-gray-100 sm:text-[1.65rem] md:text-3xl lg:text-[2.7rem]">
-                            {{ $heroStory['title'] }}
-                        </h1>
+                                @if ($heroStory['summary'])
+                                    <p class="line-clamp-2 max-w-2xl text-[13px] leading-5 text-white/86 sm:text-sm sm:leading-6">
+                                        {{ $heroStory['summary'] }}
+                                    </p>
+                                @endif
 
-                        @if ($heroStory['summary'])
-                            <p class="line-clamp-2 max-w-3xl text-sm leading-6 text-adh-gray dark:text-gray-400 sm:line-clamp-3 md:line-clamp-none md:text-base md:leading-7">
-                                {{ $heroStory['summary'] }}
-                            </p>
-                        @endif
-
-                        <x-news-meta-row :article="$heroMain" :show-source="true" />
+                                <x-news-meta-row :article="$heroMain" :show-source="true" class="text-white/75" />
+                            </div>
+                        </div>
                     </div>
                 </a>
             </div>
