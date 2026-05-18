@@ -57,7 +57,7 @@
     }"
     x-show="visible"
     x-transition
-    class="fixed bottom-0 left-0 right-0 z-[100] max-h-[34dvh] overflow-y-auto border-t border-white/10 bg-adh-navy p-3 text-white shadow-2xl md:bottom-4 md:left-4 md:right-auto md:max-h-[min(70dvh,calc(100dvh-2rem))] md:max-w-md md:rounded-xl md:border md:border-white/10 md:p-4"
+    class="fixed bottom-0 left-0 right-0 z-[100] max-h-[34dvh] overflow-y-auto border-t border-white/10 bg-adh-navy p-3 text-white shadow-2xl md:bottom-4 md:left-auto md:right-4 md:max-h-[min(70dvh,calc(100dvh-2rem))] md:max-w-md md:rounded-xl md:border md:border-white/10 md:p-4"
     style="display: none;"
 >
     <div class="mx-auto max-w-7xl space-y-2 md:space-y-3">
