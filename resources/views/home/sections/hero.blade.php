@@ -6,7 +6,7 @@
 @endphp
 
 @if ($heroMain && $heroStory)
-    <section class="mb-3 border-b border-adh-red/20 pb-3 dark:border-red-400/20 md:mb-14 md:border-b-2 md:border-adh-text md:pb-12 md:dark:border-gray-700" aria-label="{{ __('Manşet Haberleri') }}">
+    <section class="mb-3 border-b border-adh-red/20 pb-3 dark:border-red-400/20 md:mb-5 md:border-b-2 md:border-adh-text md:pb-5 md:dark:border-gray-700" aria-label="{{ __('Manşet Haberleri') }}">
         <x-section-heading :title="$title" :subtitle="$subtitle" eyebrow="{{ __('Bugünün Editör Seçimi') }}" />
 
         <div class="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-12 lg:items-start lg:gap-x-8">
@@ -18,7 +18,7 @@
                             alt="{{ $heroStory['title'] }}"
                             width="1200"
                             height="760"
-                            class="h-[255px] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] sm:h-[330px] lg:h-[360px]"
+                            class="h-[255px] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] sm:h-[330px] lg:h-[400px]"
                             loading="eager"
                             fetchpriority="high"
                         >
@@ -52,7 +52,7 @@
                 <div class="relative z-0 rounded-[var(--adh-radius)] border border-adh-border/80 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-adh-blue/80 md:p-4">
                     <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-adh-red">{{ __('Hızlı Gündem Akışı') }}</p>
                     <div class="mt-2 divide-y divide-adh-border dark:divide-gray-700 md:mt-3">
-                        @foreach ($heroSide as $article)
+                        @foreach ($heroSide->take(4) as $article)
                             @php $sideStory = \App\Support\NewsPresenter::present($article, 'thumb'); @endphp
                             <article class="group py-2.5 first:pt-0 last:pb-0 md:py-3">
                                 <div class="flex items-start gap-3">
@@ -78,7 +78,7 @@
                                             alt="{{ $sideStory['title'] }}"
                                             width="160"
                                             height="160"
-                                            class="h-20 w-20 object-cover transition-transform duration-300 group-hover:scale-105"
+                                            class="h-16 w-16 object-cover transition-transform duration-300 group-hover:scale-105 md:h-18 md:w-18 lg:h-20 lg:w-20"
                                             loading="lazy"
                                         >
                                     </a>
