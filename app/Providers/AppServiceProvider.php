@@ -99,17 +99,40 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('activeHeaderTheme', app(HeaderThemeResolver::class)->resolve());
             $view->with('breakingNews', once(fn () => $this->safeRemember('breaking_news', 60, function () {
+                $limit = 10;
                 $breaking = NewsArticle::published()
+                    ->with('category')
                     ->where('is_breaking', true)
                     ->latest('published_at')
-                    ->take(10)
-                    ->get(['id', 'title', 'slug']);
+                    ->take($limit)
+                    ->get();
 
-                if ($breaking->isEmpty()) {
-                    $breaking = NewsArticle::published()
-                        ->orderByRaw('editorial_score DESC, published_at DESC')
-                        ->take(10)
-                        ->get(['id', 'title', 'slug']);
+                if ($breaking->count() < $limit) {
+                    $breaking = $breaking
+                        ->merge(
+                            NewsArticle::published()
+                                ->with('category')
+                                ->whereNotIn('id', $breaking->pluck('id')->toArray())
+                                ->whereNotNull('featured_image')
+                                ->where('featured_image', '!=', '')
+                                ->latest('published_at')
+                                ->take($limit - $breaking->count())
+                                ->get()
+                        )
+                        ->values();
+                }
+
+                if ($breaking->count() < $limit) {
+                    $breaking = $breaking
+                        ->merge(
+                            NewsArticle::published()
+                                ->with('category')
+                                ->whereNotIn('id', $breaking->pluck('id')->toArray())
+                                ->orderByRaw('editorial_score DESC, published_at DESC')
+                                ->take($limit - $breaking->count())
+                                ->get()
+                        )
+                        ->values();
                 }
 
                 return $breaking;

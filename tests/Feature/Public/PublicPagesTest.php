@@ -59,6 +59,7 @@ class PublicPagesTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('Son Dakika Haber')
+            ->assertSee('/images/test-breaking.jpg')
             ->assertDontSee('Haber akisi gecici olarak eksik.');
 
         $this->get(route('news.category', ['slug' => $category->slug]))
