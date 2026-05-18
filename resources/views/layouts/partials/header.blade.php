@@ -1,4 +1,4 @@
-﻿@php
+@php
     $branding = \App\Support\SiteBranding::current();
     $siteName = $branding['site_name'] ?? 'Adıyaman Dijital Haber';
     $siteTagline = $branding['site_tagline'] ?? null;
