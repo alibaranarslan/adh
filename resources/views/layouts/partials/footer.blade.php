@@ -10,49 +10,56 @@
     );
 @endphp
 
-<footer class="mt-12 border-t-4 border-adh-red bg-adh-blue text-white dark:bg-adh-navy">
-    <div class="max-w-7xl mx-auto px-4 pt-10 pb-6">
-        <div class="grid grid-cols-1 gap-8 border-b border-white/10 pb-8 md:grid-cols-2 lg:grid-cols-[1.2fr_0.9fr_0.9fr_1.1fr]">
+<footer class="mt-8 border-t-2 border-adh-red bg-adh-blue text-white dark:bg-adh-navy md:mt-12 md:border-t-4">
+    <div class="mx-auto max-w-7xl px-4 py-5 md:py-8">
+        <div class="grid grid-cols-1 gap-5 border-b border-white/10 pb-5 md:grid-cols-2 md:gap-7 md:pb-7 lg:grid-cols-[1.25fr_0.8fr_0.8fr_1fr]">
             <div>
-                <a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="mb-4 block">
+                <a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="mb-3 block md:mb-4">
                     <img
                         src="{{ $branding['logo_dark_url'] ?? asset('images/branding/adh-logo-dark.svg') }}"
                         alt="{{ $siteName }}"
-                        class="h-12 w-auto"
+                        class="h-9 w-auto md:h-11"
                     >
                 </a>
+
                 @if ($siteTagline)
-                    <p class="mb-2 text-xs uppercase tracking-[0.22em] text-gray-400">{{ $siteTagline }}</p>
+                    <p class="mb-1.5 text-[10px] uppercase tracking-[0.2em] text-gray-400 md:text-xs">{{ $siteTagline }}</p>
                 @endif
-                <p class="mb-4 max-w-sm text-sm leading-7 text-gray-300">
-                    {{ $footerDescription }}
-                </p>
-                <div class="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.14em]">
-                    @foreach ($socialLinks as $platform => $url)
-                        @if ($url)
-                            <a href="{{ $url }}" target="_blank" rel="noopener" class="rounded bg-white/10 px-3 py-2 transition-colors hover:bg-adh-red">
-                                {{ $platform }}
-                            </a>
-                        @endif
-                    @endforeach
-                </div>
+
+                @if ($footerDescription)
+                    <p class="line-clamp-3 max-w-sm text-xs leading-5 text-gray-300 md:text-sm md:leading-6">
+                        {{ $footerDescription }}
+                    </p>
+                @endif
+
+                @if (! empty($socialLinks))
+                    <div class="mt-3 flex flex-wrap gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] md:gap-2 md:text-xs">
+                        @foreach ($socialLinks as $platform => $url)
+                            @if ($url)
+                                <a href="{{ $url }}" target="_blank" rel="noopener" class="rounded bg-white/10 px-2.5 py-1.5 transition-colors hover:bg-adh-red md:px-3">
+                                    {{ $platform }}
+                                </a>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
             </div>
 
             <div>
-                <h5 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-300">{{ __('Kurumsal Sayfalar') }}</h5>
-                <ul class="space-y-2 text-sm">
+                <h5 class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-300 md:mb-3">{{ __('Kurumsal') }}</h5>
+                <ul class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs md:block md:space-y-1.5 md:text-sm">
                     <li><a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="transition-colors hover:text-adh-red-light">{{ __('Anasayfa') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('page.about') }}" class="transition-colors hover:text-adh-red-light">{{ __('Hakkımızda') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('contact') }}" class="transition-colors hover:text-adh-red-light">{{ __('İletişim') }}</a></li>
-                    <li><a href="{{ \App\Support\LocalizedUrl::route('page.privacy') }}" class="transition-colors hover:text-adh-red-light">{{ __('Gizlilik Politikası') }}</a></li>
+                    <li><a href="{{ \App\Support\LocalizedUrl::route('page.privacy') }}" class="transition-colors hover:text-adh-red-light">{{ __('Gizlilik') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('page.cookies') }}" class="transition-colors hover:text-adh-red-light">{{ __('Çerez Politikası') }}</a></li>
-                    <li><a href="{{ \App\Support\LocalizedUrl::route('page.kvkk') }}" class="transition-colors hover:text-adh-red-light">{{ __('KVKK Aydınlatma Metni') }}</a></li>
+                    <li><a href="{{ \App\Support\LocalizedUrl::route('page.kvkk') }}" class="transition-colors hover:text-adh-red-light">{{ __('KVKK') }}</a></li>
                 </ul>
             </div>
 
             <div>
-                <h5 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-300">{{ __('Editoryal Akış') }}</h5>
-                <ul class="space-y-2 text-sm">
+                <h5 class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-300 md:mb-3">{{ __('Editoryal') }}</h5>
+                <ul class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs md:block md:space-y-1.5 md:text-sm">
                     <li><a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => 'gundem']) }}" class="transition-colors hover:text-adh-red-light">{{ __('Gündem') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('city.show', ['slug' => 'adiyaman']) }}" class="transition-colors hover:text-adh-red-light">{{ __('Adıyaman') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => 'asayis']) }}" class="transition-colors hover:text-adh-red-light">{{ __('Asayiş') }}</a></li>
@@ -63,8 +70,8 @@
             </div>
 
             <div>
-                <h5 class="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-300">{{ __('Okur Hattı') }}</h5>
-                <ul class="mb-5 space-y-2 text-sm text-gray-300">
+                <h5 class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-300 md:mb-3">{{ __('Okur Hattı') }}</h5>
+                <ul class="mb-3 space-y-1.5 text-xs leading-5 text-gray-300 md:text-sm md:leading-6">
                     <li>{{ $resolvedAddress }}</li>
                     @if(data_get($siteSettings, 'contact_phone'))
                         <li><a href="tel:{{ data_get($siteSettings, 'contact_phone') }}" class="transition-colors hover:text-adh-red-light">{{ data_get($siteSettings, 'contact_phone') }}</a></li>
@@ -74,11 +81,11 @@
                     @endif
                 </ul>
 
-                <div class="mb-4 rounded border border-white/10 bg-white/5 p-3 text-xs leading-6 text-gray-300">
-                    {{ __('Haber ihbarı, düzeltme talepleri ve kurumsal iletişim başlıkları için redaksiyon ekibine doğrudan ulaşabilirsiniz.') }}
-                </div>
+                <p class="mb-3 hidden rounded border border-white/10 bg-white/5 p-3 text-xs leading-5 text-gray-300 md:block">
+                    {{ __('Haber ihbarı, düzeltme talepleri ve kurumsal iletişim için redaksiyon ekibine ulaşabilirsiniz.') }}
+                </p>
 
-                <h5 class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-300">{{ __('E-Bülten') }}</h5>
+                <h5 class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-300">{{ __('E-Bülten') }}</h5>
                 <form
                     class="space-y-2"
                     x-data="{
@@ -113,16 +120,16 @@
                     @submit.prevent="submit"
                 >
                     <template x-if="!success">
-                        <div class="space-y-2">
+                        <div class="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
                             <input type="email" x-model="email"
-                                   placeholder="{{ __('E-posta adresinizi girin') }}"
-                                   class="w-full rounded border border-gray-600 bg-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-adh-red"
+                                   placeholder="{{ __('E-posta adresiniz') }}"
+                                   class="min-h-10 w-full rounded border border-gray-600 bg-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:border-adh-red focus:outline-none"
                                    aria-label="{{ __('E-posta adresinizi girin') }}" required>
                             <button type="submit" :disabled="loading"
-                                    class="w-full rounded bg-adh-red px-4 py-2 text-sm text-white transition-colors hover:bg-red-700 disabled:opacity-60">
+                                    class="min-h-10 rounded bg-adh-red px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60">
                                 <span x-text="loading ? '{{ __('Kaydediliyor...') }}' : '{{ __('Abone Ol') }}'"></span>
                             </button>
-                            <p x-show="message" x-text="message" class="mt-1 text-xs text-red-300"></p>
+                            <p x-show="message" x-text="message" class="text-xs text-red-300 sm:col-span-2"></p>
                         </div>
                     </template>
                     <template x-if="success">
@@ -132,14 +139,14 @@
             </div>
         </div>
 
-        <div class="flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-5 text-xs text-gray-400 md:flex-row">
+        <div class="flex flex-col items-start justify-between gap-2 pt-4 text-[11px] leading-5 text-gray-400 md:flex-row md:items-center md:text-xs">
             <p>© {{ date('Y') }} {{ $siteName }} — {{ __('Tüm hakları saklıdır.') }}</p>
-            <p class="flex items-center gap-1">
+            <p class="flex flex-wrap items-center gap-1">
                 <span>{{ __('İHA İş Birliği') }}</span>
-                <span class="mx-1 text-gray-600">|</span>
-                <span>{{ __('Haber kaynağı: İHA') }}</span>
+                <span class="text-gray-600">|</span>
+                <span>{{ __('Kaynak: İHA') }}</span>
             </p>
-            <p>{{ __('Yerel yayın odağı') }}: {{ __('Adıyaman ve çevresi') }}</p>
+            <p class="hidden md:block">{{ __('Yerel yayın odağı') }}: {{ __('Adıyaman ve çevresi') }}</p>
         </div>
     </div>
 </footer>
