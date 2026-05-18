@@ -13,7 +13,7 @@ class SetLocale
     {
         $locale = $request->route('locale')
             ?? $request->query('locale')
-            ?? session('locale', 'tr');
+            ?? 'tr';
 
         if (in_array($locale, ['tr', 'en', 'ku'], true)) {
             app()->setLocale($locale);

@@ -26,4 +26,17 @@ class LocalizationSurfaceTest extends TestCase
             ->assertSee('Today&#039;s Brief', false)
             ->assertSee('Language options', false);
     }
+
+    public function test_unprefixed_home_returns_to_turkish_after_prefixed_locale_visit(): void
+    {
+        $this->get('/en/')
+            ->assertOk()
+            ->assertSee('<html lang="en"', false);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('<html lang="tr"', false)
+            ->assertSee('Günün Seçkisi')
+            ->assertDontSee('Today&#039;s Brief', false);
+    }
 }
