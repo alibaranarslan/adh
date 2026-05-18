@@ -6,7 +6,7 @@
 
 <article class="group overflow-hidden rounded-lg border border-adh-border bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-gray-700 dark:bg-adh-blue">
     <a href="{{ $story['url'] }}" class="block overflow-hidden">
-        <div class="aspect-[16/10] overflow-hidden bg-gradient-to-br from-adh-navy/10 to-adh-red/10">
+        <div class="aspect-[16/9] overflow-hidden bg-gradient-to-br from-adh-navy/10 to-adh-red/10">
             <img
                 src="{{ $story['image_url'] }}"
                 alt="{{ $story['title'] }}"
@@ -18,7 +18,7 @@
         </div>
     </a>
 
-    <div class="space-y-2 p-4">
+    <div class="space-y-1.5 p-3 md:space-y-2 md:p-4">
         @if ($story['category_name'])
             <span class="text-[10px] font-bold uppercase tracking-wider text-adh-red">
                 {{ $story['category_name'] }}

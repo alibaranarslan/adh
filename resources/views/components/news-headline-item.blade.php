@@ -4,7 +4,7 @@
     $story = \App\Support\NewsPresenter::present($article, 'thumb');
 @endphp
 
-<article class="group py-3">
+<article class="group py-2.5 md:py-3">
     @if ($story['category_name'])
         <span class="text-[10px] font-bold uppercase tracking-wider leading-none text-adh-red">
             {{ $story['category_name'] }}

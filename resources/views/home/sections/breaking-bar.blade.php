@@ -7,8 +7,8 @@
 @endphp
 
 @if ($breakingNews->isNotEmpty())
-    <section class="mt-4 rounded-[var(--adh-radius)] border border-adh-red/20 bg-adh-red/[0.03] px-4 py-4 dark:border-red-400/20 dark:bg-red-400/5 md:mt-6" aria-label="{{ __('Son Dakika') }}">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6">
+    <section class="mt-2 rounded-[var(--adh-radius)] border border-adh-red/20 bg-adh-red/[0.03] px-4 py-3 dark:border-red-400/20 dark:bg-red-400/5 md:mt-6 md:py-4" aria-label="{{ __('Son Dakika') }}">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:gap-6">
             <div class="shrink-0 border-l-4 border-adh-red pl-3 lg:w-52">
                 <p class="text-[10px] font-semibold uppercase tracking-[0.24em] text-adh-red">{{ __('Acil Gündem') }}</p>
                 <h2 class="mt-1 font-serif text-xl font-bold text-adh-text dark:text-gray-100">

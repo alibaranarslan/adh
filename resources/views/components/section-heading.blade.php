@@ -7,13 +7,13 @@
     'tag' => 'h2',
 ])
 
-<div class="mb-4 flex flex-col gap-3 border-b border-adh-border/80 pb-3 dark:border-gray-700 sm:mb-5 sm:flex-row sm:items-end sm:justify-between">
+<div class="mb-3 flex flex-col gap-2 border-b border-adh-border/80 pb-2.5 dark:border-gray-700 sm:mb-5 sm:flex-row sm:items-end sm:justify-between sm:pb-3">
     <div class="min-w-0">
         @if ($eyebrow)
             <p class="text-[10px] font-semibold uppercase tracking-[0.24em] text-adh-red sm:text-[11px]">{{ $eyebrow }}</p>
         @endif
 
-        <{{ $tag }} class="mt-1 text-balance font-serif text-xl font-bold text-adh-text dark:text-gray-100 md:text-[1.65rem]">
+        <{{ $tag }} class="mt-1 text-balance font-serif text-[1.22rem] font-bold leading-tight text-adh-text dark:text-gray-100 md:text-[1.65rem]">
             {{ $title }}
         </{{ $tag }}>
 

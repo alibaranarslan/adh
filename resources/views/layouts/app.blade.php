@@ -78,9 +78,9 @@
     @include('layouts.partials.header')
     @include('layouts.partials.breaking-bar')
     @include('layouts.partials.nav')
-    <x-ad-slot position="header" class="mx-auto mt-4 w-full max-w-7xl px-4" />
+    <x-ad-slot position="header" class="mx-auto mt-3 w-full max-w-7xl px-4 md:mt-4" />
 
-    <main id="main-content" tabindex="-1" class="mx-auto px-4 py-6 focus:outline-none" style="max-width: var(--adh-content-width);">
+    <main id="main-content" tabindex="-1" class="mx-auto px-4 py-0 focus:outline-none md:py-6" style="max-width: var(--adh-content-width);">
         @hasSection('hero')
             @yield('hero')
         @endif

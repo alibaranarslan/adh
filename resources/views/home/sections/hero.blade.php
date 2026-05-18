@@ -6,10 +6,10 @@
 @endphp
 
 @if ($heroMain && $heroStory)
-    <section class="mb-7 border-b-2 border-adh-text pb-7 dark:border-gray-700 md:mb-14 md:pb-12" aria-label="{{ __('Manşet Haberleri') }}">
+    <section class="mb-4 border-b-2 border-adh-text pb-4 dark:border-gray-700 md:mb-14 md:pb-12" aria-label="{{ __('Manşet Haberleri') }}">
         <x-section-heading :title="$title" :subtitle="$subtitle" eyebrow="{{ __('Bugünün Editör Seçimi') }}" />
 
-        <div class="grid grid-cols-1 gap-5 md:gap-8 lg:grid-cols-12 lg:items-start lg:gap-x-8">
+        <div class="grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-12 lg:items-start lg:gap-x-8">
             <div class="border-adh-border dark:border-gray-700 {{ $heroSide->isNotEmpty() ? 'lg:col-span-8 lg:border-r lg:pr-8' : 'lg:col-span-12' }}">
                 <a href="{{ $heroStory['url'] }}" class="group block">
                     <div class="relative overflow-hidden rounded-[var(--adh-radius)] bg-adh-navy shadow-[var(--adh-shadow)]">
@@ -48,13 +48,13 @@
             </div>
 
             @if ($heroSide->isNotEmpty())
-            <div class="clear-both mt-5 lg:col-span-4 lg:mt-0 lg:self-start lg:pl-8">
-                <div class="relative z-0 rounded-[var(--adh-radius)] border border-adh-border/80 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-adh-blue/80">
+            <div class="clear-both mt-4 lg:col-span-4 lg:mt-0 lg:self-start lg:pl-8">
+                <div class="relative z-0 rounded-[var(--adh-radius)] border border-adh-border/80 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-adh-blue/80 md:p-4">
                     <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-adh-red">{{ __('Hızlı Gündem Akışı') }}</p>
-                    <div class="mt-3 divide-y divide-adh-border dark:divide-gray-700">
+                    <div class="mt-2 divide-y divide-adh-border dark:divide-gray-700 md:mt-3">
                         @foreach ($heroSide as $article)
                             @php $sideStory = \App\Support\NewsPresenter::present($article, 'thumb'); @endphp
-                            <article class="group py-3 first:pt-0 last:pb-0">
+                            <article class="group py-2.5 first:pt-0 last:pb-0 md:py-3">
                                 <div class="flex items-start gap-3">
                                     <div class="min-w-0 flex-1">
                                         @if ($sideStory['category_name'])
