@@ -122,4 +122,67 @@ class HomeModuleDataServiceTest extends TestCase
 
         $this->assertSame('ads', $sections[0]['key'] ?? null);
     }
+
+    public function test_breaking_news_fallback_prefers_latest_articles_with_real_images(): void
+    {
+        $category = Category::create([
+            'name' => ['tr' => 'Asayis'],
+            'slug' => 'asayis',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        NewsArticle::create([
+            'title' => ['tr' => 'Hero Haber'],
+            'slug' => 'hero-haber',
+            'summary' => ['tr' => 'Hero ozet'],
+            'content' => ['tr' => 'Hero detay'],
+            'featured_image' => '/images/hero.jpg',
+            'source' => 'manuel',
+            'category_id' => $category->id,
+            'status' => 'published',
+            'published_at' => now()->subMinutes(20),
+            'editorial_score' => 500,
+        ]);
+
+        for ($i = 1; $i <= 6; $i++) {
+            NewsArticle::create([
+                'title' => ['tr' => 'Gorselsiz Eski Haber '.$i],
+                'slug' => 'gorselsiz-eski-haber-'.$i,
+                'summary' => ['tr' => 'Ozet '.$i],
+                'content' => ['tr' => 'Detay '.$i],
+                'source' => 'manuel',
+                'category_id' => $category->id,
+                'status' => 'published',
+                'published_at' => now()->subDays($i),
+                'editorial_score' => 400 - $i,
+            ]);
+        }
+
+        for ($i = 1; $i <= 4; $i++) {
+            NewsArticle::create([
+                'title' => ['tr' => 'Gorselli Son Haber '.$i],
+                'slug' => 'gorselli-son-haber-'.$i,
+                'summary' => ['tr' => 'Ozet '.$i],
+                'content' => ['tr' => 'Detay '.$i],
+                'featured_image' => '/images/latest-'.$i.'.jpg',
+                'source' => 'manuel',
+                'category_id' => $category->id,
+                'status' => 'published',
+                'published_at' => now()->subMinutes($i),
+                'editorial_score' => 10,
+            ]);
+        }
+
+        $layoutState = app(LayoutConfigService::class)->getDraftState();
+        $payload = app(HomeModuleDataService::class)->collect($layoutState);
+
+        $this->assertGreaterThanOrEqual(4, $payload['breakingNews']->count());
+        $this->assertTrue(
+            $payload['breakingNews']
+                ->take(4)
+                ->every(fn (NewsArticle $article): bool => filled($article->featured_image))
+        );
+        $this->assertSame('gorselli-son-haber-1', $payload['breakingNews']->first()->slug);
+    }
 }

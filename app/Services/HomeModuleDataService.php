@@ -116,16 +116,42 @@ class HomeModuleDataService
             ->take((int) data_get($moduleMap, 'latest_news.settings.content_limit', 8))
             ->get();
 
+        $breakingLimit = min(6, (int) data_get($moduleMap, 'breaking_bar.settings.content_limit', 6));
+
         $breakingNews = NewsArticle::published()
             ->breaking()
             ->with('category')
             ->whereNotIn('id', $heroIds)
             ->latest('published_at')
-            ->take(min(6, (int) data_get($moduleMap, 'breaking_bar.settings.content_limit', 6)))
+            ->take($breakingLimit)
             ->get();
 
-        if ($breakingNews->isEmpty()) {
-            $breakingNews = $heroSide->take(3);
+        if ($breakingNews->count() < $breakingLimit) {
+            $breakingNews = $breakingNews
+                ->merge(
+                    NewsArticle::published()
+                        ->with('category')
+                        ->whereNotIn('id', array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
+                        ->whereNotNull('featured_image')
+                        ->where('featured_image', '!=', '')
+                        ->latest('published_at')
+                        ->take($breakingLimit - $breakingNews->count())
+                        ->get()
+                )
+                ->values();
+        }
+
+        if ($breakingNews->count() < $breakingLimit) {
+            $breakingNews = $breakingNews
+                ->merge(
+                    NewsArticle::published()
+                        ->with('category')
+                        ->whereNotIn('id', array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
+                        ->latest('published_at')
+                        ->take($breakingLimit - $breakingNews->count())
+                        ->get()
+                )
+                ->values();
         }
 
         $categories = Category::active()
