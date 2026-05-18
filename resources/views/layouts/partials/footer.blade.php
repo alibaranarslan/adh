@@ -10,15 +10,15 @@
     );
 @endphp
 
-<footer class="mt-8 border-t-2 border-adh-red bg-adh-blue text-white dark:bg-adh-navy md:mt-12 md:border-t-4">
-    <div class="mx-auto max-w-7xl px-4 py-5 md:py-8">
-        <div class="grid grid-cols-1 gap-5 border-b border-white/10 pb-5 md:grid-cols-2 md:gap-7 md:pb-7 lg:grid-cols-[1.25fr_0.8fr_0.8fr_1fr]">
+<footer class="mt-5 border-t-2 border-adh-red bg-adh-blue text-white dark:bg-adh-navy md:mt-8 md:border-t-4">
+    <div class="mx-auto max-w-7xl px-4 py-4 md:py-5">
+        <div class="grid grid-cols-1 gap-4 border-b border-white/10 pb-4 md:grid-cols-2 md:gap-5 md:pb-5 lg:grid-cols-[1.15fr_0.75fr_0.75fr_1fr]">
             <div>
-                <a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="mb-3 block md:mb-4">
+                <a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="mb-2 block md:mb-3">
                     <img
                         src="{{ $branding['logo_dark_url'] ?? asset('images/branding/adh-logo-dark.svg') }}"
                         alt="{{ $siteName }}"
-                        class="h-9 w-auto md:h-11"
+                        class="h-8 w-auto md:h-9"
                     >
                 </a>
 
@@ -27,16 +27,16 @@
                 @endif
 
                 @if ($footerDescription)
-                    <p class="line-clamp-3 max-w-sm text-xs leading-5 text-gray-300 md:text-sm md:leading-6">
+                    <p class="line-clamp-2 max-w-sm text-xs leading-5 text-gray-300 md:text-sm md:leading-5">
                         {{ $footerDescription }}
                     </p>
                 @endif
 
                 @if (! empty($socialLinks))
-                    <div class="mt-3 flex flex-wrap gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] md:gap-2 md:text-xs">
+                    <div class="mt-2 flex flex-wrap gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] md:text-[11px]">
                         @foreach ($socialLinks as $platform => $url)
                             @if ($url)
-                                <a href="{{ $url }}" target="_blank" rel="noopener" class="rounded bg-white/10 px-2.5 py-1.5 transition-colors hover:bg-adh-red md:px-3">
+                                <a href="{{ $url }}" target="_blank" rel="noopener" class="rounded bg-white/10 px-2.5 py-1 transition-colors hover:bg-adh-red">
                                     {{ $platform }}
                                 </a>
                             @endif
@@ -71,7 +71,7 @@
 
             <div>
                 <h5 class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-300 md:mb-3">{{ __('Okur Hattı') }}</h5>
-                <ul class="mb-3 space-y-1.5 text-xs leading-5 text-gray-300 md:text-sm md:leading-6">
+                <ul class="mb-2 space-y-1 text-xs leading-5 text-gray-300 md:text-sm md:leading-5">
                     <li>{{ $resolvedAddress }}</li>
                     @if(data_get($siteSettings, 'contact_phone'))
                         <li><a href="tel:{{ data_get($siteSettings, 'contact_phone') }}" class="transition-colors hover:text-adh-red-light">{{ data_get($siteSettings, 'contact_phone') }}</a></li>
@@ -81,7 +81,7 @@
                     @endif
                 </ul>
 
-                <p class="mb-3 hidden rounded border border-white/10 bg-white/5 p-3 text-xs leading-5 text-gray-300 md:block">
+                <p class="mb-2 hidden rounded border border-white/10 bg-white/5 p-2 text-xs leading-5 text-gray-300 lg:block">
                     {{ __('Haber ihbarı, düzeltme talepleri ve kurumsal iletişim için redaksiyon ekibine ulaşabilirsiniz.') }}
                 </p>
 
@@ -139,7 +139,7 @@
             </div>
         </div>
 
-        <div class="flex flex-col items-start justify-between gap-2 pt-4 text-[11px] leading-5 text-gray-400 md:flex-row md:items-center md:text-xs">
+        <div class="flex flex-col items-start justify-between gap-2 pt-3 text-[11px] leading-5 text-gray-400 md:flex-row md:items-center md:text-xs">
             <p>© {{ date('Y') }} {{ $siteName }} — {{ __('Tüm hakları saklıdır.') }}</p>
             <p class="flex flex-wrap items-center gap-1">
                 <span>{{ __('İHA İş Birliği') }}</span>

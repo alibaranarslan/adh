@@ -392,6 +392,74 @@ class PublicPagesTest extends TestCase
             ->assertDontSee('src="/"', false);
     }
 
+    public function test_empty_home_ad_slots_render_professional_house_ads_when_enabled(): void
+    {
+        Setting::set('general', 'contact_phone', '0416 000 00 00');
+        Setting::set('advertising', 'house_ads_enabled', '1');
+
+        $category = Category::create([
+            'name' => ['tr' => 'Gundem'],
+            'slug' => 'gundem',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        NewsArticle::create([
+            'title' => ['tr' => 'Reklam dolgu ana sayfa'],
+            'slug' => 'reklam-dolgu-ana-sayfa',
+            'summary' => ['tr' => 'Ozet bilgi'],
+            'content' => ['tr' => 'Detayli haber icerigi'],
+            'featured_image' => '/images/test-news.jpg',
+            'source' => 'manuel',
+            'category_id' => $category->id,
+            'status' => 'published',
+            'published_at' => now(),
+            'editorial_score' => 80,
+            'city_slug' => 'adiyaman',
+            'city_code' => 3,
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Buraya reklam verebilirsiniz')
+            ->assertSee('Reklam Alanı')
+            ->assertSee('İletişim: 0416 000 00 00')
+            ->assertSee('tel:0416000000', false)
+            ->assertDontSee('data-impression-url="', false);
+    }
+
+    public function test_empty_home_ad_slots_are_hidden_when_house_ads_are_disabled(): void
+    {
+        Setting::set('advertising', 'house_ads_enabled', '0');
+
+        $category = Category::create([
+            'name' => ['tr' => 'Gundem'],
+            'slug' => 'gundem',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        NewsArticle::create([
+            'title' => ['tr' => 'Reklam dolgu kapali ana sayfa'],
+            'slug' => 'reklam-dolgu-kapali-ana-sayfa',
+            'summary' => ['tr' => 'Ozet bilgi'],
+            'content' => ['tr' => 'Detayli haber icerigi'],
+            'featured_image' => '/images/test-news.jpg',
+            'source' => 'manuel',
+            'category_id' => $category->id,
+            'status' => 'published',
+            'published_at' => now(),
+            'editorial_score' => 80,
+            'city_slug' => 'adiyaman',
+            'city_code' => 3,
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertDontSee('Buraya reklam verebilirsiniz')
+            ->assertDontSee('Reklam Alanı');
+    }
+
     public function test_manual_banner_renders_mobile_source_when_mobile_image_is_available(): void
     {
         $category = Category::create([
@@ -622,7 +690,8 @@ class PublicPagesTest extends TestCase
             ->assertOk()
             ->assertSee('Tek haberli ana sayfa')
             ->assertDontSee('Hızlı Gündem Akışı')
-            ->assertDontSee('Sponsorlu Alanlar')
+            ->assertSee('Sponsorlu Alanlar')
+            ->assertSee('Buraya reklam verebilirsiniz')
             ->assertDontSee('Article Detail Only Reklami');
     }
 
@@ -642,9 +711,10 @@ class PublicPagesTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('adh_site_cookie_consent', false)
-            ->assertSee('max-h-[34dvh]', false)
-            ->assertSee('md:max-h-[min(70dvh,calc(100dvh-2rem))]', false)
-            ->assertSee('overflow-y-auto', false)
-            ->assertSee('sticky -top-3', false);
+            ->assertSee('inset-x-2 bottom-2', false)
+            ->assertSee('md:max-w-sm', false)
+            ->assertSee('grid grid-cols-3', false)
+            ->assertDontSee('max-h-[34dvh]', false)
+            ->assertDontSee('sticky -top-3', false);
     }
 }

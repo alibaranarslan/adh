@@ -1,4 +1,4 @@
-﻿@props(['position', 'class' => ''])
+@props(['position', 'class' => ''])
 
 @php
     $slotMeta = \App\Support\AdvertisementPlacement::placementMeta($position);
@@ -17,6 +17,21 @@
     $linkUrl = filled($ad?->link_url) ? $ad->link_url : null;
     $pictureClass = 'block w-full overflow-hidden rounded-lg aspect-[var(--adh-ad-mobile-aspect-ratio)] md:aspect-[var(--adh-ad-aspect-ratio)] max-h-[var(--adh-ad-mobile-max-height)] md:max-h-[var(--adh-ad-max-height)]';
     $imageClass = 'h-full w-full rounded-lg object-contain';
+
+    $houseAdsEnabled = filter_var(
+        \App\Models\Setting::get('advertising', 'house_ads_enabled', '1'),
+        FILTER_VALIDATE_BOOL,
+        FILTER_NULL_ON_FAILURE
+    ) ?? true;
+    $canShowHouseAd = $houseAdsEnabled && in_array($position, \App\Support\AdvertisementPlacement::houseAdPositions(), true);
+    $contactPhone = trim((string) \App\Models\Setting::get('general', 'contact_phone', ''));
+    $contactEmail = trim((string) \App\Models\Setting::get('general', 'contact_email', ''));
+    $contactUrl = filled($contactPhone)
+        ? 'tel:'.preg_replace('/\s+/', '', $contactPhone)
+        : (filled($contactEmail) ? 'mailto:'.$contactEmail : \App\Support\LocalizedUrl::route('contact'));
+    $contactLabel = filled($contactPhone)
+        ? __('İletişim: :value', ['value' => $contactPhone])
+        : (filled($contactEmail) ? __('İletişim: :value', ['value' => $contactEmail]) : __('İletişim sayfası'));
 @endphp
 
 @if($ad)
@@ -108,4 +123,21 @@
         });
     </script>
 @endonce
+@elseif($canShowHouseAd)
+    <aside
+        class="adh-house-ad {{ $class }}"
+        data-position="{{ $position }}"
+        aria-label="{{ __('Reklam alanı') }}"
+    >
+        <div class="adh-house-ad__inner">
+            <span class="adh-house-ad__label">{{ __('Reklam Alanı') }}</span>
+            <div class="adh-house-ad__copy">
+                <strong>{{ __('Buraya reklam verebilirsiniz') }}</strong>
+                <span>{{ __('Adıyaman Dijital Haber’de işletmenizi görünür kılın.') }}</span>
+            </div>
+            <a href="{{ $contactUrl }}" class="adh-house-ad__cta">
+                {{ $contactLabel }}
+            </a>
+        </div>
+    </aside>
 @endif

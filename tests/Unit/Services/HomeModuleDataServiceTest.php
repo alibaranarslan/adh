@@ -5,6 +5,7 @@ namespace Tests\Unit\Services;
 use App\Models\Advertisement;
 use App\Models\Category;
 use App\Models\NewsArticle;
+use App\Models\Setting;
 use App\Services\HomeModuleDataService;
 use App\Services\LayoutConfigService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -50,6 +51,8 @@ class HomeModuleDataServiceTest extends TestCase
 
     public function test_ads_section_is_hidden_when_active_ads_are_not_rendered_positions(): void
     {
+        Setting::set('advertising', 'house_ads_enabled', '0');
+
         Advertisement::query()->create([
             'name' => 'Footer Only',
             'position' => 'footer',

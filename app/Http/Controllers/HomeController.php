@@ -74,12 +74,13 @@ class HomeController extends Controller
         $breakingNews = NewsArticle::published()
             ->breaking()
             ->with('category')
+            ->whereNotIn('id', $heroIds)
             ->latest('published_at')
-            ->take(10)
+            ->take(6)
             ->get();
 
         if ($breakingNews->isEmpty()) {
-            $breakingNews = collect([$heroMain])->filter()->merge($heroSide->take(3));
+            $breakingNews = $heroSide->take(3);
         }
 
         $categories = Category::active()

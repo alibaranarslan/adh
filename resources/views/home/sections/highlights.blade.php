@@ -5,10 +5,10 @@
 @endphp
 
 @if ($highlights->isNotEmpty())
-    <section class="border-b border-adh-border py-6 dark:border-gray-700">
+    <section class="border-b border-adh-border py-4 dark:border-gray-700 md:py-5">
         <x-section-heading :title="$title" :subtitle="$subtitle" eyebrow="{{ __('Editör Radarında') }}" />
 
-        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             @foreach ($highlights as $article)
                 <x-news-card :article="$article" />
             @endforeach

@@ -15,6 +15,7 @@ use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -54,6 +55,7 @@ class GeneralSettings extends Page implements HasForms
             'address' => LocalizedSettings::decodeText(Setting::get('general', 'address', '')),
             'social_links' => json_decode(Setting::get('social', 'links', '[]'), true) ?? [],
             'archive_active_days' => (int) Setting::get('general', 'archive_active_days', 90),
+            'house_ads_enabled' => filter_var(Setting::get('advertising', 'house_ads_enabled', '1'), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) ?? true,
         ];
 
         $this->form->fill($this->data);
@@ -139,6 +141,18 @@ class GeneralSettings extends Page implements HasForms
                         ->content('K24: Haberler süresiz saklanır. Sistem yalnızca aktif süre eşiğini aşan içerikleri arşive taşır; kalıcı silme yapmaz.'),
                 ])->columns(2),
 
+            Section::make('Reklam Dolgu Alanları')
+                ->description('Gerçek reklam yoksa public yüzeyde profesyonel "Buraya reklam verebilirsiniz" alanları gösterilir.')
+                ->schema([
+                    Toggle::make('house_ads_enabled')
+                        ->label('Boş reklam alanlarını satış çağrısıyla doldur')
+                        ->helperText('Header, ana sayfa sponsorlu alanları ve footer için geçerlidir. Haber detayının üst reklam alanı okuma deneyimini bozmasın diye dolgu göstermez.')
+                        ->default(true),
+                    Placeholder::make('house_ads_contact_note')
+                        ->label('İletişim kaynağı')
+                        ->content('Dolgu alanlarında Genel Ayarlar > Telefon değeri kullanılır. Telefon yoksa e-posta, o da yoksa iletişim sayfası bağlantısı gösterilir.'),
+                ])->columns(2),
+
             Section::make('Sosyal Medya')
                 ->description('Kaydedilen bağlantılar header ve footer sosyal ikonlarını besler.')
                 ->schema([
@@ -178,6 +192,7 @@ class GeneralSettings extends Page implements HasForms
         Setting::set('general', 'address', LocalizedSettings::encodeText($data['address'] ?? []));
         Setting::set('social', 'links', json_encode($data['social_links'] ?? [], JSON_UNESCAPED_UNICODE));
         Setting::set('general', 'archive_active_days', $data['archive_active_days'] ?? 90);
+        Setting::set('advertising', 'house_ads_enabled', ! empty($data['house_ads_enabled']) ? '1' : '0');
 
         Notification::make()->success()->title('Ayarlar kaydedildi')->send();
     }

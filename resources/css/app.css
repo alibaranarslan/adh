@@ -213,6 +213,124 @@
 }
 
 @layer components {
+  .adh-house-ad {
+    display: block;
+    border: 1px dashed rgba(153, 27, 27, 0.28);
+    border-radius: var(--adh-radius);
+    background:
+      linear-gradient(135deg, rgba(153, 27, 27, 0.06), rgba(255, 255, 255, 0.92)),
+      repeating-linear-gradient(135deg, rgba(153, 27, 27, 0.06) 0 1px, transparent 1px 14px);
+    color: #111827;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  }
+
+  .adh-house-ad__inner {
+    display: flex;
+    min-height: 5rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .adh-house-ad__label {
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: rgba(153, 27, 27, 0.1);
+    padding: 0.35rem 0.65rem;
+    color: #991b1b;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .adh-house-ad__copy {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .adh-house-ad__copy strong,
+  .adh-house-ad__copy span {
+    display: block;
+  }
+
+  .adh-house-ad__copy strong {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1rem;
+    line-height: 1.15;
+  }
+
+  .adh-house-ad__copy span {
+    margin-top: 0.15rem;
+    color: #64748b;
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  .adh-house-ad__cta {
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: #991b1b;
+    padding: 0.55rem 0.8rem;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    transition: background-color 0.2s ease;
+  }
+
+  .adh-house-ad__cta:hover {
+    background: #7f1d1d;
+  }
+
+  html.dark .adh-house-ad {
+    border-color: rgba(248, 113, 113, 0.3);
+    background:
+      linear-gradient(135deg, rgba(248, 113, 113, 0.11), rgba(15, 23, 42, 0.9)),
+      repeating-linear-gradient(135deg, rgba(248, 113, 113, 0.06) 0 1px, transparent 1px 14px);
+    color: #f8fafc;
+  }
+
+  html.dark .adh-house-ad__label {
+    background: rgba(248, 113, 113, 0.12);
+    color: #fca5a5;
+  }
+
+  html.dark .adh-house-ad__copy span {
+    color: #cbd5e1;
+  }
+
+  @media (max-width: 767px) {
+    .adh-house-ad__inner {
+      min-height: 4rem;
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.75rem;
+    }
+
+    .adh-house-ad__label {
+      padding: 0.3rem 0.55rem;
+      font-size: 0.56rem;
+    }
+
+    .adh-house-ad__copy strong {
+      font-size: 0.9rem;
+    }
+
+    .adh-house-ad__copy span {
+      font-size: 0.72rem;
+    }
+
+    .adh-house-ad__cta {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      text-align: center;
+      font-size: 0.7rem;
+    }
+  }
+
   .adh-theme-banner {
     position: relative;
     overflow: hidden;

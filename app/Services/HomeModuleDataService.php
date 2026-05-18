@@ -119,12 +119,13 @@ class HomeModuleDataService
         $breakingNews = NewsArticle::published()
             ->breaking()
             ->with('category')
+            ->whereNotIn('id', $heroIds)
             ->latest('published_at')
-            ->take((int) data_get($moduleMap, 'breaking_bar.settings.content_limit', 10))
+            ->take(min(6, (int) data_get($moduleMap, 'breaking_bar.settings.content_limit', 6)))
             ->get();
 
         if ($breakingNews->isEmpty()) {
-            $breakingNews = collect([$heroMain])->filter()->merge($heroSide->take(3));
+            $breakingNews = $heroSide->take(3);
         }
 
         $categories = Category::active()
@@ -195,7 +196,7 @@ class HomeModuleDataService
             'latest_news' => ($data['latestNews'] ?? collect())->isNotEmpty(),
             'category_shortcuts' => ($data['categories'] ?? collect())->isNotEmpty(),
             'sidebar_widgets' => true,
-            'ads' => $this->hasRenderableAds($data['ads'] ?? collect()),
+            'ads' => $this->hasRenderableAds($data['ads'] ?? collect()) || $this->houseAdsEnabled(),
             'breaking_bar' => ($data['breakingNews'] ?? collect())->isNotEmpty(),
             default => true,
         };
@@ -215,6 +216,15 @@ class HomeModuleDataService
                 return ($ads->get($position) ?? collect())
                     ->contains(fn (Advertisement $ad): bool => $ad->isRenderable($adsenseClientId));
             });
+    }
+
+    private function houseAdsEnabled(): bool
+    {
+        return filter_var(
+            Setting::get('advertising', 'house_ads_enabled', '1'),
+            FILTER_VALIDATE_BOOL,
+            FILTER_NULL_ON_FAILURE
+        ) ?? true;
     }
 
     private function diversifyByCategory(Collection $pool, int $limit, int $maxPerCategory = 2): Collection

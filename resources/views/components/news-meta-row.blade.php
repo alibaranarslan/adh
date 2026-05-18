@@ -2,7 +2,7 @@
     'article',
     'compact' => false,
     'showSource' => false,
-    'showViews' => false,
+    'showViews' => true,
     'showReadTime' => true,
     'showFreshness' => true,
 ])

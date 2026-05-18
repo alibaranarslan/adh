@@ -4,7 +4,7 @@
     $story = \App\Support\NewsPresenter::present($article, 'thumb');
 @endphp
 
-<article class="group py-2.5 md:py-3">
+<article class="group py-2 md:py-2.5">
     @if ($story['category_name'])
         <span class="text-[10px] font-bold uppercase tracking-wider leading-none text-adh-red">
             {{ $story['category_name'] }}
@@ -18,7 +18,7 @@
     </h3>
 
     @if ($showSummary && $story['summary'])
-        <p class="mt-1 line-clamp-2 text-xs text-adh-gray dark:text-gray-400">{{ $story['summary'] }}</p>
+        <p class="mt-1 line-clamp-2 text-xs leading-5 text-adh-gray dark:text-gray-400">{{ $story['summary'] }}</p>
     @endif
 
     <div class="mt-1">

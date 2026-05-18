@@ -10,9 +10,9 @@
         'contrast' => 'border-y border-adh-border bg-slate-100/80 dark:border-gray-700 dark:bg-slate-950/35',
     ];
     $paddingClasses = [
-        'compact' => 'py-2.5 md:py-2',
-        'regular' => 'py-3 md:py-2.5',
-        'relaxed' => 'py-3.5 md:py-4 lg:py-5',
+        'compact' => 'py-2 md:py-1.5',
+        'regular' => 'py-2.5 md:py-2',
+        'relaxed' => 'py-3 md:py-3.5 lg:py-4',
     ];
     $containerClasses = [
         'content' => 'mx-auto w-full max-w-7xl px-4 sm:px-6',
@@ -92,7 +92,7 @@
 @endsection
 
 @section('fullwidth')
-    <div class="space-y-3 md:space-y-3">
+    <div class="space-y-2.5 md:space-y-2.5">
         @if ($showFallbackNotice ?? false)
             @include('home.sections.fallback-notice')
         @endif

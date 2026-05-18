@@ -2,22 +2,21 @@
     $locale = app()->getLocale();
     $title = data_get($settings, "title_override.$locale") ?: __('Son Dakika');
     $subtitle = data_get($settings, "subtitle_override.$locale");
-    $breakingCount = $breakingNews->count();
-    $itemsWrapperClass = 'w-full';
+    $items = $breakingNews->take(6);
 @endphp
 
-@if ($breakingNews->isNotEmpty())
-    <section class="mt-0 rounded-[var(--adh-radius)] border border-adh-red/20 bg-gradient-to-b from-adh-red/[0.045] to-white px-4 py-3 dark:border-red-400/20 dark:from-red-400/10 dark:to-adh-blue/60 md:bg-adh-red/[0.03] md:py-3 md:dark:bg-red-400/5" aria-label="{{ __('Son Dakika') }}">
+@if ($items->isNotEmpty())
+    <section class="rounded-[var(--adh-radius)] border border-adh-red/20 bg-gradient-to-b from-adh-red/[0.04] to-white px-3 py-3 dark:border-red-400/20 dark:from-red-400/10 dark:to-adh-blue/60 md:px-4" aria-label="{{ __('Son Dakika') }}">
         <div class="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-adh-red md:hidden">
             <span class="h-px flex-1 bg-adh-red/25" aria-hidden="true"></span>
             <span>{{ __('Gündem akışının devamı') }}</span>
             <span class="h-px flex-1 bg-adh-red/25" aria-hidden="true"></span>
         </div>
 
-        <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-2.5">
             <div class="flex flex-col border-l-4 border-adh-red pl-3 sm:flex-row sm:items-end sm:gap-3">
                 <p class="text-[10px] font-semibold uppercase tracking-[0.24em] text-adh-red">{{ __('Acil Gündem') }}</p>
-                <h2 class="mt-1 font-serif text-lg font-bold leading-tight text-adh-text dark:text-gray-100 sm:mt-0 md:text-xl">
+                <h2 class="mt-0.5 font-serif text-lg font-bold leading-tight text-adh-text dark:text-gray-100 sm:mt-0 md:text-xl">
                     {{ $title }}
                 </h2>
 
@@ -26,39 +25,47 @@
                 @endif
             </div>
 
-            <div class="{{ $itemsWrapperClass }}">
-                <div class="grid grid-cols-1 gap-2 md:[grid-template-columns:repeat(auto-fit,minmax(16rem,1fr))] xl:[grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))]">
-                    @foreach ($breakingNews as $article)
-                        @php $story = \App\Support\NewsPresenter::present($article, 'thumb'); @endphp
-                        <a
-                            href="{{ $story['url'] }}"
-                            class="group flex min-h-[4.5rem] items-center gap-3 overflow-hidden rounded-[var(--adh-radius)] border border-adh-red/15 bg-white/90 p-2.5 text-adh-text transition hover:border-adh-red hover:shadow-sm dark:border-red-400/10 dark:bg-adh-blue/80 dark:text-gray-100 md:p-3"
-                        >
+            <div class="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+                @foreach ($items as $article)
+                    @php $story = \App\Support\NewsPresenter::present($article, 'thumb'); @endphp
+                    <a
+                        href="{{ $story['url'] }}"
+                        class="group flex min-h-[3.8rem] items-center gap-2.5 overflow-hidden rounded-[var(--adh-radius)] border border-adh-red/15 bg-white/92 p-2 text-adh-text transition hover:border-adh-red hover:shadow-sm dark:border-red-400/10 dark:bg-adh-blue/80 dark:text-gray-100 md:min-h-[4.25rem] md:p-2.5"
+                    >
+                        @if ($story['has_image'])
                             <span class="shrink-0 overflow-hidden rounded-[calc(var(--adh-radius)*0.75)] bg-slate-100 ring-1 ring-adh-border/70 dark:bg-slate-800 dark:ring-gray-700">
                                 <img
                                     src="{{ $story['image_url'] }}"
                                     alt="{{ $story['title'] }}"
                                     width="120"
                                     height="120"
-                                    class="h-14 w-14 object-cover transition-transform duration-300 group-hover:scale-105 md:h-16 md:w-16"
+                                    class="h-12 w-12 object-cover transition-transform duration-300 group-hover:scale-105 md:h-14 md:w-14"
                                     loading="lazy"
                                 >
                             </span>
-
-                            <span class="adh-visual-news-text adh-visual-news-text--breaking">
-                                @if ($story['category_name'])
-                                    <span class="block text-[9px] font-bold uppercase tracking-[0.16em] text-adh-red">
-                                        {{ $story['category_name'] }}
-                                    </span>
-                                @endif
-
-                                <span class="mt-0.5 block line-clamp-2 whitespace-normal break-words text-sm font-semibold leading-5 transition-colors group-hover:text-adh-red md:text-[15px]">
-                                    {{ $story['title'] }}
-                                </span>
+                        @else
+                            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[calc(var(--adh-radius)*0.75)] border border-adh-red/20 bg-adh-red/10 px-1 text-center text-[9px] font-black uppercase leading-tight tracking-[0.12em] text-adh-red dark:border-red-400/25 dark:bg-red-400/10 dark:text-red-300 md:h-14 md:w-14">
+                                {{ $story['category_name'] ?: __('Haber') }}
                             </span>
-                        </a>
-                    @endforeach
-                </div>
+                        @endif
+
+                        <span class="adh-visual-news-text adh-visual-news-text--breaking">
+                            @if ($story['category_name'])
+                                <span class="block text-[9px] font-bold uppercase tracking-[0.16em] text-adh-red">
+                                    {{ $story['category_name'] }}
+                                </span>
+                            @endif
+
+                            <span class="mt-0.5 block line-clamp-2 whitespace-normal break-words text-[13px] font-semibold leading-5 transition-colors group-hover:text-adh-red md:text-sm">
+                                {{ $story['title'] }}
+                            </span>
+
+                            <span class="mt-0.5 block">
+                                <x-news-meta-row :article="$article" compact :show-freshness="false" />
+                            </span>
+                        </span>
+                    </a>
+                @endforeach
             </div>
         </div>
     </section>

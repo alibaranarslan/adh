@@ -4,14 +4,14 @@
     $story = \App\Support\NewsPresenter::present($article, 'thumb');
 @endphp
 
-<article class="group -mx-2 flex items-start gap-3 rounded px-2 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-adh-navy/40">
+<article class="group -mx-2 flex items-start gap-3 rounded px-2 py-2.5 transition-colors hover:bg-gray-50 dark:hover:bg-adh-navy/40">
     <a href="{{ $story['url'] }}" class="shrink-0 overflow-hidden rounded">
         <img
             src="{{ $story['image_url'] }}"
             alt="{{ $story['title'] }}"
             width="224"
             height="160"
-            class="h-[72px] w-24 object-cover transition-transform duration-200 group-hover:scale-105 sm:h-20 sm:w-28"
+            class="h-16 w-20 object-cover transition-transform duration-200 group-hover:scale-105 sm:h-[72px] sm:w-24"
             loading="lazy"
         >
     </a>

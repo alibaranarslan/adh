@@ -14,6 +14,8 @@ class NewsPresenter
         $updatedAt = self::resolveDate(data_get($article, 'updated_at'));
         $readTime = max(1, (int) data_get($article, 'read_time', 1));
 
+        $hasImage = self::hasArticleImage($article);
+
         return [
             'url' => filled(data_get($article, 'slug'))
                 ? LocalizedUrl::route('news.show', ['slug' => data_get($article, 'slug')], $locale)
@@ -21,6 +23,8 @@ class NewsPresenter
             'title' => (string) data_get($article, 'title', ''),
             'summary' => trim((string) data_get($article, 'summary', '')),
             'image_url' => self::imageUrl($article, $imageConversion),
+            'has_image' => $hasImage,
+            'uses_placeholder_image' => ! $hasImage,
             'category_name' => data_get($article, 'category.name') ?: data_get($article, 'category'),
             'published_at' => $publishedAt,
             'published_iso' => $publishedAt?->toIso8601String(),
@@ -51,6 +55,19 @@ class NewsPresenter
             ?: data_get($article, 'image');
 
         return $image ?: asset('images/news/placeholder-news.jpg');
+    }
+
+    private static function hasArticleImage(mixed $article): bool
+    {
+        if (is_object($article) && method_exists($article, 'getFirstMediaUrl')) {
+            $mediaUrl = $article->getFirstMediaUrl('featured_image');
+
+            if (filled($mediaUrl)) {
+                return true;
+            }
+        }
+
+        return filled(data_get($article, 'featured_image')) || filled(data_get($article, 'image'));
     }
 
     private static function resolveDate(mixed $value): ?CarbonInterface

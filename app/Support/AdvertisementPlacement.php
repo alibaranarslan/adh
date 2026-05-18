@@ -140,4 +140,22 @@ final class AdvertisementPlacement
             'sidebar-bottom',
         ];
     }
+
+    /**
+     * Positions that may show a public house-ad when no paid creative exists.
+     *
+     * Article detail slots stay real-ad-only so the reading experience is not
+     * pushed down by unsold inventory.
+     *
+     * @return array<int, string>
+     */
+    public static function houseAdPositions(): array
+    {
+        return [
+            'between-news',
+            'sidebar-top',
+            'sidebar-bottom',
+            'footer',
+        ];
+    }
 }

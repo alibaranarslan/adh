@@ -18,21 +18,21 @@
         </div>
     </a>
 
-    <div class="space-y-1.5 p-3 md:space-y-2 md:p-4">
+    <div class="space-y-1.5 p-3 md:space-y-1.5 md:p-3.5">
         @if ($story['category_name'])
             <span class="text-[10px] font-bold uppercase tracking-wider text-adh-red">
                 {{ $story['category_name'] }}
             </span>
         @endif
 
-        <h3 class="line-clamp-2 font-serif text-base font-bold leading-snug text-adh-text dark:text-gray-100">
+        <h3 class="line-clamp-2 font-serif text-[15px] font-bold leading-snug text-adh-text dark:text-gray-100 md:text-base">
             <a href="{{ $story['url'] }}" class="transition-colors hover:text-adh-red dark:hover:text-adh-red-light">
                 {{ $story['title'] }}
             </a>
         </h3>
 
         @if ($story['summary'])
-            <p class="hidden line-clamp-2 text-sm text-adh-gray dark:text-gray-400 sm:block">{{ $story['summary'] }}</p>
+            <p class="hidden line-clamp-2 text-[13px] leading-5 text-adh-gray dark:text-gray-400 sm:block">{{ $story['summary'] }}</p>
         @endif
 
         <x-news-meta-row :article="$article" compact />
