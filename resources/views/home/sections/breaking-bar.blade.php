@@ -27,13 +27,35 @@
             </div>
 
             <div class="{{ $itemsWrapperClass }}">
-                <div class="grid grid-cols-1 gap-2 md:[grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))]">
+                <div class="grid grid-cols-1 gap-2 md:[grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))]">
                     @foreach ($breakingNews as $article)
+                        @php $story = \App\Support\NewsPresenter::present($article, 'thumb'); @endphp
                         <a
-                            href="{{ \App\Support\LocalizedUrl::route('news.show', ['slug' => $article->slug]) }}"
-                            class="rounded-[var(--adh-radius)] border border-adh-red/15 bg-white/90 px-3 py-2.5 text-sm font-semibold leading-6 text-adh-text transition hover:border-adh-red hover:text-adh-red dark:border-red-400/10 dark:bg-adh-blue/80 dark:text-gray-100 md:px-4 md:py-3"
+                            href="{{ $story['url'] }}"
+                            class="group flex min-h-[4.5rem] items-center gap-3 overflow-hidden rounded-[var(--adh-radius)] border border-adh-red/15 bg-white/90 p-2.5 text-adh-text transition hover:border-adh-red hover:shadow-sm dark:border-red-400/10 dark:bg-adh-blue/80 dark:text-gray-100 md:p-3"
                         >
-                            {{ $article->getTranslation('title', app()->getLocale(), false) ?: $article->title }}
+                            <span class="shrink-0 overflow-hidden rounded-[calc(var(--adh-radius)*0.75)] bg-slate-100 ring-1 ring-adh-border/70 dark:bg-slate-800 dark:ring-gray-700">
+                                <img
+                                    src="{{ $story['image_url'] }}"
+                                    alt="{{ $story['title'] }}"
+                                    width="120"
+                                    height="120"
+                                    class="h-14 w-14 object-cover transition-transform duration-300 group-hover:scale-105 md:h-16 md:w-16"
+                                    loading="lazy"
+                                >
+                            </span>
+
+                            <span class="adh-visual-news-text adh-visual-news-text--breaking">
+                                @if ($story['category_name'])
+                                    <span class="block text-[9px] font-bold uppercase tracking-[0.16em] text-adh-red">
+                                        {{ $story['category_name'] }}
+                                    </span>
+                                @endif
+
+                                <span class="mt-0.5 block line-clamp-2 whitespace-normal break-words text-sm font-semibold leading-5 transition-colors group-hover:text-adh-red md:text-[15px]">
+                                    {{ $story['title'] }}
+                                </span>
+                            </span>
                         </a>
                     @endforeach
                 </div>

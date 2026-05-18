@@ -82,6 +82,24 @@
   }
 }
 
+.adh-visual-news-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .adh-visual-news-text {
+    flex: 0 0 calc(100vw - 9.5rem);
+    max-width: calc(100vw - 9.5rem);
+  }
+
+  .adh-visual-news-text--breaking {
+    flex-basis: calc(100vw - 10rem);
+    max-width: calc(100vw - 10rem);
+  }
+}
+
 @layer components {
   @media (max-width: 768px) {
     html,

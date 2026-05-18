@@ -54,15 +54,26 @@
                     <div class="mt-2 divide-y divide-adh-border dark:divide-gray-700 md:mt-3">
                         @foreach ($heroSide->take(4) as $article)
                             @php $sideStory = \App\Support\NewsPresenter::present($article, 'thumb'); @endphp
-                            <article class="group py-2.5 first:pt-0 last:pb-0 md:py-3">
-                                <div class="flex items-start gap-3">
-                                    <div class="min-w-0 flex-1">
+                            <article class="group overflow-hidden py-2.5 first:pt-0 last:pb-0 md:py-3">
+                                <div class="flex items-start gap-2.5 md:gap-3">
+                                    <a href="{{ $sideStory['url'] }}" class="shrink-0 overflow-hidden rounded-[calc(var(--adh-radius)*0.8)] bg-slate-100 ring-1 ring-adh-border/70 dark:bg-slate-800 dark:ring-gray-700">
+                                        <img
+                                            src="{{ $sideStory['image_url'] }}"
+                                            alt="{{ $sideStory['title'] }}"
+                                            width="160"
+                                            height="160"
+                                            class="h-14 w-14 object-cover transition-transform duration-300 group-hover:scale-105 md:h-18 md:w-18 lg:h-20 lg:w-20"
+                                            loading="lazy"
+                                        >
+                                    </a>
+
+                                    <div class="adh-visual-news-text">
                                         @if ($sideStory['category_name'])
                                             <span class="text-[10px] font-bold uppercase tracking-wider text-adh-red">{{ $sideStory['category_name'] }}</span>
                                         @endif
 
-                                        <h2 class="mt-0.5 line-clamp-2 font-serif text-[15px] font-bold leading-snug text-adh-text dark:text-gray-100">
-                                            <a href="{{ $sideStory['url'] }}" class="transition-colors hover:text-adh-red">
+                                        <h2 class="mt-0.5 line-clamp-2 overflow-hidden whitespace-normal break-words font-serif text-sm font-bold leading-snug text-adh-text dark:text-gray-100 md:text-[15px]">
+                                            <a href="{{ $sideStory['url'] }}" class="block whitespace-normal break-words transition-colors hover:text-adh-red">
                                                 {{ $sideStory['title'] }}
                                             </a>
                                         </h2>
@@ -71,17 +82,6 @@
                                             <x-news-meta-row :article="$article" compact />
                                         </div>
                                     </div>
-
-                                    <a href="{{ $sideStory['url'] }}" class="shrink-0 overflow-hidden rounded-[calc(var(--adh-radius)*0.8)]">
-                                        <img
-                                            src="{{ $sideStory['image_url'] }}"
-                                            alt="{{ $sideStory['title'] }}"
-                                            width="160"
-                                            height="160"
-                                            class="h-16 w-16 object-cover transition-transform duration-300 group-hover:scale-105 md:h-18 md:w-18 lg:h-20 lg:w-20"
-                                            loading="lazy"
-                                        >
-                                    </a>
                                 </div>
                             </article>
                         @endforeach
