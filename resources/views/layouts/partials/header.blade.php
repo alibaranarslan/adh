@@ -179,6 +179,34 @@
         </div>
     </div>
 
+    <nav class="border-b border-adh-border bg-white dark:border-adh-blue dark:bg-adh-blue md:hidden"
+         aria-label="{{ __('Haber kategorileri') }}"
+         data-testid="mobile-category-strip">
+        <div class="scrollbar-hide flex min-h-[3.25rem] items-center gap-2 overflow-x-auto px-3 py-2">
+            <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
+               class="inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-[13px] font-semibold transition-colors
+                      {{ request()->routeIs('home')
+                          ? 'border-adh-red bg-adh-red text-white'
+                          : 'border-adh-border bg-slate-50 text-adh-text hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100' }}">
+                {{ __('Ana Sayfa') }}
+            </a>
+            @foreach ($navCategories ?? collect() as $item)
+                @php $catSlug = data_get($item, 'slug'); @endphp
+                <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => $catSlug]) }}"
+                   class="inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-[13px] font-semibold transition-colors
+                          {{ request()->route('slug') === $catSlug
+                              ? 'border-adh-red bg-adh-red text-white'
+                              : 'border-adh-border bg-slate-50 text-adh-text hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100' }}">
+                    {{ data_get($item, 'name') }}
+                </a>
+            @endforeach
+            <a href="{{ \App\Support\LocalizedUrl::route('city.index') }}"
+               class="inline-flex min-h-11 shrink-0 items-center rounded-full border border-adh-border bg-slate-50 px-4 text-[13px] font-semibold text-adh-text transition-colors hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100">
+                {{ __('İller') }}
+            </a>
+        </div>
+    </nav>
+
     <div x-show="mobileOpen"
          x-transition:enter="transition ease-out duration-150"
          x-transition:enter-start="opacity-0 -translate-y-1"
@@ -210,13 +238,6 @@
                       {{ request()->routeIs('home') ? 'text-adh-red' : 'text-adh-text' }}">
                 {{ __('Anasayfa') }}
             </a>
-            @foreach ($navCategories ?? collect() as $item)
-                <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => data_get($item, 'slug')]) }}"
-                   class="min-h-11 py-2.5 px-2 text-sm border-b border-adh-border dark:border-gray-700 dark:text-gray-100
-                          {{ request()->route('slug') === data_get($item, 'slug') ? 'text-adh-red font-semibold' : 'text-adh-text hover:text-adh-red' }}">
-                    {{ data_get($item, 'name') }}
-                </a>
-            @endforeach
             <a href="{{ \App\Support\LocalizedUrl::route('city.index') }}"
                class="min-h-11 py-2.5 px-2 text-sm border-b border-adh-border text-adh-text hover:text-adh-red dark:border-gray-700 dark:text-gray-100">
                 {{ __('İller') }}

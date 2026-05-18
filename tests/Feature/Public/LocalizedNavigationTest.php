@@ -19,6 +19,8 @@ class LocalizedNavigationTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertSee('data-testid="mobile-category-strip"', false)
+            ->assertSee('aria-label="Haber kategorileri"', false)
             ->assertSee('href="' . url('/en/arama') . '"', false)
             ->assertSee('href="' . url('/en/kategori/gundem') . '"', false)
             ->assertSee('href="' . url('/en/iletisim') . '"', false)
@@ -35,6 +37,8 @@ class LocalizedNavigationTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertSee('data-testid="mobile-category-strip"', false)
+            ->assertSee('aria-label="Haber kategorileri"', false)
             ->assertSee('href="' . url('/ku/arama') . '"', false)
             ->assertSee('href="' . url('/ku/kategori/gundem') . '"', false)
             ->assertSee('href="' . url('/ku/iletisim') . '"', false)
