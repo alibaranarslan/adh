@@ -71,6 +71,111 @@ class PublicPagesTest extends TestCase
             ->assertSee('Son Dakika Haber');
     }
 
+    public function test_home_editorial_priority_does_not_require_featured_image(): void
+    {
+        $category = Category::create([
+            'name' => ['tr' => 'Gundem'],
+            'slug' => 'gundem',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        NewsArticle::create([
+            'title' => ['tr' => 'Yuksek Skorlu Gorselsiz Haber'],
+            'slug' => 'yuksek-skorlu-gorselsiz-haber',
+            'summary' => ['tr' => 'Editoryal skor oncelikli haber ozeti'],
+            'content' => ['tr' => 'Detayli haber icerigi'],
+            'featured_image' => null,
+            'source' => 'manuel',
+            'category_id' => $category->id,
+            'status' => 'published',
+            'published_at' => now()->subMinutes(20),
+            'editorial_score' => 99,
+            'city_slug' => 'adiyaman',
+            'city_code' => 3,
+        ]);
+
+        NewsArticle::create([
+            'title' => ['tr' => 'Dusuk Skorlu Gorselli Haber'],
+            'slug' => 'dusuk-skorlu-gorselli-haber',
+            'summary' => ['tr' => 'Gorseli var ama skoru dusuk'],
+            'content' => ['tr' => 'Detayli haber icerigi'],
+            'featured_image' => '/images/test-low-score.jpg',
+            'source' => 'manuel',
+            'category_id' => $category->id,
+            'status' => 'published',
+            'published_at' => now()->subMinutes(5),
+            'editorial_score' => 10,
+            'city_slug' => 'adiyaman',
+            'city_code' => 3,
+        ]);
+
+        $data = app(\App\Services\HomeModuleDataService::class)->collect([
+            'modules' => [
+                ['key' => 'hero', 'settings' => ['content_limit' => 5]],
+            ],
+        ]);
+
+        $this->assertSame(
+            'Yuksek Skorlu Gorselsiz Haber',
+            $data['heroMain']?->getTranslation('title', 'tr')
+        );
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Yuksek Skorlu Gorselsiz Haber')
+            ->assertSee('Dusuk Skorlu Gorselli Haber')
+            ->assertDontSee('placeholder-news.jpg', false);
+    }
+
+    public function test_breaking_fallback_uses_editorial_score_before_recent_image(): void
+    {
+        $category = Category::create([
+            'name' => ['tr' => 'Gundem'],
+            'slug' => 'gundem',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        foreach ([
+            ['Hero Haber', 'hero-haber', 100, '/images/hero.jpg', 30],
+            ['Hero Yan Haber', 'hero-yan-haber', 95, '/images/hero-side.jpg', 25],
+            ['Acil Gorselsiz Yuksek Skor', 'acil-gorselsiz-yuksek-skor', 90, null, 20],
+            ['Acil Gorselli Dusuk Skor', 'acil-gorselli-dusuk-skor', 10, '/images/recent.jpg', 1],
+        ] as [$title, $slug, $score, $image, $minutesAgo]) {
+            NewsArticle::create([
+                'title' => ['tr' => $title],
+                'slug' => $slug,
+                'summary' => ['tr' => 'Ozet bilgi'],
+                'content' => ['tr' => 'Detayli haber icerigi'],
+                'featured_image' => $image,
+                'source' => 'manuel',
+                'category_id' => $category->id,
+                'status' => 'published',
+                'published_at' => now()->subMinutes($minutesAgo),
+                'editorial_score' => $score,
+                'city_slug' => 'adiyaman',
+                'city_code' => 3,
+            ]);
+        }
+
+        $data = app(\App\Services\HomeModuleDataService::class)->collect([
+            'modules' => [
+                ['key' => 'hero', 'settings' => ['content_limit' => 1]],
+                ['key' => 'breaking_bar', 'settings' => ['content_limit' => 2]],
+            ],
+        ]);
+
+        $this->assertSame(
+            'Acil Gorselsiz Yuksek Skor',
+            $data['breakingNews']->first()?->getTranslation('title', 'tr')
+        );
+        $this->assertSame(
+            'Acil Gorselli Dusuk Skor',
+            $data['breakingNews']->skip(1)->first()?->getTranslation('title', 'tr')
+        );
+    }
+
     public function test_city_page_and_robots_txt_rewrite_existing_sitemap_url(): void
     {
         $category = Category::create([

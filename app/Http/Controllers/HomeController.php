@@ -15,8 +15,6 @@ class HomeController extends Controller
 
         $heroMain = NewsArticle::published()
             ->with('category')
-            ->whereNotNull('featured_image')
-            ->where('featured_image', '!=', '')
             ->orderByRaw($editorialOrder)
             ->first();
 
@@ -45,8 +43,6 @@ class HomeController extends Controller
         $highlightsPool = NewsArticle::published()
             ->with('category')
             ->whereNotIn('id', $heroIds)
-            ->whereNotNull('featured_image')
-            ->where('featured_image', '!=', '')
             ->orderByRaw($editorialOrder)
             ->take(20)
             ->get();

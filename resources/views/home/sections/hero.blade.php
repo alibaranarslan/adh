@@ -4,8 +4,7 @@
     $subtitle = data_get($settings, "subtitle_override.$locale");
     $heroStory = $heroMain ? \App\Support\NewsPresenter::present($heroMain) : null;
     $sideStories = $heroSide->take(5)->values();
-    $leadSideArticle = $sideStories->first(fn ($article) => filled(data_get($article, 'featured_image')) || filled(data_get($article, 'image')))
-        ?: $sideStories->first();
+    $leadSideArticle = $sideStories->first();
     $leadSideStory = $leadSideArticle ? \App\Support\NewsPresenter::present($leadSideArticle, 'medium') : null;
     $listSideArticles = $sideStories
         ->reject(fn ($article) => $leadSideArticle && data_get($article, 'id') === data_get($leadSideArticle, 'id'))
@@ -35,15 +34,21 @@
             <div class="{{ $sideStories->isNotEmpty() ? 'lg:col-span-7 xl:col-span-8' : 'lg:col-span-12' }}">
                 <a href="{{ $heroStory['url'] }}" class="group block h-full">
                     <div class="relative h-full overflow-hidden rounded-[calc(var(--adh-radius)*1.1)] border border-adh-border bg-adh-navy shadow-[var(--adh-shadow)] dark:border-gray-700">
-                        <img
-                            src="{{ $heroStory['image_url'] }}"
-                            alt="{{ $heroStory['title'] }}"
-                            width="1200"
-                            height="760"
-                            class="h-[220px] w-full object-cover transition-transform duration-500 group-hover:scale-[1.025] sm:h-[320px] lg:h-[430px]"
-                            loading="eager"
-                            fetchpriority="high"
-                        >
+                        @if ($heroStory['has_image'])
+                            <img
+                                src="{{ $heroStory['image_url'] }}"
+                                alt="{{ $heroStory['title'] }}"
+                                width="1200"
+                                height="760"
+                                class="h-[220px] w-full object-cover transition-transform duration-500 group-hover:scale-[1.025] sm:h-[320px] lg:h-[430px]"
+                                loading="eager"
+                                fetchpriority="high"
+                            >
+                        @else
+                            <span class="flex h-[220px] w-full items-center justify-center bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.16),transparent_28%),linear-gradient(135deg,#0a1632,#172554_52%,#7f1d1d)] px-6 text-center text-sm font-black uppercase tracking-[0.22em] text-white/88 transition-transform duration-500 group-hover:scale-[1.01] sm:h-[320px] lg:h-[430px]">
+                                {{ $heroStory['category_name'] ?: __('Haber') }}
+                            </span>
+                        @endif
                         <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-adh-navy via-adh-navy/90 to-transparent px-4 pb-4 pt-16 text-white sm:px-6 sm:pb-6 sm:pt-28 lg:px-7 lg:pb-7">
                             <div class="max-w-3xl space-y-2 sm:space-y-3">
                                 @if ($heroStory['category_name'])

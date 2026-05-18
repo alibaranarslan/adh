@@ -24,8 +24,6 @@ class HomeModuleDataService
         $heroSideLimit = max(1, (int) data_get($moduleMap, 'hero.settings.content_limit', 5));
         $heroMain = NewsArticle::published()
             ->with('category')
-            ->whereNotNull('featured_image')
-            ->where('featured_image', '!=', '')
             ->orderByRaw($editorialOrder)
             ->first();
 
@@ -63,8 +61,6 @@ class HomeModuleDataService
             NewsArticle::published()
                 ->with('category')
                 ->whereNotIn('id', $heroIds)
-                ->whereNotNull('featured_image')
-                ->where('featured_image', '!=', '')
                 ->orderByRaw($editorialOrder)
                 ->take(24)
                 ->get(),
@@ -122,7 +118,7 @@ class HomeModuleDataService
             ->breaking()
             ->with('category')
             ->whereNotIn('id', $heroIds)
-            ->latest('published_at')
+            ->orderByRaw($editorialOrder)
             ->take($breakingLimit)
             ->get();
 
@@ -132,9 +128,7 @@ class HomeModuleDataService
                     NewsArticle::published()
                         ->with('category')
                         ->whereNotIn('id', array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
-                        ->whereNotNull('featured_image')
-                        ->where('featured_image', '!=', '')
-                        ->latest('published_at')
+                        ->orderByRaw($editorialOrder)
                         ->take($breakingLimit - $breakingNews->count())
                         ->get()
                 )
@@ -147,7 +141,7 @@ class HomeModuleDataService
                     NewsArticle::published()
                         ->with('category')
                         ->whereNotIn('id', array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
-                        ->latest('published_at')
+                        ->orderByRaw($editorialOrder)
                         ->take($breakingLimit - $breakingNews->count())
                         ->get()
                 )
