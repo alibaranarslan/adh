@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Tag;
 use App\Services\IhaCategoryMapper;
 use App\Support\LocalizedUrl;
+use App\Support\PagePublicUrl;
 use App\Support\SeoUrls;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -59,13 +60,15 @@ class GenerateSitemapCommand extends Command
                 }
             });
 
-        Category::active()->select(['slug'])->get()->each(function ($category) use ($baseUrl, &$taxonomyUrls): void {
-            $taxonomyUrls[] = [
-                'loc' => $this->localizedUrl($baseUrl, "kategori/{$category->slug}", 'tr'),
-                'priority' => '0.6',
-                'changefreq' => 'daily',
-            ];
-        });
+        Category::active()->get()
+            ->filter(fn (Category $category): bool => $category->publicArticlesCount() > 0)
+            ->each(function (Category $category) use ($baseUrl, &$taxonomyUrls): void {
+                $taxonomyUrls[] = [
+                    'loc' => $this->localizedUrl($baseUrl, "kategori/{$category->slug}", 'tr'),
+                    'priority' => '0.6',
+                    'changefreq' => 'daily',
+                ];
+            });
 
         foreach (IhaCategoryMapper::getActiveCities() as $slug => $cityName) {
             $taxonomyUrls[] = [
@@ -75,17 +78,20 @@ class GenerateSitemapCommand extends Command
             ];
         }
 
-        Tag::select(['slug'])->get()->each(function ($tag) use ($baseUrl, &$taxonomyUrls): void {
-            $taxonomyUrls[] = [
-                'loc' => $this->localizedUrl($baseUrl, "etiket/{$tag->slug}", 'tr'),
-                'priority' => '0.4',
-                'changefreq' => 'weekly',
-            ];
-        });
+        Tag::whereHas('articles', fn ($query) => $query->published())
+            ->select(['slug'])
+            ->get()
+            ->each(function ($tag) use ($baseUrl, &$taxonomyUrls): void {
+                $taxonomyUrls[] = [
+                    'loc' => $this->localizedUrl($baseUrl, "etiket/{$tag->slug}", 'tr'),
+                    'priority' => '0.4',
+                    'changefreq' => 'weekly',
+                ];
+            });
 
         Page::published()->select(['slug'])->get()->each(function ($page) use ($baseUrl, &$pageUrls): void {
             $pageUrls[] = [
-                'loc' => $this->localizedUrl($baseUrl, 'sayfa/' . $page->slug, 'tr'),
+                'loc' => $this->localizedUrl($baseUrl, ltrim(PagePublicUrl::pathForSlug((string) $page->slug), '/'), 'tr'),
                 'priority' => '0.5',
                 'changefreq' => 'monthly',
             ];

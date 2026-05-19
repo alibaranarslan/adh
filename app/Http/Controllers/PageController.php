@@ -56,9 +56,23 @@ class PageController extends Controller
 
     public function contact()
     {
-        return view('pages.contact')->with([
-            'metaTitle' => __('İletişim'),
-            'metaDescription' => __('Adıyaman Dijital Haber ile haber ihbarı, reklam iş birlikleri ve okur geri bildirimleri için iletişime geçin.'),
+        $page = Page::published()
+            ->where('slug', 'iletisim')
+            ->first();
+
+        $fallbackTitle = __('İletişim');
+        $fallbackDescription = __('Adıyaman Dijital Haber ile haber ihbarı, reklam iş birlikleri ve okur geri bildirimleri için iletişime geçin.');
+        $contactTitle = $page
+            ? trim((string) $page->getTranslation('title', app()->getLocale(), false)) ?: (string) $page->title
+            : $fallbackTitle;
+        $contactDescription = $page
+            ? trim((string) $page->getTranslation('meta_description', app()->getLocale(), false))
+                ?: str($page->content)->stripTags()->limit(160)->toString()
+            : $fallbackDescription;
+
+        return view('pages.contact', compact('page', 'contactTitle', 'contactDescription'))->with([
+            'metaTitle' => $page?->meta_title ?: $contactTitle,
+            'metaDescription' => $contactDescription,
         ]);
     }
 

@@ -3,8 +3,8 @@
 @push('head')
     <x-schema-page
         type="ContactPage"
-        :name="__('İletişim')"
-        :description="__('Adıyaman Dijital Haber iletişim, haber ihbarı ve reklam iş birliği kanalları.')"
+        :name="$contactTitle ?? __('İletişim')"
+        :description="$contactDescription ?? __('Adıyaman Dijital Haber iletişim, haber ihbarı ve reklam iş birliği kanalları.')"
         :url="\App\Support\SeoUrls::absolute(\App\Support\LocalizedUrl::route('contact'))"
     />
 @endpush
@@ -16,17 +16,26 @@
             'Adıyaman Merkez / Türkiye',
         );
         $resolvedPhone = data_get($siteSettings, 'contact_phone', '+90 (416) 000 00 00');
-        $resolvedEmail = data_get($siteSettings, 'contact_email', 'iletisim@adiyamandijitalhaber.com');
+        $resolvedEmail = data_get($siteSettings, 'contact_email', 'iletisim@adiyamandijitalhaber.com.tr');
         $whatsAppPhone = preg_replace('/[^0-9]/', '', $resolvedPhone);
+        $contactPageBody = isset($page)
+            ? trim((string) $page->getTranslation('content', app()->getLocale(), false))
+            : '';
     @endphp
 
     <div class="space-y-6 overflow-hidden">
         <div class="rounded-[var(--adh-radius)] border border-adh-border bg-white px-4 py-6 shadow-[var(--adh-shadow)] dark:border-gray-700 dark:bg-adh-blue md:px-8 md:py-9">
             <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-adh-red">{{ __('İletişim') }}</p>
-            <h1 class="mt-3 break-words font-serif text-2xl font-bold leading-tight text-adh-text dark:text-gray-100 sm:text-3xl md:text-4xl">{{ __('Redaksiyon ve Okur Hattı') }}</h1>
-            <p class="mt-4 max-w-3xl break-words text-sm leading-6 text-adh-gray dark:text-gray-300 md:text-base md:leading-7">
-                {{ __('Haber ihbarı, düzeltme talepleri, reklam iş birlikleri ve genel sorular için ADH ekibine bu sayfa üzerinden ulaşabilirsiniz.') }}
-            </p>
+            <h1 class="mt-3 break-words font-serif text-2xl font-bold leading-tight text-adh-text dark:text-gray-100 sm:text-3xl md:text-4xl">{{ $contactTitle ?? __('Redaksiyon ve Okur Hattı') }}</h1>
+            @if ($contactPageBody !== '')
+                <div class="prose prose-sm mt-4 max-w-3xl break-words text-adh-gray dark:prose-invert dark:text-gray-300 md:prose-base">
+                    {!! $contactPageBody !!}
+                </div>
+            @else
+                <p class="mt-4 max-w-3xl break-words text-sm leading-6 text-adh-gray dark:text-gray-300 md:text-base md:leading-7">
+                    {{ __('Haber ihbarı, düzeltme talepleri, reklam iş birlikleri ve genel sorular için ADH ekibine bu sayfa üzerinden ulaşabilirsiniz.') }}
+                </p>
+            @endif
         </div>
 
         <div class="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-12">

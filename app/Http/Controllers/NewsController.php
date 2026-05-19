@@ -48,9 +48,8 @@ class NewsController extends Controller
 
         $category = Category::active()->where('slug', $slug)->firstOrFail();
 
-        $articles = NewsArticle::published()
+        $articles = $category->publicArticlesQuery()
             ->with('category')
-            ->where('category_id', $category->id)
             ->orderByRaw('editorial_score DESC, published_at DESC')
             ->paginate(12);
 

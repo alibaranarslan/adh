@@ -21,4 +21,11 @@ class Tag extends Model
     {
         return $this->belongsToMany(NewsArticle::class, 'news_article_tag');
     }
+
+    public function publicArticlesCount(): int
+    {
+        return $this->articles()
+            ->published()
+            ->count();
+    }
 }

@@ -117,13 +117,21 @@ class CategoryResource extends Resource
                     ->label('Üst Kategori')
                     ->formatStateUsing(fn ($record) => $record->parent?->getTranslation('name', 'tr') ?? '-'),
 
+                TextColumn::make('public_articles_count')
+                    ->label('Sitede Görünen Haber')
+                    ->state(fn (Category $record): int => $record->publicArticlesCount())
+                    ->badge()
+                    ->color(fn (?int $state): string => ((int) $state) > 0 ? 'success' : 'gray')
+                    ->formatStateUsing(fn (?int $state): string => ((int) $state) . ' haber'),
+
                 TextColumn::make('articles_count')
-                    ->label('Haber')
+                    ->label('Toplam Ana Haber')
                     ->counts('articles')
                     ->sortable()
                     ->badge()
                     ->color(fn (?int $state): string => ((int) $state) > 0 ? 'success' : 'gray')
-                    ->formatStateUsing(fn (?int $state): string => ((int) $state) . ' haber'),
+                    ->formatStateUsing(fn (?int $state): string => ((int) $state) . ' haber')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('sort_order')
                     ->label('Sıra')
@@ -242,13 +250,15 @@ class CategoryResource extends Resource
         $primaryCount = $category->articles()->count();
         $additionalCount = $category->additionalArticles()->count();
         $childCount = $category->children()->count();
+        $publicCount = $category->publicArticlesCount();
 
         if (($primaryCount + $additionalCount + $childCount) === 0) {
             return 'Bu kategori haberlerde veya alt kategorilerde kullanılmıyor; silme işlemi yalnız kategori kaydını kaldırır.';
         }
 
         return sprintf(
-            'Bu kategori %d ana haber, %d ek haber ilişkisi ve %d alt kategoriyle bağlantılı. Silmeden önce haberleri taşıyın veya hiyerarşiyi temizleyin.',
+            'Bu kategori %d public haber, %d ana haber, %d ek haber ilişkisi ve %d alt kategoriyle bağlantılı. Silmeden önce haberleri taşıyın veya hiyerarşiyi temizleyin.',
+            $publicCount,
             $primaryCount,
             $additionalCount,
             $childCount,

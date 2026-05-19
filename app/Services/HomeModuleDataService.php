@@ -50,7 +50,7 @@ class HomeModuleDataService
                 $query->where('city_slug', 'adiyaman')
                     ->orWhere(function ($fallbackQuery) {
                         $fallbackQuery->whereNull('city_slug')
-                            ->where('city_code', 3);
+                            ->where('city_code', IhaCategoryMapper::LOCALITY_LOCAL);
                     });
             })
             ->orderByRaw($editorialOrder)
@@ -97,7 +97,7 @@ class HomeModuleDataService
 
         $regionNews = NewsArticle::published()
             ->with('category')
-            ->where('city_code', 2)
+            ->where('city_code', IhaCategoryMapper::LOCALITY_REGION)
             ->whereNotIn('id', $usedIds)
             ->orderByRaw($editorialOrder)
             ->take((int) data_get($moduleMap, 'region_news.settings.content_limit', 6))
@@ -148,13 +148,19 @@ class HomeModuleDataService
                 ->values();
         }
 
+        $categoryLimit = (int) data_get($moduleMap, 'category_shortcuts.settings.content_limit', 9);
         $categories = Category::active()
             ->roots()
             ->orderBy('sort_order')
-            ->whereHas('articles', fn ($query) => $query->published())
-            ->withCount(['articles' => fn ($query) => $query->published()])
-            ->take((int) data_get($moduleMap, 'category_shortcuts.settings.content_limit', 9))
-            ->get();
+            ->get()
+            ->map(function (Category $category): Category {
+                $category->setAttribute('articles_count', $category->publicArticlesCount());
+
+                return $category;
+            })
+            ->filter(fn (Category $category): bool => (int) $category->articles_count > 0)
+            ->take($categoryLimit)
+            ->values();
 
         $ads = Advertisement::active()
             ->orderBy('sort_order')

@@ -4,6 +4,7 @@ namespace App\Support\AiVisibility;
 
 use App\Models\Category;
 use App\Models\NewsArticle;
+use App\Services\IhaCategoryMapper;
 use App\Support\NewsPresenter;
 use App\Support\SeoUrls;
 use Illuminate\Database\Eloquent\Builder;
@@ -67,20 +68,29 @@ class AiVisibilityContent
 
     public function rssFor(?Category $category = null, ?string $citySlug = null): string
     {
-        $query = $this->articleQuery();
+        $query = $this->articleQuery($category);
         $title = 'Adiyaman Dijital Haber';
         $description = 'Adiyaman merkezli son dakika ve guncel haber akisi.';
         $link = SeoUrls::absolute('/');
 
         if ($category) {
-            $query->where('category_id', $category->id);
             $title = $category->name . ' Haberleri - Adiyaman Dijital Haber';
             $description = $category->name . ' kategorisinden son haberler.';
             $link = SeoUrls::absolute('/kategori/' . $category->slug);
         }
 
         if ($citySlug) {
-            $query->where('city_slug', $citySlug);
+            $query->where(function (Builder $query) use ($citySlug): void {
+                $query->where('city_slug', $citySlug);
+
+                if ($citySlug === 'adiyaman') {
+                    $query->orWhere(function (Builder $query): void {
+                        $query
+                            ->whereNull('city_slug')
+                            ->where('city_code', IhaCategoryMapper::LOCALITY_LOCAL);
+                    });
+                }
+            });
             $title = 'Adiyaman Haberleri - Adiyaman Dijital Haber';
             $description = 'Adiyaman odakli son dakika ve guncel yerel haberler.';
             $link = SeoUrls::absolute('/il/' . $citySlug);
@@ -94,9 +104,11 @@ class AiVisibilityContent
         );
     }
 
-    private function articleQuery(): Builder
+    private function articleQuery(?Category $category = null): Builder
     {
-        return NewsArticle::published()
+        $query = $category ? $category->publicArticlesQuery() : NewsArticle::published();
+
+        return $query
             ->with(['category', 'media'])
             ->whereNotNull('slug')
             ->where('slug', 'not like', 'preview-%');

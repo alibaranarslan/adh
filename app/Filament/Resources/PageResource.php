@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PageResource\Pages;
 use App\Models\Page;
 use App\Support\AdminPrivileges;
+use App\Support\PagePublicUrl;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -157,7 +158,7 @@ class PageResource extends Resource
                 Action::make('view_site')
                     ->label('Sitede Gör')
                     ->icon('heroicon-o-arrow-top-right-on-square')
-                    ->url(fn (Page $record): string => route('page.show', ['slug' => $record->slug]))
+                    ->url(fn (Page $record): string => PagePublicUrl::url($record))
                     ->openUrlInNewTab()
                     ->visible(fn (Page $record): bool => (bool) $record->is_published),
 

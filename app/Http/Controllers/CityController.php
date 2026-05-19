@@ -18,7 +18,17 @@ class CityController extends Controller
 
         $articles = NewsArticle::published()
             ->with('category')
-            ->where('city_slug', $slug)
+            ->where(function ($query) use ($slug) {
+                $query->where('city_slug', $slug);
+
+                if ($slug === 'adiyaman') {
+                    $query->orWhere(function ($fallbackQuery) {
+                        $fallbackQuery
+                            ->whereNull('city_slug')
+                            ->where('city_code', IhaCategoryMapper::LOCALITY_LOCAL);
+                    });
+                }
+            })
             ->latest('published_at')
             ->paginate(16);
 
@@ -37,6 +47,15 @@ class CityController extends Controller
             ->selectRaw('city_slug, COUNT(*) as total')
             ->groupBy('city_slug')
             ->pluck('total', 'city_slug');
+
+        $adiyamanFallbackCount = NewsArticle::published()
+            ->whereNull('city_slug')
+            ->where('city_code', IhaCategoryMapper::LOCALITY_LOCAL)
+            ->count();
+
+        if ($adiyamanFallbackCount > 0) {
+            $cityCounts['adiyaman'] = (int) ($cityCounts['adiyaman'] ?? 0) + $adiyamanFallbackCount;
+        }
 
         return view('news.cities', compact('allCities', 'cityCounts'))->with([
             'metaTitle' => 'Adıyaman ve Bölge Haberleri',

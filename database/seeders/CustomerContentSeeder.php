@@ -141,14 +141,14 @@ HTML,
 <p><strong>Yayın Sahibi / Sorumlu Müdür:</strong> Nesim ALTUNGÜL</p>
 <p><strong>Adres:</strong> Adıyaman, Türkiye</p>
 <p><strong>Telefon:</strong> 0552 271 70 67</p>
-<p><strong>E-posta:</strong> info@adiyamandijitalhaber.com</p>
-<p><strong>Web Sitesi:</strong> www.adiyamandijitalhaber.com</p>
+<p><strong>E-posta:</strong> info@adiyamandijitalhaber.com.tr</p>
+<p><strong>Web Sitesi:</strong> www.adiyamandijitalhaber.com.tr</p>
 <p><strong>Kayıt ve Telif Hakları:</strong> Tüm içerikler Adıyaman Dijital Haber’e aittir ve izinsiz kullanılamaz.</p>
 <p><strong>Yayın Türü:</strong> Dijital Haber Platformu</p>
 <p><strong>Kuruluş Amacı:</strong> Adıyaman ve çevresindeki gelişmeleri hızlı, doğru ve tarafsız şekilde okuyuculara ulaştırmak.</p>
 <p><strong>KVKK ve Gizlilik Politikası:</strong> Kişisel verileriniz 6698 sayılı KVKK kapsamında korunmaktadır. Detaylar için <a href="/sayfa/gizlilik-politikasi">Gizlilik Politikası</a> sayfamızı inceleyebilirsiniz.</p>
 <p><strong>Çerez Politikası:</strong> Web sitemizde kullanıcı deneyimini geliştirmek için çerezler kullanılmaktadır. Detaylar için <a href="/sayfa/cerez-politikasi">Çerez Politikası</a> sayfamızı inceleyebilirsiniz.</p>
-<p><strong>İtiraz ve Şikayet:</strong> Yayın içerikleri ile ilgili görüş, itiraz veya şikayetlerinizi info@adiyamandijitalhaber.com adresine iletebilirsiniz.</p>
+<p><strong>İtiraz ve Şikayet:</strong> Yayın içerikleri ile ilgili görüş, itiraz veya şikayetlerinizi info@adiyamandijitalhaber.com.tr adresine iletebilirsiniz.</p>
 HTML,
                     'en' => <<<'HTML'
 <h2>MASTHEAD</h2>
@@ -156,8 +156,8 @@ HTML,
 <p><strong>Publisher / Editor-in-Chief:</strong> Nesim ALTUNGÜL</p>
 <p><strong>Address:</strong> Adıyaman, Türkiye</p>
 <p><strong>Phone:</strong> 0552 271 70 67</p>
-<p><strong>Email:</strong> info@adiyamandijitalhaber.com</p>
-<p><strong>Website:</strong> www.adiyamandijitalhaber.com</p>
+<p><strong>Email:</strong> info@adiyamandijitalhaber.com.tr</p>
+<p><strong>Website:</strong> www.adiyamandijitalhaber.com.tr</p>
 <p><strong>Copyright:</strong> All content belongs to Adıyaman Digital News and may not be used without permission.</p>
 HTML,
                 ],

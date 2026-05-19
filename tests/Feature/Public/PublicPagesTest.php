@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\LocalInfoEntry;
 use App\Models\NewsArticle;
 use App\Models\Setting;
+use App\Services\IhaCategoryMapper;
 use Database\Seeders\CustomerContentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -69,6 +70,82 @@ class PublicPagesTest extends TestCase
         $this->get(route('news.show', ['slug' => $breaking->slug]))
             ->assertOk()
             ->assertSee('Son Dakika Haber');
+    }
+
+    public function test_additional_admin_categories_are_reflected_on_public_category_surfaces(): void
+    {
+        $primary = Category::create([
+            'name' => ['tr' => 'Gundem'],
+            'slug' => 'gundem',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+        $secondary = Category::create([
+            'name' => ['tr' => 'Yerel'],
+            'slug' => 'yerel',
+            'is_active' => true,
+            'sort_order' => 2,
+        ]);
+
+        $article = NewsArticle::create([
+            'title' => ['tr' => 'Ek kategoride gorunen haber'],
+            'slug' => 'ek-kategoride-gorunen-haber',
+            'summary' => ['tr' => 'Ozet bilgi'],
+            'content' => ['tr' => 'Detayli haber icerigi'],
+            'source' => 'manuel',
+            'category_id' => $primary->id,
+            'status' => 'published',
+            'published_at' => now()->subMinutes(5),
+            'editorial_score' => 80,
+        ]);
+        $article->categories()->attach($secondary->id);
+
+        $this->get(route('news.category', ['slug' => $secondary->slug]))
+            ->assertOk()
+            ->assertSee('Ek kategoride gorunen haber');
+
+        $payload = app(\App\Services\HomeModuleDataService::class)->collect([
+            'modules' => [
+                ['key' => 'category_shortcuts', 'settings' => ['content_limit' => 9]],
+            ],
+        ]);
+
+        $shortcut = $payload['categories']->firstWhere('slug', 'yerel');
+
+        $this->assertNotNull($shortcut);
+        $this->assertSame(1, (int) $shortcut->articles_count);
+    }
+
+    public function test_adiyaman_city_page_uses_legacy_locality_score_fallback_when_slug_is_missing(): void
+    {
+        $category = Category::create([
+            'name' => ['tr' => 'Gundem'],
+            'slug' => 'gundem',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        NewsArticle::create([
+            'title' => ['tr' => 'Yerellik skorlu Adiyaman haberi'],
+            'slug' => 'yerellik-skorlu-adiyaman-haberi',
+            'summary' => ['tr' => 'Ozet bilgi'],
+            'content' => ['tr' => 'Detayli haber icerigi'],
+            'source' => 'manuel',
+            'category_id' => $category->id,
+            'status' => 'published',
+            'published_at' => now()->subMinutes(5),
+            'editorial_score' => 80,
+            'city_slug' => null,
+            'city_code' => IhaCategoryMapper::LOCALITY_LOCAL,
+        ]);
+
+        $this->get(route('city.show', ['slug' => 'adiyaman']))
+            ->assertOk()
+            ->assertSee('Yerellik skorlu Adiyaman haberi');
+
+        $this->get(route('feeds.adiyaman'))
+            ->assertOk()
+            ->assertSee('Yerellik skorlu Adiyaman haberi');
     }
 
     public function test_home_editorial_priority_does_not_require_featured_image(): void

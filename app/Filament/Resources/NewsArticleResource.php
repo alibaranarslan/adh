@@ -6,6 +6,7 @@ use App\Filament\Resources\NewsArticleResource\Pages;
 use App\Models\Category;
 use App\Models\NewsArticle;
 use App\Models\Tag;
+use App\Services\IhaCategoryMapper;
 use App\Support\AdminImageUploads;
 use App\Support\AdminPrivileges;
 use Filament\Forms;
@@ -235,15 +236,23 @@ class NewsArticleResource extends Resource
                         ->disabled(fn ($record): bool => $isIhaReadonly($record) || $cannotPublish())
                         ->native(false),
 
-                    Select::make('city_code')
-                        ->label('Şehir')
-                        ->options([
-                            2 => 'Adıyaman',
-                            34 => 'İstanbul',
-                            6 => 'Ankara',
-                            35 => 'İzmir',
-                        ])
+                    Select::make('city_slug')
+                        ->label('Public şehir sayfası')
+                        ->options(fn (): array => IhaCategoryMapper::getActiveCities())
+                        ->helperText('Seçilirse haber ilgili /il/{şehir} sayfasında ve Adıyaman seçimi için yerel haber bloklarında görünür.')
                         ->searchable()
+                        ->nullable()
+                        ->disabled($isIhaReadonly),
+
+                    Select::make('city_code')
+                        ->label('Yerellik skoru')
+                        ->options([
+                            IhaCategoryMapper::LOCALITY_LOCAL => 'Adıyaman yerel',
+                            IhaCategoryMapper::LOCALITY_REGION => 'Bölge',
+                            IhaCategoryMapper::LOCALITY_NATIONAL => 'Ulusal / diğer',
+                        ])
+                        ->helperText('İHA senkronunun iç öncelik skorudur; public şehir sayfasını city_slug belirler.')
+                        ->disabled($isIhaReadonly)
                         ->hidden(fn (Get $get) => $get('source') === 'manuel'),
 
                     Placeholder::make('editorial_score_summary')
@@ -303,6 +312,12 @@ class NewsArticleResource extends Resource
                     ->sortable()
                     ->formatStateUsing(fn (NewsArticle $record): string => $record->category?->getTranslation('name', 'tr') ?? '-')
                     ->colors(['primary']),
+
+                BadgeColumn::make('city_slug')
+                    ->label('Şehir')
+                    ->formatStateUsing(fn (?string $state): string => $state ? (IhaCategoryMapper::getActiveCities()[$state] ?? $state) : '-')
+                    ->colors(['gray'])
+                    ->toggleable(),
 
                 BadgeColumn::make('source')
                     ->label('Kaynak')
@@ -409,6 +424,10 @@ class NewsArticleResource extends Resource
                         'iha' => 'İHA',
                         'manuel' => 'Manuel',
                     ]),
+
+                SelectFilter::make('city_slug')
+                    ->label('Public Şehir')
+                    ->options(fn (): array => IhaCategoryMapper::getActiveCities()),
 
                 TernaryFilter::make('is_breaking')
                     ->label('Son Dakika'),

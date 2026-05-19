@@ -7,6 +7,7 @@ use App\Filament\Resources\PageResource\Pages\CreatePage;
 use App\Filament\Resources\PageResource\Pages\EditPage;
 use App\Models\Page;
 use App\Models\User;
+use App\Support\PagePublicUrl;
 use Database\Seeders\CustomerContentSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,10 +24,12 @@ class AdminStaticPageReflectionTest extends TestCase
 
         foreach ([
             '/hakkimizda',
+            '/iletisim',
             '/gizlilik-politikasi',
             '/kvkk',
             '/cerez-politikasi',
             '/sayfa/hakkimizda',
+            '/sayfa/iletisim',
             '/sayfa/gizlilik-politikasi',
             '/sayfa/kvkk-aydinlatma',
             '/sayfa/cerez-politikasi',
@@ -73,6 +76,40 @@ class AdminStaticPageReflectionTest extends TestCase
         $this->get('/sayfa/hakkimizda')
             ->assertOk()
             ->assertSee('Static page reflection proof content', false);
+    }
+
+    public function test_admin_contact_page_edit_reflects_canonical_contact_route(): void
+    {
+        $this->seed(CustomerContentSeeder::class);
+        $page = Page::query()->where('slug', 'iletisim')->firstOrFail();
+        $content = '<p>Canonical contact page reflection proof.</p>';
+
+        $this->actingAs($this->superAdmin());
+
+        Livewire::test(EditPage::class, ['record' => $page->getKey()])
+            ->fillForm([
+                'title' => 'Canonical Contact',
+                'slug' => 'broken-contact-slug',
+                'content' => $content,
+                'is_published' => false,
+                'sort_order' => 2,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $page->refresh();
+
+        $this->assertSame('iletisim', $page->slug);
+        $this->assertTrue($page->is_published);
+        $this->assertSame('/iletisim', PagePublicUrl::path($page));
+        $this->assertSame('/kvkk', PagePublicUrl::pathForSlug('kvkk-aydinlatma'));
+        $this->assertSame('/sayfa/custom-page', PagePublicUrl::pathForSlug('custom-page'));
+
+        auth()->logout();
+
+        $this->get('/iletisim')
+            ->assertOk()
+            ->assertSee('Canonical contact page reflection proof', false);
     }
 
     public function test_protected_static_pages_cannot_be_deleted_from_admin(): void

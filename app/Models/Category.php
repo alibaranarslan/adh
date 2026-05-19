@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -63,5 +64,20 @@ class Category extends Model
     public function scopeRoots($query)
     {
         return $query->whereNull('parent_id');
+    }
+
+    public function publicArticlesQuery(): Builder
+    {
+        return NewsArticle::published()
+            ->where(function (Builder $query): void {
+                $query
+                    ->where('category_id', $this->getKey())
+                    ->orWhereHas('categories', fn (Builder $query) => $query->whereKey($this->getKey()));
+            });
+    }
+
+    public function publicArticlesCount(): int
+    {
+        return $this->publicArticlesQuery()->count();
     }
 }

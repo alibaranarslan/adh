@@ -4,6 +4,7 @@ namespace Tests\Feature\Public;
 
 use App\Models\Category;
 use App\Models\NewsArticle;
+use Database\Seeders\CustomerContentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -58,6 +59,22 @@ class SeoInfrastructureTest extends TestCase
         $this->assertStringContainsString($old->slug, $articlesSitemap);
         $this->assertStringNotContainsString('/en/', $articlesSitemap);
         $this->assertStringNotContainsString('/ku/', $articlesSitemap);
+    }
+
+    public function test_sitemap_uses_canonical_static_page_urls_from_admin_pages(): void
+    {
+        config(['app.url' => 'https://adiyamandijitalhaber.com.tr']);
+        app()['env'] = 'testing';
+        $this->seed(CustomerContentSeeder::class);
+
+        $this->artisan('sitemap:generate')->assertSuccessful();
+
+        $pagesSitemap = file_get_contents(public_path('sitemap-pages.xml'));
+
+        $this->assertStringContainsString('https://adiyamandijitalhaber.com.tr/iletisim', $pagesSitemap);
+        $this->assertStringContainsString('https://adiyamandijitalhaber.com.tr/kvkk', $pagesSitemap);
+        $this->assertStringNotContainsString('https://adiyamandijitalhaber.com.tr/sayfa/iletisim', $pagesSitemap);
+        $this->assertStringNotContainsString('https://adiyamandijitalhaber.com.tr/sayfa/kvkk-aydinlatma', $pagesSitemap);
     }
 
     public function test_news_detail_renders_seo_schema_without_placeholder_image(): void

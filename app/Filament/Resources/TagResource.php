@@ -12,6 +12,7 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\CreateAction as TableCreateAction;
@@ -72,13 +73,21 @@ class TagResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
+                TextColumn::make('public_articles_count')
+                    ->label('Sitede Görünen Haber')
+                    ->state(fn (Tag $record): int => $record->publicArticlesCount())
+                    ->badge()
+                    ->color(fn (?int $state): string => ((int) $state) > 0 ? 'success' : 'gray')
+                    ->formatStateUsing(fn (?int $state): string => ((int) $state) . ' haber'),
+
                 TextColumn::make('articles_count')
-                    ->label('Kullanım')
+                    ->label('Toplam Kullanım')
                     ->counts('articles')
                     ->sortable()
                     ->badge()
                     ->color(fn (?int $state): string => ((int) $state) > 0 ? 'success' : 'gray')
-                    ->formatStateUsing(fn (?int $state): string => ((int) $state) . ' haber'),
+                    ->formatStateUsing(fn (?int $state): string => ((int) $state) . ' haber')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
                     ->label('Oluşturulma')
@@ -88,23 +97,30 @@ class TagResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('usage_band')
-                    ->label('Kullanım')
+                    ->label('Public Kullanım')
                     ->options([
-                        'used' => 'Kullanımda',
-                        'unused' => 'Kullanılmıyor',
-                        'high' => '5+ haber',
+                        'used' => 'Sitede kullanılıyor',
+                        'unused' => 'Sitede görünmüyor',
+                        'high' => '5+ public haber',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return match ($data['value'] ?? null) {
-                            'used' => $query->has('articles'),
-                            'unused' => $query->doesntHave('articles'),
-                            'high' => $query->has('articles', '>=', 5),
+                            'used' => $query->whereHas('articles', fn (Builder $query) => $query->published()),
+                            'unused' => $query->whereDoesntHave('articles', fn (Builder $query) => $query->published()),
+                            'high' => $query->whereHas('articles', fn (Builder $query) => $query->published(), '>=', 5),
                             default => $query,
                         };
                     }),
             ], FiltersLayout::AboveContentCollapsible)
             ->filtersFormColumns(2)
             ->actions([
+                Action::make('view_site')
+                    ->label('Sitede Gör')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->url(fn (Tag $record): string => route('news.tag', ['slug' => $record->slug]))
+                    ->openUrlInNewTab()
+                    ->visible(fn (Tag $record): bool => $record->publicArticlesCount() > 0),
+
                 EditAction::make()
                     ->label('Düzenle')
                     ->icon('heroicon-o-pencil-square'),
@@ -246,11 +262,12 @@ class TagResource extends Resource
     private static function deleteImpactDescription(Tag $tag): string
     {
         $count = $tag->articles()->count();
+        $publicCount = $tag->publicArticlesCount();
 
         if ($count === 0) {
             return 'Bu etiket herhangi bir haberde kullanılmıyor; silme işlemi yalnız etiket kaydını kaldırır.';
         }
 
-        return $count . ' haber bu etiketi kullanıyor. Silme yerine birleştirme aksiyonunu kullanmak haber ilişkilerini korur.';
+        return $count . ' haber bu etiketi kullanıyor; bunların ' . $publicCount . ' tanesi publicte görünüyor. Silme yerine birleştirme aksiyonunu kullanmak haber ilişkilerini korur.';
     }
 }

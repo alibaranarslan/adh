@@ -12,6 +12,7 @@ class Page extends Model
     use HasTranslations;
 
     public const PROTECTED_STATIC_SLUGS = [
+        'iletisim',
         'hakkimizda',
         'yayin-ilkeleri',
         'gizlilik-politikasi',
