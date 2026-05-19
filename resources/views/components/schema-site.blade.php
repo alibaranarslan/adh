@@ -8,16 +8,41 @@
         ->filter(fn ($url) => is_string($url) && str_starts_with($url, 'http'))
         ->values()
         ->all();
+    $contactEmail = \App\Models\Setting::get('general', 'contact_email');
+    $contactPhone = \App\Models\Setting::get('general', 'contact_phone');
+
+    $organization = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Organization',
+        'name' => $siteName,
+        'url' => $baseUrl,
+        'logo' => \App\Support\SeoUrls::absolute($branding['logo_light_url'] ?? '/images/branding/adh-logo-light.svg'),
+        'sameAs' => $sameAs,
+        'areaServed' => [
+            '@type' => 'AdministrativeArea',
+            'name' => 'Adıyaman',
+        ],
+        'knowsAbout' => [
+            'Adıyaman haberleri',
+            'Adıyaman son dakika',
+            'Adıyaman asayiş',
+            'Adıyaman ilçe haberleri',
+        ],
+    ];
+
+    if (filled($contactEmail) || filled($contactPhone)) {
+        $organization['contactPoint'] = array_filter([
+            '@type' => 'ContactPoint',
+            'contactType' => 'newsroom',
+            'areaServed' => 'TR',
+            'availableLanguage' => ['Turkish'],
+            'email' => $contactEmail ?: null,
+            'telephone' => $contactPhone ?: null,
+        ]);
+    }
 
     $schema = [
-        [
-            '@context' => 'https://schema.org',
-            '@type' => 'Organization',
-            'name' => $siteName,
-            'url' => $baseUrl,
-            'logo' => \App\Support\SeoUrls::absolute($branding['logo_light_url'] ?? '/images/branding/adh-logo-light.svg'),
-            'sameAs' => $sameAs,
-        ],
+        $organization,
         [
             '@context' => 'https://schema.org',
             '@type' => 'WebSite',

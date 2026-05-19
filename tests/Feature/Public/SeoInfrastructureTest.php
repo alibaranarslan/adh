@@ -18,7 +18,11 @@ class SeoInfrastructureTest extends TestCase
 
         $this->get('https://adiyamandijitalhaber.com.tr/robots.txt')
             ->assertOk()
-            ->assertSee('Sitemap: https://adiyamandijitalhaber.com.tr/sitemap.xml', false);
+            ->assertSee('Sitemap: https://adiyamandijitalhaber.com.tr/sitemap.xml', false)
+            ->assertSee('Sitemap: https://adiyamandijitalhaber.com.tr/sitemap-news.xml', false)
+            ->assertSee('Sitemap: https://adiyamandijitalhaber.com.tr/rss.xml', false)
+            ->assertSee('User-agent: OAI-SearchBot', false)
+            ->assertSee('User-agent: ChatGPT-User', false);
     }
 
     public function test_sitemap_generate_creates_index_and_news_sitemap_for_recent_turkish_news(): void

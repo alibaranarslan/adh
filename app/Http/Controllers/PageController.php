@@ -34,6 +34,11 @@ class PageController extends Controller
         return $this->renderPage('hakkimizda');
     }
 
+    public function editorialPolicy()
+    {
+        return $this->renderPage('yayin-ilkeleri');
+    }
+
     public function privacy()
     {
         return $this->renderPage('gizlilik-politikasi');

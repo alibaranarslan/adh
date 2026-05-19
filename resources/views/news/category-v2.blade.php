@@ -1,5 +1,14 @@
 @extends('layouts.app')
 
+@push('head')
+    <x-schema-page
+        type="CollectionPage"
+        :name="$category->name . ' Haberleri'"
+        :description="$category->name . ' kategorisindeki son haberler ve güncel gelişmeler.'"
+        :url="\App\Support\SeoUrls::absolute(\App\Support\LocalizedUrl::route('news.category', ['slug' => $category->slug]))"
+    />
+@endpush
+
 @section('content')
     @php
         $leadArticle = $articles->getCollection()->first();

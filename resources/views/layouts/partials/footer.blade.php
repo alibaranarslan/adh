@@ -49,6 +49,7 @@
                 <h5 class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-300 md:mb-3">{{ __('Kurumsal') }}</h5>
                 <ul class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs md:block md:space-y-1.5 md:text-sm">
                     <li><a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="transition-colors hover:text-adh-red-light">{{ __('Anasayfa') }}</a></li>
+                    <li><a href="{{ \App\Support\LocalizedUrl::route('page.editorial_policy') }}" class="transition-colors hover:text-adh-red-light">{{ __('Yayın İlkeleri') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('page.about') }}" class="transition-colors hover:text-adh-red-light">{{ __('Hakkımızda') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('contact') }}" class="transition-colors hover:text-adh-red-light">{{ __('İletişim') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('page.privacy') }}" class="transition-colors hover:text-adh-red-light">{{ __('Gizlilik') }}</a></li>

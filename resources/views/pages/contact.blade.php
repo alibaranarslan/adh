@@ -1,5 +1,14 @@
 @extends('layouts.app')
 
+@push('head')
+    <x-schema-page
+        type="ContactPage"
+        :name="__('İletişim')"
+        :description="__('Adıyaman Dijital Haber iletişim, haber ihbarı ve reklam iş birliği kanalları.')"
+        :url="\App\Support\SeoUrls::absolute(\App\Support\LocalizedUrl::route('contact'))"
+    />
+@endpush
+
 @section('content')
     @php
         $resolvedAddress = \App\Support\LocalizedSettings::resolveText(

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             SettingsSeeder::class,
             DemoContentSeeder::class,
             CustomerContentSeeder::class,
+            AiVisibilityContentSeeder::class,
         ]);
     }
 }

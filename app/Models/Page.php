@@ -13,6 +13,7 @@ class Page extends Model
 
     public const PROTECTED_STATIC_SLUGS = [
         'hakkimizda',
+        'yayin-ilkeleri',
         'gizlilik-politikasi',
         'kvkk-aydinlatma',
         'cerez-politikasi',

@@ -69,6 +69,34 @@ class SeoSettings extends Page implements HasForms
                     ->content(fn (): string => $this->recentArticleSummary()),
             ])->columns(2),
 
+            Section::make('AI Görünürlüğü')->schema([
+                Placeholder::make('llms_txt_status')
+                    ->label('/llms.txt')
+                    ->content(fn (): string => $this->seoSnapshot()['llms_txt_available']
+                        ? 'Hazır: makine-okunur kaynak haritası yayında.'
+                        : 'Risk: /llms.txt route kaydi bulunamadi.'),
+                Placeholder::make('rss_status')
+                    ->label('/rss.xml')
+                    ->content(fn (): string => $this->seoSnapshot()['rss_available']
+                        ? 'Hazır: public RSS feed route kaydı yayında.'
+                        : 'Risk: RSS feed route kaydı bulunamadı.'),
+                Placeholder::make('oai_searchbot_status')
+                    ->label('OAI-SearchBot')
+                    ->content(fn (): string => $this->seoSnapshot()['oai_searchbot_allowed']
+                        ? 'Allow: ChatGPT Search crawler robots tarafında açık.'
+                        : 'Risk: OAI-SearchBot için Allow sinyali yok.'),
+                Placeholder::make('chatgpt_user_status')
+                    ->label('ChatGPT-User')
+                    ->content(fn (): string => $this->seoSnapshot()['chatgpt_user_allowed']
+                        ? 'Allow: ChatGPT user-triggered browse robots tarafında açık.'
+                        : 'Risk: ChatGPT-User için Allow sinyali yok.'),
+                Placeholder::make('llms_recent_status')
+                    ->label('Son Haberler')
+                    ->content(fn (): string => $this->seoSnapshot()['llms_recent_articles_available']
+                        ? 'Hazır: llms.txt son yayınlanmış haberleri listeleyebilir.'
+                        : 'Uyarı: henüz listelenecek yayınlanmış haber yok.'),
+            ])->columns(2),
+
             Section::make('Meta Ayarları')->schema([
                 TextInput::make('default_meta_title')
                     ->label('Varsayılan Meta Başlık Formatı')

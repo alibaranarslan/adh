@@ -1,5 +1,14 @@
 @extends('layouts.app')
 
+@push('head')
+    <x-schema-page
+        type="CollectionPage"
+        :name="$cityName . ' Haberleri'"
+        :description="$cityName . ' haberleri, son dakika gelişmeleri ve yerel gündem başlıkları.'"
+        :url="\App\Support\SeoUrls::absolute(\App\Support\LocalizedUrl::route('city.show', ['slug' => $slug]))"
+    />
+@endpush
+
 @section('content')
     @php
         $leadArticle = $articles->getCollection()->first();

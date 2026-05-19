@@ -190,7 +190,11 @@ class AdminOperationsReadinessTest extends TestCase
         $this->assertSame('noreply@adh.test', Setting::get('email', 'from_email'));
 
         Livewire::test(SeoSettings::class)
-            ->assertFormSet(['default_meta_title' => '{title} - ADH']);
+            ->assertFormSet(['default_meta_title' => '{title} - ADH'])
+            ->assertSee('OAI-SearchBot')
+            ->assertSee('ChatGPT-User')
+            ->assertSee('/llms.txt')
+            ->assertSee('/rss.xml');
         Livewire::test(IntegrationSettings::class)
             ->assertFormSet([
                 'iha_user_code' => 'IHA-CODE',

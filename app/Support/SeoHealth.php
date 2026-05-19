@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\NewsArticle;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 class SeoHealth
@@ -14,7 +15,7 @@ class SeoHealth
         $newsSitemapPath = public_path('sitemap-news.xml');
         $robots = (string) Setting::get('seo', 'robots_txt', '');
         $expectedSitemap = SeoUrls::absolute('/sitemap.xml');
-        $effectiveRobots = $this->effectiveRobots($robots, $expectedSitemap);
+        $effectiveRobots = RobotsTxt::render($robots);
         $recentArticles = NewsArticle::published()
             ->with('media')
             ->latest('published_at')
@@ -35,10 +36,17 @@ class SeoHealth
             'https_ok' => str_starts_with(SeoUrls::canonicalBaseUrl(), 'https://'),
             'robots_points_to_sitemap' => Str::contains($effectiveRobots, 'Sitemap: ' . $expectedSitemap),
             'expected_sitemap' => $expectedSitemap,
+            'expected_news_sitemap' => SeoUrls::absolute('/sitemap-news.xml'),
+            'expected_rss' => SeoUrls::absolute('/rss.xml'),
             'sitemap_exists' => is_file($sitemapPath),
             'sitemap_updated_at' => is_file($sitemapPath) ? date('d.m.Y H:i', (int) filemtime($sitemapPath)) : null,
             'news_sitemap_exists' => is_file($newsSitemapPath),
             'news_sitemap_url_count' => $this->countUrls($newsSitemapPath),
+            'llms_txt_available' => Route::has('llms'),
+            'rss_available' => Route::has('feeds.rss'),
+            'oai_searchbot_allowed' => RobotsTxt::botAllowed($effectiveRobots, 'OAI-SearchBot'),
+            'chatgpt_user_allowed' => RobotsTxt::botAllowed($effectiveRobots, 'ChatGPT-User'),
+            'llms_recent_articles_available' => $recentArticles->isNotEmpty(),
             'recent_articles_checked' => $recentArticles->count(),
             'recent_missing_meta' => $missingMeta,
             'recent_missing_image' => $missingImage,
@@ -69,6 +77,18 @@ class SeoHealth
                 'tone' => $snapshot['news_sitemap_exists'] ? 'success' : 'warning',
             ],
             [
+                'label' => 'AI crawl',
+                'value' => ($snapshot['oai_searchbot_allowed'] && $snapshot['chatgpt_user_allowed']) ? 'Hazır' : 'Risk',
+                'meta' => 'OAI-SearchBot / ChatGPT-User robots signal',
+                'tone' => ($snapshot['oai_searchbot_allowed'] && $snapshot['chatgpt_user_allowed']) ? 'success' : 'danger',
+            ],
+            [
+                'label' => 'Feed / llms.txt',
+                'value' => ($snapshot['rss_available'] && $snapshot['llms_txt_available']) ? 'Hazır' : 'Risk',
+                'meta' => 'RSS and machine-readable source map',
+                'tone' => ($snapshot['rss_available'] && $snapshot['llms_txt_available']) ? 'success' : 'warning',
+            ],
+            [
                 'label' => 'Son 20 haber',
                 'value' => $snapshot['recent_missing_meta'] . ' meta / ' . $snapshot['recent_missing_image'] . ' görsel',
                 'meta' => $snapshot['recent_articles_checked'] . ' haber kontrol edildi',
@@ -86,18 +106,4 @@ class SeoHealth
         return substr_count((string) file_get_contents($path), '<url>');
     }
 
-    private function effectiveRobots(string $stored, string $sitemap): string
-    {
-        if ($stored === '') {
-            return "User-agent: *\nAllow: /\nSitemap: {$sitemap}";
-        }
-
-        $content = preg_replace('#Sitemap:\s*https?://[^\s]+#i', 'Sitemap: ' . $sitemap, $stored);
-
-        if (! preg_match('/^Sitemap:/im', $content)) {
-            $content = rtrim($content) . "\nSitemap: {$sitemap}";
-        }
-
-        return $content;
-    }
 }

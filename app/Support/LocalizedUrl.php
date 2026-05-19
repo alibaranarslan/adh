@@ -12,6 +12,7 @@ class LocalizedUrl
 
     private const STATIC_PAGE_PATHS = [
         'hakkimizda' => 'hakkimizda',
+        'yayin-ilkeleri' => 'yayin-ilkeleri',
         'gizlilik-politikasi' => 'gizlilik-politikasi',
         'kvkk' => 'kvkk',
         'kvkk-aydinlatma' => 'kvkk',
@@ -103,6 +104,7 @@ class LocalizedUrl
             'news.archive' => 'arsiv',
             'contact', 'contact.submit' => 'iletisim',
             'page.about' => 'hakkimizda',
+            'page.editorial_policy' => 'yayin-ilkeleri',
             'page.privacy' => 'gizlilik-politikasi',
             'page.kvkk' => 'kvkk',
             'page.cookies' => 'cerez-politikasi',

@@ -1,5 +1,14 @@
 @extends('layouts.app')
 
+@push('head')
+    <x-schema-page
+        :type="$page->slug === 'hakkimizda' ? 'AboutPage' : 'WebPage'"
+        :name="$page->title"
+        :description="$page->meta_description ?: strip_tags($page->content)"
+        :url="\App\Support\SeoUrls::absolute(\App\Support\LocalizedUrl::route('page.show', ['slug' => $page->slug]))"
+    />
+@endpush
+
 @section('content')
     @php
         $pageContext = match ($page->slug) {

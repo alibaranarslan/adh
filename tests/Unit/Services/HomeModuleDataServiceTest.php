@@ -123,7 +123,7 @@ class HomeModuleDataServiceTest extends TestCase
         $this->assertSame('ads', $sections[0]['key'] ?? null);
     }
 
-    public function test_breaking_news_fallback_prefers_latest_articles_with_real_images(): void
+    public function test_breaking_news_fallback_preserves_editorial_score_priority(): void
     {
         $category = Category::create([
             'name' => ['tr' => 'Asayis'],
@@ -178,11 +178,10 @@ class HomeModuleDataServiceTest extends TestCase
         $payload = app(HomeModuleDataService::class)->collect($layoutState);
 
         $this->assertGreaterThanOrEqual(4, $payload['breakingNews']->count());
-        $this->assertTrue(
-            $payload['breakingNews']
-                ->take(4)
-                ->every(fn (NewsArticle $article): bool => filled($article->featured_image))
+        $this->assertSame('gorselsiz-eski-haber-6', $payload['breakingNews']->first()->slug);
+        $this->assertSame(
+            ['gorselsiz-eski-haber-6', 'gorselli-son-haber-1', 'gorselli-son-haber-2', 'gorselli-son-haber-3'],
+            $payload['breakingNews']->take(4)->pluck('slug')->all(),
         );
-        $this->assertSame('gorselli-son-haber-1', $payload['breakingNews']->first()->slug);
     }
 }

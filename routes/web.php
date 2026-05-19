@@ -1,8 +1,10 @@
 <?php
 
-use App\Http\Controllers\CityController;
 use App\Http\Controllers\AdminGuideProgressController;
+use App\Http\Controllers\AiVisibilityController;
 use App\Http\Controllers\ArchiveController;
+use App\Http\Controllers\CityController;
+use App\Http\Controllers\FeedController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\NewsController;
@@ -87,19 +89,15 @@ Route::get('/preview/header-theme/{headerTheme}', [HomePageController::class, 't
     ->middleware('signed')
     ->name('header-theme.preview.home');
 
+Route::get('/llms.txt', [AiVisibilityController::class, 'llms'])->name('llms');
+Route::get('/rss.xml', [FeedController::class, 'rss'])->name('feeds.rss');
+Route::get('/feed/news.xml', [FeedController::class, 'news'])->name('feeds.news');
+Route::get('/feed/adiyaman.xml', [FeedController::class, 'adiyaman'])->name('feeds.adiyaman');
+Route::get('/feed/kategori/{slug}.xml', [FeedController::class, 'category'])->name('feeds.category');
+
 Route::get('/robots.txt', function () {
-    $stored = \App\Models\Setting::query()->where('key', 'robots_txt')->value('value');
-    $sitemapLine = 'Sitemap: ' . \App\Support\SeoUrls::absolute('/sitemap.xml');
-
-    if (! $stored) {
-        $content = "User-agent: *\nAllow: /\n{$sitemapLine}";
-    } else {
-        $content = preg_replace('#Sitemap:\s*https?://[^\s]+#i', $sitemapLine, $stored);
-
-        if (! preg_match('/^Sitemap:/im', $content)) {
-            $content = rtrim($content) . "\n" . $sitemapLine;
-        }
-    }
+    $stored = \App\Models\Setting::get('seo', 'robots_txt');
+    $content = \App\Support\RobotsTxt::render($stored);
 
     return response($content, 200)->header('Content-Type', 'text/plain');
 });
@@ -114,6 +112,7 @@ Route::prefix('{locale}')
         Route::get('/iletisim', [PageController::class, 'contact']);
         Route::post('/iletisim', [PageController::class, 'submitContact'])->middleware('throttle:contact');
         Route::get('/hakkimizda', [PageController::class, 'about']);
+        Route::get('/yayin-ilkeleri', [PageController::class, 'editorialPolicy']);
         Route::get('/gizlilik-politikasi', [PageController::class, 'privacy']);
         Route::get('/kvkk', [PageController::class, 'kvkk']);
         Route::get('/cerez-politikasi', [PageController::class, 'cookies']);
@@ -132,6 +131,7 @@ Route::middleware('set.locale')->group(function () {
     Route::get('/iletisim', [PageController::class, 'contact'])->name('contact');
     Route::post('/iletisim', [PageController::class, 'submitContact'])->middleware('throttle:contact')->name('contact.submit');
     Route::get('/hakkimizda', [PageController::class, 'about'])->middleware('cache.page:600')->name('page.about');
+    Route::get('/yayin-ilkeleri', [PageController::class, 'editorialPolicy'])->middleware('cache.page:600')->name('page.editorial_policy');
     Route::get('/gizlilik-politikasi', [PageController::class, 'privacy'])->middleware('cache.page:600')->name('page.privacy');
     Route::get('/kvkk', [PageController::class, 'kvkk'])->middleware('cache.page:600')->name('page.kvkk');
     Route::get('/cerez-politikasi', [PageController::class, 'cookies'])->middleware('cache.page:600')->name('page.cookies');
