@@ -54,8 +54,10 @@
             </div>
 
             <div class="flex min-w-0 flex-1 justify-center md:hidden">
-                <div class="inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-semibold leading-none text-white/90">
-                    <span>{{ now()->locale(app()->getLocale())->translatedFormat('H:i') }}</span>
+                <div class="adh-mobile-local-pill inline-flex max-w-full items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-bold leading-none text-white shadow-sm shadow-black/10"
+                     data-testid="mobile-local-info-pill"
+                     aria-label="{{ __('Yerel saat ve hava durumu') }}">
+                    <span class="tabular-nums">{{ now()->locale(app()->getLocale())->translatedFormat('H:i') }}</span>
                     <span class="h-3 w-px bg-white/25"></span>
                     <span class="truncate">{{ __('Adıyaman') }} {{ $weather['temp'] ?? '--' }}&deg;</span>
                 </div>
@@ -149,8 +151,8 @@
                                 <img src="{{ $branding['logo_dark_url'] }}" alt="{{ $siteName }}" class="hidden h-10 w-auto dark:block">
                             </div>
                         @endif
-                        <p class="adh-mobile-wordmark mx-auto max-w-[calc(100vw-1.5rem)] whitespace-nowrap font-serif font-black uppercase leading-[0.9] tracking-[0.018em] text-adh-navy dark:text-white
-                                  text-[clamp(1rem,4.45vw,1.16rem)] sm:text-3xl sm:font-bold sm:tracking-[0.08em] md:text-[2.7rem] lg:text-[3rem]">
+                        <p class="adh-mobile-wordmark mx-auto max-w-[calc(100vw-1.5rem)] whitespace-nowrap font-serif font-black uppercase leading-[0.9] tracking-[0.024em] text-adh-navy dark:text-white
+                                  text-[clamp(1.08rem,4.7vw,1.24rem)] sm:text-3xl sm:font-bold sm:tracking-[0.08em] md:text-[2.7rem] lg:text-[3rem]">
                             {{ $siteName }}
                         </p>
                         <div class="relative my-1 sm:my-2">
@@ -182,9 +184,9 @@
     <nav class="border-b border-adh-border bg-white dark:border-adh-blue dark:bg-adh-blue md:hidden"
          aria-label="{{ __('Haber kategorileri') }}"
          data-testid="mobile-category-strip">
-        <div class="scrollbar-hide flex min-h-[2.5rem] items-center gap-1.5 overflow-x-auto px-2.5 py-1.5">
+        <div class="scrollbar-hide flex min-h-9 snap-x items-center gap-1 overflow-x-auto px-2 py-1">
             <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
-               class="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-lg border px-3 text-[12px] font-semibold transition-colors
+               class="inline-flex min-h-8 shrink-0 snap-start items-center whitespace-nowrap rounded-md border px-2.5 text-[11px] font-semibold transition-colors
                       {{ request()->routeIs('home')
                           ? 'border-adh-red/30 bg-adh-red/10 text-adh-red'
                           : 'border-adh-border bg-white text-adh-text hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100' }}">
@@ -193,7 +195,7 @@
             @foreach ($navCategories ?? collect() as $item)
                 @php $catSlug = data_get($item, 'slug'); @endphp
                 <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => $catSlug]) }}"
-                   class="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-lg border px-3 text-[12px] font-semibold transition-colors
+                   class="inline-flex min-h-8 shrink-0 snap-start items-center whitespace-nowrap rounded-md border px-2.5 text-[11px] font-semibold transition-colors
                           {{ request()->route('slug') === $catSlug
                               ? 'border-adh-red/30 bg-adh-red/10 text-adh-red'
                               : 'border-adh-border bg-white text-adh-text hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100' }}">
@@ -201,7 +203,7 @@
                 </a>
             @endforeach
             <a href="{{ \App\Support\LocalizedUrl::route('city.index') }}"
-               class="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-lg border border-adh-border bg-white px-3 text-[12px] font-semibold text-adh-text transition-colors hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100">
+               class="inline-flex min-h-8 shrink-0 snap-start items-center whitespace-nowrap rounded-md border border-adh-border bg-white px-2.5 text-[11px] font-semibold text-adh-text transition-colors hover:border-adh-red hover:text-adh-red dark:border-gray-700 dark:bg-adh-navy/50 dark:text-gray-100">
                 {{ __('İller') }}
             </a>
         </div>

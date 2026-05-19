@@ -10,24 +10,24 @@
     );
 @endphp
 
-<footer class="mt-5 border-t-2 border-adh-red bg-adh-blue text-white dark:bg-adh-navy md:mt-8 md:border-t-4">
-    <div class="mx-auto max-w-7xl px-4 py-4 md:py-5">
-        <div class="grid grid-cols-1 gap-4 border-b border-white/10 pb-4 md:grid-cols-2 md:gap-5 md:pb-5 lg:grid-cols-[1.15fr_0.75fr_0.75fr_1fr]">
+<footer class="mt-4 border-t-2 border-adh-red bg-adh-blue text-white dark:bg-adh-navy md:mt-6" data-testid="site-footer">
+    <div class="mx-auto max-w-7xl px-4 py-3 md:py-4">
+        <div class="grid grid-cols-1 gap-3 border-b border-white/10 pb-3 md:grid-cols-2 md:gap-4 md:pb-4 lg:grid-cols-[1.15fr_0.75fr_0.75fr_1fr]">
             <div>
-                <a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="mb-2 block md:mb-3">
+                <a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="mb-2 block">
                     <img
                         src="{{ $branding['logo_dark_url'] ?? asset('images/branding/adh-logo-dark.svg') }}"
                         alt="{{ $siteName }}"
-                        class="h-8 w-auto md:h-9"
+                        class="h-7 w-auto md:h-8"
                     >
                 </a>
 
                 @if ($siteTagline)
-                    <p class="mb-1.5 text-[10px] uppercase tracking-[0.2em] text-gray-400 md:text-xs">{{ $siteTagline }}</p>
+                    <p class="mb-1 text-[10px] uppercase tracking-[0.18em] text-gray-400 md:text-[11px]">{{ $siteTagline }}</p>
                 @endif
 
                 @if ($footerDescription)
-                    <p class="line-clamp-2 max-w-sm text-xs leading-5 text-gray-300 md:text-sm md:leading-5">
+                    <p class="line-clamp-2 max-w-sm text-xs leading-5 text-gray-300">
                         {{ $footerDescription }}
                     </p>
                 @endif
@@ -36,7 +36,7 @@
                     <div class="mt-2 flex flex-wrap gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] md:text-[11px]">
                         @foreach ($socialLinks as $platform => $url)
                             @if ($url)
-                                <a href="{{ $url }}" target="_blank" rel="noopener" class="rounded bg-white/10 px-2.5 py-1 transition-colors hover:bg-adh-red">
+                                <a href="{{ $url }}" target="_blank" rel="noopener" class="rounded bg-white/10 px-2 py-0.5 transition-colors hover:bg-adh-red">
                                     {{ $platform }}
                                 </a>
                             @endif
@@ -46,8 +46,8 @@
             </div>
 
             <div>
-                <h5 class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-300 md:mb-3">{{ __('Kurumsal') }}</h5>
-                <ul class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs md:block md:space-y-1.5 md:text-sm">
+                <h5 class="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-300">{{ __('Kurumsal') }}</h5>
+                <ul class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs md:block md:space-y-1">
                     <li><a href="{{ \App\Support\LocalizedUrl::route('home') }}" class="transition-colors hover:text-adh-red-light">{{ __('Anasayfa') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('page.editorial_policy') }}" class="transition-colors hover:text-adh-red-light">{{ __('Yayın İlkeleri') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('page.about') }}" class="transition-colors hover:text-adh-red-light">{{ __('Hakkımızda') }}</a></li>
@@ -59,8 +59,8 @@
             </div>
 
             <div>
-                <h5 class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-300 md:mb-3">{{ __('Editoryal') }}</h5>
-                <ul class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs md:block md:space-y-1.5 md:text-sm">
+                <h5 class="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-300">{{ __('Editoryal') }}</h5>
+                <ul class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs md:block md:space-y-1">
                     <li><a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => 'gundem']) }}" class="transition-colors hover:text-adh-red-light">{{ __('Gündem') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('city.show', ['slug' => 'adiyaman']) }}" class="transition-colors hover:text-adh-red-light">{{ __('Adıyaman') }}</a></li>
                     <li><a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => 'asayis']) }}" class="transition-colors hover:text-adh-red-light">{{ __('Asayiş') }}</a></li>
@@ -71,8 +71,8 @@
             </div>
 
             <div>
-                <h5 class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-300 md:mb-3">{{ __('Okur Hattı') }}</h5>
-                <ul class="mb-2 space-y-1 text-xs leading-5 text-gray-300 md:text-sm md:leading-5">
+                <h5 class="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-300">{{ __('Okur Hattı') }}</h5>
+                <ul class="mb-2 space-y-1 text-xs leading-5 text-gray-300">
                     <li>{{ $resolvedAddress }}</li>
                     @if(data_get($siteSettings, 'contact_phone'))
                         <li><a href="tel:{{ data_get($siteSettings, 'contact_phone') }}" class="transition-colors hover:text-adh-red-light">{{ data_get($siteSettings, 'contact_phone') }}</a></li>
@@ -86,9 +86,9 @@
                     {{ __('Haber ihbarı, düzeltme talepleri ve kurumsal iletişim için redaksiyon ekibine ulaşabilirsiniz.') }}
                 </p>
 
-                <h5 class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-300">{{ __('E-Bülten') }}</h5>
+                <h5 class="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-300">{{ __('E-Bülten') }}</h5>
                 <form
-                    class="space-y-2"
+                    class="space-y-1.5"
                     x-data="{
                         email: '',
                         loading: false,
@@ -121,13 +121,13 @@
                     @submit.prevent="submit"
                 >
                     <template x-if="!success">
-                        <div class="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                        <div class="grid grid-cols-1 gap-1.5 sm:grid-cols-[minmax(0,1fr)_auto]">
                             <input type="email" x-model="email"
                                    placeholder="{{ __('E-posta adresiniz') }}"
-                                   class="min-h-10 w-full rounded border border-gray-600 bg-white/10 px-3 py-2 text-sm text-white placeholder-gray-400 focus:border-adh-red focus:outline-none"
+                                   class="min-h-9 w-full rounded border border-gray-600 bg-white/10 px-3 py-1.5 text-sm text-white placeholder-gray-400 focus:border-adh-red focus:outline-none"
                                    aria-label="{{ __('E-posta adresinizi girin') }}" required>
                             <button type="submit" :disabled="loading"
-                                    class="min-h-10 rounded bg-adh-red px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60">
+                                    class="min-h-9 rounded bg-adh-red px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60">
                                 <span x-text="loading ? '{{ __('Kaydediliyor...') }}' : '{{ __('Abone Ol') }}'"></span>
                             </button>
                             <p x-show="message" x-text="message" class="text-xs text-red-300 sm:col-span-2"></p>
@@ -140,7 +140,7 @@
             </div>
         </div>
 
-        <div class="flex flex-col items-start justify-between gap-2 pt-3 text-[11px] leading-5 text-gray-400 md:flex-row md:items-center md:text-xs">
+        <div class="flex flex-col items-start justify-between gap-1.5 pt-2 text-[11px] leading-5 text-gray-400 md:flex-row md:items-center md:text-xs">
             <p>© {{ date('Y') }} {{ $siteName }} — {{ __('Tüm hakları saklıdır.') }}</p>
             <p class="flex flex-wrap items-center gap-1">
                 <span>{{ __('İHA İş Birliği') }}</span>

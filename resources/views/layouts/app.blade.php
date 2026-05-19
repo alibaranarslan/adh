@@ -80,7 +80,7 @@
     @include('layouts.partials.nav')
     <x-ad-slot position="header" class="mx-auto mt-3 w-full max-w-7xl px-4 md:mt-4" />
 
-    <main id="main-content" tabindex="-1" class="mx-auto px-4 py-0 focus:outline-none md:py-2" style="max-width: var(--adh-content-width);">
+    <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-full overflow-x-clip px-4 py-0 focus:outline-none md:py-2" style="max-width: var(--adh-content-width);">
         @hasSection('hero')
             @yield('hero')
         @endif
@@ -91,19 +91,19 @@
             @if($sidebarPosition === 'none')
                 @yield('content')
             @else
-                <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <div class="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-3">
                     @if($sidebarPosition === 'left')
-                        <aside class="lg:col-span-1">
+                        <aside class="min-w-0 lg:col-span-1">
                             @include('layouts.partials.sidebar')
                         </aside>
                     @endif
 
-                    <div class="{{ $sidebarPosition === 'left' ? 'lg:col-span-2' : 'lg:col-span-2' }}">
+                    <div class="min-w-0 {{ $sidebarPosition === 'left' ? 'lg:col-span-2' : 'lg:col-span-2' }}">
                         @yield('content')
                     </div>
 
                     @if($sidebarPosition !== 'left')
-                        <aside class="lg:col-span-1">
+                        <aside class="min-w-0 lg:col-span-1">
                             @include('layouts.partials.sidebar')
                         </aside>
                     @endif

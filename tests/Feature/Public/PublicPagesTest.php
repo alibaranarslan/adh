@@ -829,11 +829,99 @@ class PublicPagesTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('adh_site_cookie_consent', false)
-            ->assertSee('inset-x-2 bottom-2', false)
+            ->assertSee('inset-x-3 bottom-3', false)
+            ->assertSee('max-h-[32vh] overflow-y-auto', false)
             ->assertSee('md:max-w-sm', false)
             ->assertSee('grid grid-cols-3', false)
+            ->assertSee('min-h-8', false)
             ->assertDontSee('max-h-[34dvh]', false)
             ->assertDontSee('sticky -top-3', false);
+    }
+
+    public function test_mobile_header_navigation_and_breaking_strip_use_compact_classes(): void
+    {
+        $category = Category::create([
+            'name' => ['tr' => 'Gundem'],
+            'slug' => 'gundem',
+            'description' => ['tr' => 'Gundem haberleri'],
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        NewsArticle::create([
+            'title' => ['tr' => 'Mobil Son Dakika Haberi'],
+            'slug' => 'mobil-son-dakika-haberi',
+            'summary' => ['tr' => 'Kisa ozet'],
+            'content' => ['tr' => 'Detayli haber icerigi'],
+            'source' => 'manuel',
+            'category_id' => $category->id,
+            'status' => 'published',
+            'is_breaking' => true,
+            'published_at' => now(),
+            'city_slug' => 'adiyaman',
+            'language' => 'tr',
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('data-testid="mobile-category-strip"', false)
+            ->assertSee('data-testid="mobile-local-info-pill"', false)
+            ->assertSee('adh-mobile-local-pill', false)
+            ->assertSee('min-h-9 snap-x', false)
+            ->assertSee('min-h-8 shrink-0 snap-start', false)
+            ->assertSee('text-[clamp(1.08rem,4.7vw,1.24rem)]', false)
+            ->assertSee('data-testid="breaking-news-strip"', false)
+            ->assertSee('min-h-10', false)
+            ->assertSee('max-w-[12rem]', false);
+    }
+
+    public function test_editorial_hero_uses_compact_mobile_presentation(): void
+    {
+        $category = Category::create([
+            'name' => ['tr' => 'Gundem'],
+            'slug' => 'gundem',
+            'description' => ['tr' => 'Gundem haberleri'],
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        NewsArticle::create([
+            'title' => ['tr' => 'Mobil Manset Haberi'],
+            'slug' => 'mobil-manset-haberi',
+            'summary' => ['tr' => 'Mobil manset icin kisa ozet'],
+            'content' => ['tr' => 'Mobil manset icin detayli haber icerigi'],
+            'featured_image' => '/images/mobile-hero.jpg',
+            'source' => 'manuel',
+            'category_id' => $category->id,
+            'status' => 'published',
+            'published_at' => now(),
+            'editorial_score' => 95,
+            'city_slug' => 'adiyaman',
+            'language' => 'tr',
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('data-testid="editorial-hero-section"', false)
+            ->assertSee('data-testid="editorial-hero-card"', false)
+            ->assertSee('h-[186px]', false)
+            ->assertSee('min-[390px]:h-[198px]', false)
+            ->assertSee('line-clamp-2 text-balance', false)
+            ->assertSee('line-clamp-1 max-w-2xl', false);
+    }
+
+    public function test_footer_uses_compact_clean_public_presentation(): void
+    {
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('data-testid="site-footer"', false)
+            ->assertSee('py-3 md:py-4', false)
+            ->assertSee('h-7 w-auto md:h-8', false)
+            ->assertSee('grid grid-cols-2 gap-x-3 gap-y-1 text-xs', false)
+            ->assertSee('min-h-9', false)
+            ->assertSee(json_decode('"Yay\u0131n \u0130lkeleri"'))
+            ->assertSee(json_decode('"\u00c7erez Politikas\u0131"'))
+            ->assertSee(json_decode('"\u0130HA \u0130\u015f Birli\u011fi"'));
     }
 
     public function test_public_news_surfaces_do_not_render_stock_placeholder_as_article_image(): void

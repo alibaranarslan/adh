@@ -20,17 +20,17 @@
         $whatsAppPhone = preg_replace('/[^0-9]/', '', $resolvedPhone);
     @endphp
 
-    <div class="space-y-6">
-        <div class="rounded-[var(--adh-radius)] border border-adh-border bg-white px-6 py-7 shadow-[var(--adh-shadow)] dark:border-gray-700 dark:bg-adh-blue md:px-8 md:py-9">
+    <div class="space-y-6 overflow-hidden">
+        <div class="rounded-[var(--adh-radius)] border border-adh-border bg-white px-4 py-6 shadow-[var(--adh-shadow)] dark:border-gray-700 dark:bg-adh-blue md:px-8 md:py-9">
             <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-adh-red">{{ __('İletişim') }}</p>
-            <h1 class="mt-3 font-serif text-3xl font-bold text-adh-text dark:text-gray-100 md:text-4xl">{{ __('Redaksiyon ve Okur Hattı') }}</h1>
-            <p class="mt-4 max-w-3xl text-base leading-7 text-adh-gray dark:text-gray-300">
+            <h1 class="mt-3 break-words font-serif text-2xl font-bold leading-tight text-adh-text dark:text-gray-100 sm:text-3xl md:text-4xl">{{ __('Redaksiyon ve Okur Hattı') }}</h1>
+            <p class="mt-4 max-w-3xl break-words text-sm leading-6 text-adh-gray dark:text-gray-300 md:text-base md:leading-7">
                 {{ __('Haber ihbarı, düzeltme talepleri, reklam iş birlikleri ve genel sorular için ADH ekibine bu sayfa üzerinden ulaşabilirsiniz.') }}
             </p>
         </div>
 
-        <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
-            <div class="xl:col-span-7 rounded-[var(--adh-radius)] border border-adh-border bg-white p-6 shadow-[var(--adh-shadow)] dark:border-gray-700 dark:bg-adh-blue">
+        <div class="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-12">
+            <div class="min-w-0 rounded-[var(--adh-radius)] border border-adh-border bg-white p-4 shadow-[var(--adh-shadow)] dark:border-gray-700 dark:bg-adh-blue sm:p-6 xl:col-span-7">
                 <div class="mb-5 border-b border-adh-border pb-4 dark:border-gray-700">
                     <h2 class="font-serif text-2xl font-bold text-adh-text dark:text-gray-100">{{ __('Mesaj Gönderin') }}</h2>
                     <p class="mt-2 text-sm leading-6 text-adh-gray dark:text-gray-400">{{ __('Okur geri bildirimleri, haber önerileri ve kurumsal iletişim talepleri doğrudan ilgili ekibe yönlendirilir.') }}</p>
@@ -98,7 +98,7 @@
                 </form>
             </div>
 
-            <div class="xl:col-span-5 space-y-5">
+            <div class="min-w-0 space-y-5 xl:col-span-5">
                 <div class="rounded-[var(--adh-radius)] border border-adh-border bg-white p-5 shadow-[var(--adh-shadow)] dark:border-gray-700 dark:bg-adh-blue">
                     <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-adh-red">{{ __('İletişim Bilgileri') }}</p>
                     <ul class="mt-4 space-y-4 text-sm text-adh-text dark:text-gray-200">

@@ -12,11 +12,11 @@
 @endphp
 
 @if ($heroMain && $heroStory)
-    <section class="mb-2 border-b border-adh-red/20 pb-2 dark:border-red-400/20 md:mb-3 md:border-b-2 md:border-adh-text md:pb-3 md:dark:border-gray-700" aria-label="{{ __('Manşet Haberleri') }}">
-        <div class="mb-3 flex flex-col gap-2 border-b border-adh-border/80 pb-3 dark:border-gray-700 md:mb-4 md:flex-row md:items-end md:justify-between">
+    <section class="mb-1 border-b border-adh-red/20 pb-1 dark:border-red-400/20 md:mb-3 md:border-b-2 md:border-adh-text md:pb-3 md:dark:border-gray-700" aria-label="{{ __('Manşet Haberleri') }}" data-testid="editorial-hero-section">
+        <div class="mb-2 flex flex-col gap-1.5 border-b border-adh-border/80 pb-2 dark:border-gray-700 md:mb-4 md:flex-row md:items-end md:justify-between md:gap-2 md:pb-3">
             <div>
                 <p class="text-[10px] font-bold uppercase tracking-[0.28em] text-adh-red">{{ __('Bugünün Editör Seçimi') }}</p>
-                <h2 class="mt-1 font-serif text-2xl font-bold leading-tight text-adh-text dark:text-gray-100 md:text-3xl">
+                <h2 class="mt-1 font-serif text-[1.55rem] font-bold leading-tight text-adh-text dark:text-gray-100 md:text-3xl">
                     {{ $title }}
                 </h2>
                 @if ($subtitle)
@@ -33,41 +33,41 @@
         <div class="grid grid-cols-1 gap-3 md:gap-5 lg:grid-cols-12 lg:items-stretch lg:gap-x-6">
             <div class="{{ $sideStories->isNotEmpty() ? 'lg:col-span-7 xl:col-span-8' : 'lg:col-span-12' }}">
                 <a href="{{ $heroStory['url'] }}" class="group block h-full">
-                    <div class="relative h-full overflow-hidden rounded-[calc(var(--adh-radius)*1.1)] border border-adh-border bg-adh-navy shadow-[var(--adh-shadow)] dark:border-gray-700">
+                    <div class="relative h-full overflow-hidden rounded-[calc(var(--adh-radius)*1.1)] border border-adh-border bg-adh-navy shadow-[var(--adh-shadow)] dark:border-gray-700" data-testid="editorial-hero-card">
                         @if ($heroStory['has_image'])
                             <img
                                 src="{{ $heroStory['image_url'] }}"
                                 alt="{{ $heroStory['title'] }}"
                                 width="1200"
                                 height="760"
-                                class="h-[220px] w-full object-cover transition-transform duration-500 group-hover:scale-[1.025] sm:h-[320px] lg:h-[430px]"
+                                class="h-[186px] w-full object-cover transition-transform duration-500 group-hover:scale-[1.025] min-[390px]:h-[198px] sm:h-[320px] lg:h-[430px]"
                                 loading="eager"
                                 fetchpriority="high"
                             >
                         @else
-                            <span class="flex h-[220px] w-full items-center justify-center bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.16),transparent_28%),linear-gradient(135deg,#0a1632,#172554_52%,#7f1d1d)] px-6 text-center text-sm font-black uppercase tracking-[0.22em] text-white/88 transition-transform duration-500 group-hover:scale-[1.01] sm:h-[320px] lg:h-[430px]">
+                            <span class="flex h-[186px] w-full items-center justify-center bg-[radial-gradient(circle_at_18%_18%,rgba(255,255,255,0.16),transparent_28%),linear-gradient(135deg,#0a1632,#172554_52%,#7f1d1d)] px-6 text-center text-sm font-black uppercase tracking-[0.22em] text-white/88 transition-transform duration-500 group-hover:scale-[1.01] min-[390px]:h-[198px] sm:h-[320px] lg:h-[430px]">
                                 {{ $heroStory['category_name'] ?: __('Haber') }}
                             </span>
                         @endif
-                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-adh-navy via-adh-navy/90 to-transparent px-4 pb-4 pt-16 text-white sm:px-6 sm:pb-6 sm:pt-28 lg:px-7 lg:pb-7">
-                            <div class="max-w-3xl space-y-2 sm:space-y-3">
+                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-adh-navy via-adh-navy/90 to-transparent px-4 pb-3 pt-12 text-white sm:px-6 sm:pb-6 sm:pt-28 lg:px-7 lg:pb-7">
+                            <div class="max-w-3xl space-y-1.5 sm:space-y-3">
                                 @if ($heroStory['category_name'])
                                     <span class="inline-flex rounded-sm bg-adh-red px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white shadow-sm">
                                         {{ $heroStory['category_name'] }}
                                     </span>
                                 @endif
 
-                                <h1 class="line-clamp-3 text-balance font-serif text-[1.2rem] font-bold leading-tight text-white transition-colors group-hover:text-red-100 sm:text-3xl lg:text-[2.45rem]">
+                                <h1 class="line-clamp-2 text-balance font-serif text-[1.08rem] font-bold leading-tight text-white transition-colors group-hover:text-red-100 min-[390px]:text-[1.15rem] sm:line-clamp-3 sm:text-3xl lg:text-[2.45rem]">
                                     {{ $heroStory['title'] }}
                                 </h1>
 
                                 @if ($heroStory['summary'])
-                                    <p class="line-clamp-2 max-w-2xl text-[13px] leading-5 text-white/86 sm:text-[15px] sm:leading-6">
+                                    <p class="line-clamp-1 max-w-2xl text-[12px] leading-5 text-white/86 min-[390px]:text-[13px] sm:line-clamp-2 sm:text-[15px] sm:leading-6">
                                         {{ $heroStory['summary'] }}
                                     </p>
                                 @endif
 
-                                <div class="flex flex-wrap items-center gap-3">
+                                <div class="flex flex-wrap items-center gap-2.5">
                                     <x-news-meta-row :article="$heroMain" :show-source="true" class="text-white/75" />
                                     <span class="hidden h-1 w-1 rounded-full bg-white/40 sm:inline-block" aria-hidden="true"></span>
                                     <span class="hidden text-xs font-semibold uppercase tracking-[0.16em] text-white/80 sm:inline">
