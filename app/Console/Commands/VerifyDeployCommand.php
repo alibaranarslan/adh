@@ -91,10 +91,11 @@ class VerifyDeployCommand extends Command
 
         $this->check("Sitemap responds ({$appUrl}/sitemap.xml)", function () use ($appUrl) {
             $response = Http::timeout(10)->get("{$appUrl}/sitemap.xml");
+            $body = $response->body();
 
             return $response->ok()
                 && str_contains($response->header('Content-Type', ''), 'xml')
-                && str_contains($response->body(), '<urlset');
+                && (str_contains($body, '<urlset') || str_contains($body, '<sitemapindex'));
         }, $failed);
 
         if ($this->option('sentry')) {
