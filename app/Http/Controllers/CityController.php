@@ -23,8 +23,8 @@ class CityController extends Controller
             ->paginate(16);
 
         return view('news.city', compact('cityName', 'slug', 'articles', 'allCities'))->with([
-            'metaTitle' => $cityName . ' ' . __('Haberleri') . ' | ' . __('Adıyaman Dijital Haber'),
-            'metaDescription' => $cityName . ' ' . __('ilinden en güncel haberler.'),
+            'metaTitle' => $cityName . ' Haberleri - Son Dakika ' . $cityName . ' Gelişmeleri',
+            'metaDescription' => $cityName . ' ilçesi ve çevresinden son dakika haberleri, güncel gelişmeler ve yerel gündem başlıkları.',
         ]);
     }
 
@@ -39,8 +39,8 @@ class CityController extends Controller
             ->pluck('total', 'city_slug');
 
         return view('news.cities', compact('allCities', 'cityCounts'))->with([
-            'metaTitle' => __('İller') . ' | ' . __('Adıyaman Dijital Haber'),
-            'metaDescription' => __('Bölge illerinden en güncel haberler.'),
+            'metaTitle' => 'Adıyaman ve Bölge Haberleri',
+            'metaDescription' => 'Adıyaman merkez, ilçeler ve çevre illerden son dakika haberleri ve güncel yerel gelişmeler.',
         ]);
     }
 }

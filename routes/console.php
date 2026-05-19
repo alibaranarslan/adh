@@ -43,5 +43,5 @@ Schedule::command('weather:refresh')->everyThirtyMinutes()
 Schedule::command('editorial:recalculate')->hourly()
     ->onFailure($onScheduleFailure);
 
-Schedule::command('sitemap:generate')->dailyAt('04:00')
+Schedule::command('sitemap:generate')->everyThirtyMinutes()
     ->onFailure($onScheduleFailure);

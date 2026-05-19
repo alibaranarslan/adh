@@ -15,6 +15,7 @@ use App\Models\NewsArticle;
 use App\Models\User;
 use App\Support\AdminPrivileges;
 use App\Support\AdminSafeText;
+use App\Support\SeoHealth;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -183,6 +184,7 @@ class AdhControlCenterService
             ],
             'homepage_status' => $homepageStatus,
             'traffic_pulse' => $trafficPulse,
+            'seo_health' => app(SeoHealth::class)->cards(),
             'quick_actions' => $this->quickActions($isEditor, $isOps),
             'ops_health' => $isOps ? [
                 [

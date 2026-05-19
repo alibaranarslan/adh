@@ -5,6 +5,7 @@
 /public/hot
 /public/js/filament
 /public/sitemap.xml
+/public/sitemap-*.xml
 /public/storage
 /storage/*.key
 /vendor

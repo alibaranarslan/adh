@@ -9,7 +9,7 @@
             "@type": "ListItem",
             "position": {{ $i + 1 }},
             "name": @json($item['name'] ?? $item['label'] ?? ''),
-            "item": @json($item['url'] ?? request()->url())
+            "item": @json(\App\Support\SeoUrls::absolute($item['url'] ?? request()->url()))
         }@if(!$loop->last),@endif
         @endforeach
     ]

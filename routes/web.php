@@ -62,6 +62,20 @@ Route::get('/sitemap.xml', function () {
     return response()->file($path, ['Content-Type' => 'application/xml']);
 });
 
+Route::get('/{sitemap}', function (string $sitemap) {
+    abort_unless(in_array($sitemap, [
+        'sitemap-pages.xml',
+        'sitemap-categories.xml',
+        'sitemap-articles.xml',
+        'sitemap-news.xml',
+    ], true), 404);
+
+    $path = public_path($sitemap);
+    abort_unless(file_exists($path), 404);
+
+    return response()->file($path, ['Content-Type' => 'application/xml']);
+})->where('sitemap', 'sitemap-(pages|categories|articles|news)\.xml');
+
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])
     ->middleware('throttle:newsletter')
     ->name('newsletter.subscribe');
@@ -75,7 +89,7 @@ Route::get('/preview/header-theme/{headerTheme}', [HomePageController::class, 't
 
 Route::get('/robots.txt', function () {
     $stored = \App\Models\Setting::query()->where('key', 'robots_txt')->value('value');
-    $sitemapLine = 'Sitemap: ' . url('/sitemap.xml');
+    $sitemapLine = 'Sitemap: ' . \App\Support\SeoUrls::absolute('/sitemap.xml');
 
     if (! $stored) {
         $content = "User-agent: *\nAllow: /\n{$sitemapLine}";

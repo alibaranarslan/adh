@@ -199,6 +199,26 @@
             </section>
         </div>
 
+        <section class="admin-panel-surface" data-tour-anchor="dashboard.seo">
+            <div class="admin-section-head">
+                <div>
+                    <h3>{{ $seo_health['title'] }}</h3>
+                    <p>{{ $seo_health['summary'] }}</p>
+                </div>
+                <a href="{{ \App\Filament\Pages\SeoSettings::getUrl(panel: 'admin') }}" class="admin-link">SEO Ayarları</a>
+            </div>
+
+            <div class="admin-kpi-grid admin-kpi-grid--triple">
+                @foreach ($seo_health['cards'] as $card)
+                    <article class="admin-kpi {{ $tones[$card['tone']] ?? $tones['neutral'] }}">
+                        <p class="admin-kpi__label">{{ $card['label'] }}</p>
+                        <p class="admin-kpi__value">{{ $card['value'] }}</p>
+                        <p class="admin-kpi__meta">{{ $card['meta'] }}</p>
+                    </article>
+                @endforeach
+            </div>
+        </section>
+
         <section class="admin-panel-surface" data-tour-anchor="dashboard.traffic">
             <div class="admin-section-head">
                 <div>

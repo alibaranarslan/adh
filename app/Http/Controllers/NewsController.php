@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\NewsArticle;
 use App\Models\Tag;
 use App\Services\RelatedNewsService;
+use Illuminate\Support\Str;
 
 class NewsController extends Controller
 {
@@ -34,8 +35,8 @@ class NewsController extends Controller
             ->groupBy('position');
 
         return view('news.show', compact('article', 'related', 'ads'))->with([
-            'metaTitle' => $article->title,
-            'metaDescription' => $article->summary,
+            'metaTitle' => $this->articleMetaTitle($article),
+            'metaDescription' => $this->articleMetaDescription($article),
             'ogImage' => $article->featured_image,
             'ogType' => 'article',
         ]);
@@ -54,8 +55,8 @@ class NewsController extends Controller
             ->paginate(12);
 
         return view('news.category-v2', compact('category', 'articles'))->with([
-            'metaTitle' => $category->name . ' ' . __('Haberleri'),
-            'metaDescription' => $category->name . ' ' . __('kategorisindeki güncel haberler.'),
+            'metaTitle' => $category->name . ' Haberleri - Son Dakika ' . $category->name,
+            'metaDescription' => $category->name . ' kategorisindeki son dakika gelişmeleri, güncel haberler ve öne çıkan başlıklar.',
         ]);
     }
 
@@ -72,13 +73,28 @@ class NewsController extends Controller
             ->paginate(12);
 
         return view('news.tag-v2', compact('tag', 'articles'))->with([
-            'metaTitle' => '#' . $tag->name . ' ' . __('Etiketli Haberler'),
-            'metaDescription' => $tag->name . ' ' . __('etiketi altındaki haberler.'),
+            'metaTitle' => '#' . $tag->name . ' Etiketli Haberler',
+            'metaDescription' => $tag->name . ' etiketi altındaki güncel haberler ve son dakika başlıkları.',
         ]);
     }
 
     private function resolveSlug(string $localeOrSlug, ?string $slug = null): string
     {
         return $slug ?? $localeOrSlug;
+    }
+
+    private function articleMetaTitle(NewsArticle $article): string
+    {
+        return trim((string) $article->getTranslation('meta_title', app()->getLocale(), false))
+            ?: (string) $article->title;
+    }
+
+    private function articleMetaDescription(NewsArticle $article): string
+    {
+        $description = trim((string) $article->getTranslation('meta_description', app()->getLocale(), false))
+            ?: trim((string) $article->getTranslation('summary', app()->getLocale(), false))
+            ?: trim((string) $article->getTranslation('content', app()->getLocale(), false));
+
+        return Str::limit(strip_tags($description), 160);
     }
 }

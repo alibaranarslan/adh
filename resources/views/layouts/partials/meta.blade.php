@@ -16,4 +16,5 @@
 <link rel="icon" href="{{ $faviconUrl }}" sizes="any">
 <link rel="icon" href="{{ $faviconUrl }}" sizes="32x32">
 <link rel="apple-touch-icon" href="{{ $faviconUrl }}">
+<x-schema-site />
 @stack('schema')

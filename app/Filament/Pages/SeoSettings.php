@@ -5,7 +5,9 @@ namespace App\Filament\Pages;
 use App\Models\Setting;
 use App\Support\AdminImageUploads;
 use App\Support\AdminPrivileges;
+use App\Support\SeoHealth;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -50,6 +52,23 @@ class SeoSettings extends Page implements HasForms
     public function form(Form $form): Form
     {
         return $form->schema([
+            Section::make('SEO Sağlığı')->schema([
+                Placeholder::make('canonical_status')
+                    ->label('Canonical / HTTPS')
+                    ->content(fn (): string => $this->seoSnapshot()['https_ok']
+                        ? 'Hazır: Canonical base URL HTTPS üretiyor.'
+                        : 'Risk: Canonical base URL HTTPS değil. APP_URL ve sitemap çıktısı kontrol edilmeli.'),
+                Placeholder::make('sitemap_status')
+                    ->label('Sitemap Durumu')
+                    ->content(fn (): string => $this->sitemapSummary()),
+                Placeholder::make('news_sitemap_status')
+                    ->label('Google News Sitemap')
+                    ->content(fn (): string => number_format($this->seoSnapshot()['news_sitemap_url_count']) . ' taze haber URL kaydı.'),
+                Placeholder::make('recent_article_status')
+                    ->label('Son Haber SEO Kontrolü')
+                    ->content(fn (): string => $this->recentArticleSummary()),
+            ])->columns(2),
+
             Section::make('Meta Ayarları')->schema([
                 TextInput::make('default_meta_title')
                     ->label('Varsayılan Meta Başlık Formatı')
@@ -95,5 +114,31 @@ class SeoSettings extends Page implements HasForms
         Setting::set('integration', 'google_analytics_id', $data['google_analytics_id']);
 
         Notification::make()->success()->title('SEO ayarları kaydedildi')->send();
+    }
+
+    private function seoSnapshot(): array
+    {
+        return app(SeoHealth::class)->snapshot();
+    }
+
+    private function sitemapSummary(): string
+    {
+        $snapshot = $this->seoSnapshot();
+
+        if (! $snapshot['sitemap_exists']) {
+            return 'Eksik: sitemap:generate çalıştırılmalı.';
+        }
+
+        return 'Hazır: ' . $snapshot['expected_sitemap'] . ' / Son üretim: ' . ($snapshot['sitemap_updated_at'] ?? 'bilinmiyor');
+    }
+
+    private function recentArticleSummary(): string
+    {
+        $snapshot = $this->seoSnapshot();
+
+        return $snapshot['recent_articles_checked']
+            . ' haber kontrol edildi; '
+            . $snapshot['recent_missing_meta'] . ' meta eksiği, '
+            . $snapshot['recent_missing_image'] . ' görsel eksiği.';
     }
 }

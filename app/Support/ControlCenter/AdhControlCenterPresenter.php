@@ -147,6 +147,16 @@ class AdhControlCenterPresenter
                 'active_modules' => $activeModules,
                 'url' => $data['homepage_status']['url'] ?? '#',
             ],
+            'seo_health' => [
+                'title' => 'SEO Sağlığı',
+                'summary' => 'Canonical, sitemap, News sitemap ve son haber meta/görsel sinyalleri.',
+                'cards' => collect($data['seo_health'] ?? [])->map(fn (array $card): array => [
+                    'label' => $card['label'] ?? 'SEO',
+                    'value' => $card['value'] ?? '-',
+                    'meta' => $card['meta'] ?? 'Kontrol bekleniyor',
+                    'tone' => $card['tone'] ?? 'neutral',
+                ])->all(),
+            ],
             'traffic' => [
                 'title' => 'Trafik Nabzı',
                 'summary' => 'Şu an ilgi çeken içerikleri ve yükselen haberleri ayrı görün.',
