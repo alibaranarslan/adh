@@ -111,6 +111,15 @@ Additional note:
 
 ## Deployment Notes
 
+Current live deploy state:
+
+- Code pushed to `origin/main` at commit `854fec80`.
+- Live domain has not picked up the new code yet:
+  - `https://adiyamandijitalhaber.com.tr/llms.txt`: 404
+  - `https://adiyamandijitalhaber.com.tr/rss.xml`: 404
+- SSH deploy attempt with `root@adiyamandijitalhaber.com.tr` was blocked by missing server authentication in this environment.
+- Therefore live AI visibility smoke remains `BLOCKED` until Hetzner deploy access or the production deploy mechanism is provided.
+
 After deploy, run:
 
 ```bash
