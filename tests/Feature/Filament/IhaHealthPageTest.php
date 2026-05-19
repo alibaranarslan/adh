@@ -22,6 +22,12 @@ class IhaHealthPageTest extends TestCase
             'is_active' => true,
         ]);
 
+        config([
+            'services.iha.user_code' => 'ENV-CODE',
+            'services.iha.username' => 'ENV-USER',
+            'services.iha.password' => 'ENV-PASS',
+        ]);
+
         IhaSyncLog::query()->create([
             'status' => 'success',
             'started_at' => now()->subMinutes(6),
@@ -68,6 +74,8 @@ class IhaHealthPageTest extends TestCase
             ->get('/admin/iha-health')
             ->assertOk()
             ->assertSee('Efektif senkron aralığı')
+            ->assertSee('Son koşu durumu')
+            ->assertSee('Config/env fallback hazır')
             ->assertSee('Eksik çeviri')
             ->assertSee('Son hata özeti');
 

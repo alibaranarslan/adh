@@ -6,7 +6,9 @@ use App\Filament\Pages\Analytics;
 use App\Filament\Pages\BackupManager;
 use App\Filament\Pages\CacheManagement;
 use App\Filament\Pages\IhaHealth;
+use App\Filament\Pages\IntegrationSettings;
 use App\Filament\Pages\LayoutStudio;
+use App\Filament\Resources\IhaSyncLogResource;
 use App\Filament\Resources\NewsArticleResource;
 use App\Models\AnalyticsPageView;
 use App\Models\IhaSyncLog;
@@ -16,6 +18,7 @@ use App\Models\User;
 use App\Support\AdminPrivileges;
 use App\Support\AdminSafeText;
 use App\Support\SeoHealth;
+use App\Support\TranslationSettings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -52,6 +55,7 @@ class AdhControlCenterService
         $translationBacklog = $this->countTranslationBacklog();
         $queuedTranslations = $this->countQueuedTranslationJobs();
         $criticalDrafts = $this->criticalDrafts($normalizedFilters['source']);
+        $translationCredentialsReady = TranslationSettings::ready();
 
         $attention = collect();
 
@@ -61,7 +65,7 @@ class AdhControlCenterService
                 'title' => 'İHA akışı geriden geliyor',
                 'body' => $freshnessLagMinutes === null
                     ? 'Başarılı bir senkron kaydı görünmüyor. Akışı İHA Sağlığı ekranından kontrol edin.'
-                    : "Son başarılı senkron {$freshnessLagMinutes} dakika önce tamamlandı.",
+                    : 'Son başarılı senkron '.$this->formatLagMinutes($freshnessLagMinutes).' önce tamamlandı.',
                 'meta' => 'Entegrasyon',
                 'url' => IhaHealth::getUrl(panel: 'admin'),
                 'action_label' => 'İHA Sağlığı',
@@ -83,21 +87,30 @@ class AdhControlCenterService
             $attention->push([
                 'tone' => 'warning',
                 'title' => 'Çeviri backlog’u birikti',
-                'body' => "{$translationBacklog} İHA haberi EN/KU çeviri tamamlanmasını bekliyor.",
+                'body' => $translationCredentialsReady
+                    ? "{$translationBacklog} İHA haberi EN/KU çeviri tamamlanmasını bekliyor."
+                    : "{$translationBacklog} İHA haberi EN/KU çeviri bekliyor; Google Translation API key eksik.",
                 'meta' => 'Çeviri',
-                'url' => IhaHealth::getUrl(panel: 'admin'),
-                'action_label' => 'Çeviri Kuyruğu',
+                'url' => (! $translationCredentialsReady && $isOps)
+                    ? IntegrationSettings::getUrl(panel: 'admin')
+                    : IhaHealth::getUrl(panel: 'admin'),
+                'action_label' => (! $translationCredentialsReady && $isOps) ? 'Çeviri Ayarları' : 'Çeviriyi Yönet',
             ]);
         }
 
         if ($lastFailedSync !== null) {
+            $failureMessage = $lastFailedSync->error_message ?? 'Hata detayı log kaydında görünüyor.';
+            $isConfigurationFailure = $this->isIntegrationConfigurationFailure($failureMessage);
+
             $attention->push([
                 'tone' => 'warning',
                 'title' => 'Son senkron hata verdi',
-                'body' => AdminSafeText::limit($lastFailedSync->error_message ?? 'Hata detayı log kaydında görünüyor.', 140),
+                'body' => AdminSafeText::limit($failureMessage, 140),
                 'meta' => optional($lastFailedSync->completed_at)->diffForHumans() ?? 'Senkron',
-                'url' => IhaHealth::getUrl(panel: 'admin'),
-                'action_label' => 'Logu Aç',
+                'url' => ($isConfigurationFailure && $isOps)
+                    ? IntegrationSettings::getUrl(panel: 'admin')
+                    : ($isOps ? IhaSyncLogResource::getUrl(panel: 'admin') : IhaHealth::getUrl(panel: 'admin')),
+                'action_label' => ($isConfigurationFailure && $isOps) ? 'Entegrasyon Ayarları' : 'Logları Aç',
             ]);
         }
 
@@ -118,8 +131,8 @@ class AdhControlCenterService
                 'title' => 'Instagram otomasyonu kapalı',
                 'body' => 'Token ve Business Account ID eksik olduğu için otomatik paylaşım devreye girmiyor.',
                 'meta' => 'Opsiyonel entegrasyon',
-                'url' => IhaHealth::getUrl(panel: 'admin'),
-                'action_label' => 'Kontrol Et',
+                'url' => IntegrationSettings::getUrl(panel: 'admin'),
+                'action_label' => 'Instagram Ayarları',
             ]);
         }
 
@@ -406,6 +419,8 @@ class AdhControlCenterService
 
     private function buildTrafficPulse($from, $to): array
     {
+        $usesAggregateFallback = false;
+
         $topArticles = NewsArticle::query()
             ->published()
             ->with('category')
@@ -417,9 +432,12 @@ class AdhControlCenterService
             ->values();
 
         if ($topArticles->isEmpty()) {
+            $usesAggregateFallback = true;
+
             $topArticles = NewsArticle::query()
                 ->published()
                 ->with('category')
+                ->where('view_count', '>', 0)
                 ->orderByDesc('view_count')
                 ->limit((int) config('control_center.traffic.top_limit', 5))
                 ->get();
@@ -437,7 +455,11 @@ class AdhControlCenterService
 
         return [
             'title' => 'Trafik Nabzı',
-            'summary' => 'İlgi toplayan içeriği ve hızla yükselen haberleri ayırt edin.',
+            'summary' => $usesAggregateFallback
+                ? 'Seçili aralıkta canlı analitik yok; liste toplam okunma verisiyle gösteriliyor.'
+                : 'İlgi toplayan içeriği ve hızla yükselen haberleri ayırt edin.',
+            'top_articles_heading' => $usesAggregateFallback ? 'Toplam okunmaya göre' : 'En çok okunanlar',
+            'top_articles_source' => $usesAggregateFallback ? 'aggregate' : 'window',
             'top_articles' => $topArticles->map(function (NewsArticle $article): array {
                 return [
                     'title' => $article->getTranslation('title', 'tr'),
@@ -456,6 +478,53 @@ class AdhControlCenterService
             })->all(),
             'analytics_url' => Analytics::getUrl(panel: 'admin'),
         ];
+    }
+
+    private function isIntegrationConfigurationFailure(?string $message): bool
+    {
+        if (! filled($message)) {
+            return false;
+        }
+
+        return Str::of($message)->lower()->contains([
+            'api key',
+            'business account',
+            'credential',
+            'entegrasyon',
+            'kimlik',
+            'kullanıcı',
+            'password',
+            'şifre',
+            'token',
+            'username',
+        ]);
+    }
+
+    private function formatLagMinutes(mixed $minutes): string
+    {
+        if (! is_numeric($minutes)) {
+            return 'bilinmeyen sürede';
+        }
+
+        $minutes = max(0, (float) $minutes);
+
+        if ($minutes < 1) {
+            return '1 dakikadan kısa süre';
+        }
+
+        if ($minutes < 60) {
+            return number_format((int) round($minutes), 0, ',', '.').' dakika';
+        }
+
+        $hours = (int) floor($minutes / 60);
+        $remainingMinutes = (int) round($minutes - ($hours * 60));
+
+        if ($remainingMinutes === 60) {
+            $hours++;
+            $remainingMinutes = 0;
+        }
+
+        return trim($hours.' saat'.($remainingMinutes > 0 ? ' '.$remainingMinutes.' dakika' : ''));
     }
 
     private function quickActions(bool $isEditor, bool $isOps): array

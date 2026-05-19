@@ -29,6 +29,8 @@ class AdhControlCenterPresenter
         $activeModules = (int) ($data['homepage_status']['active_modules'] ?? 0);
         $failedRuns = (int) ($summary['failed_runs'] ?? 0);
         $ihaHealthUrl = $this->findQuickActionUrl($data, ['İHA', 'IHA']) ?? IhaHealth::getUrl(panel: 'admin');
+        $freshnessLabel = $this->formatMinutes($freshnessLag);
+        $trafficSource = Arr::get($data, 'traffic_pulse.top_articles_source', 'window');
 
         return [
             'hero' => [
@@ -47,10 +49,24 @@ class AdhControlCenterPresenter
                 ],
                 'guide_label' => 'Yönetim Panelini Tanı',
             ],
+            'filter_state' => [
+                'window' => Arr::get($data, 'filters.window', '24h'),
+                'source' => Arr::get($data, 'filters.source', 'all'),
+                'window_options' => [
+                    'today' => 'Bugün',
+                    '24h' => 'Son 24 saat',
+                    '7d' => 'Son 7 gün',
+                ],
+                'source_options' => [
+                    'all' => 'Tüm içerik',
+                    'iha' => 'Yalnız İHA',
+                    'manual' => 'Yalnız manuel',
+                ],
+            ],
             'signals' => [
                 [
                     'label' => 'İHA tazeliği',
-                    'value' => $freshnessLag !== null ? $freshnessLag.' dk' : 'Kayıt yok',
+                    'value' => $freshnessLabel,
                     'meta' => $freshnessLag !== null ? 'Son başarılı akış farkı' : 'Başarılı senkron bekleniyor',
                     'tone' => $freshnessLag === null ? 'warning' : ($freshnessLag > 45 ? 'danger' : 'success'),
                     'bars' => $this->miniBars([$freshnessLag === null ? 12 : max(12, 100 - min(100, $freshnessLag * 2)), 42, 60, 80]),
@@ -65,7 +81,11 @@ class AdhControlCenterPresenter
                 [
                     'label' => 'Bugünkü görüntüleme',
                     'value' => number_format($todayViews),
-                    'meta' => $topArticles->isNotEmpty() ? 'En çok ilgi gören içerik hazır' : 'Trafik bugün sakin',
+                    'meta' => $todayViews > 0
+                        ? 'Bugün canlı trafik kaydı var'
+                        : ($topArticles->isNotEmpty() && $trafficSource === 'aggregate'
+                            ? 'Bugün trafik yok, toplam okunma gösteriliyor'
+                            : 'Bugün trafik kaydı yok'),
                     'tone' => $todayViews > 0 ? 'neutral' : 'warning',
                     'bars' => $this->miniBars([$todayViews / 40, $todayViews / 28, $todayViews / 20, $todayViews / 18]),
                 ],
@@ -102,6 +122,14 @@ class AdhControlCenterPresenter
                     'tone' => $row['tone'] ?? 'neutral',
                     'url' => $row['url'] ?? '#',
                 ])->all(),
+                'empty_state' => [
+                    'title' => 'Karar bekleyen yayın yok',
+                    'body' => 'Seçili görünümde taslak, zamanlı yayın veya vitrin adayı beklemiyor. Haber havuzunu açarak tüm içerik durumunu kontrol edebilirsiniz.',
+                    'primary_label' => 'Haber havuzunu aç',
+                    'primary_url' => $this->findQuickActionUrl($data, ['Haber havuzu']) ?? Arr::get($data, 'header.primary_action.url', '#'),
+                    'secondary_label' => Arr::get($data, 'header.primary_action.label', 'Yeni Haber'),
+                    'secondary_url' => Arr::get($data, 'header.primary_action.url', '#'),
+                ],
             ],
             'iha_flow' => [
                 'title' => 'İHA ve Çeviri Akışı',
@@ -110,7 +138,7 @@ class AdhControlCenterPresenter
                     [
                         'label' => 'Son başarılı senkron',
                         'value' => $this->formatRelative($data['health']['last_success']['completed_at'] ?? null),
-                        'meta' => $freshnessLag !== null ? $freshnessLag.' dakikalık fark' : 'Kayıt bekleniyor',
+                        'meta' => $freshnessLag !== null ? $freshnessLabel.' fark' : 'Kayıt bekleniyor',
                         'tone' => $freshnessLag === null ? 'warning' : ($freshnessLag > 45 ? 'danger' : 'success'),
                     ],
                     [
@@ -159,7 +187,8 @@ class AdhControlCenterPresenter
             ],
             'traffic' => [
                 'title' => 'Trafik Nabzı',
-                'summary' => 'Şu an ilgi çeken içerikleri ve yükselen haberleri ayrı görün.',
+                'summary' => Arr::get($data, 'traffic_pulse.summary', 'Şu an ilgi çeken içerikleri ve yükselen haberleri ayrı görün.'),
+                'top_articles_heading' => Arr::get($data, 'traffic_pulse.top_articles_heading', 'En çok okunanlar'),
                 'top_articles' => $topArticles->map(fn (array $article): array => [
                     'title' => $article['title'] ?? 'Başlıksız içerik',
                     'category' => $article['category'] ?? 'Kategorisiz',
@@ -217,6 +246,33 @@ class AdhControlCenterPresenter
         }
 
         return $date->format('d.m.Y H:i');
+    }
+
+    private function formatMinutes(mixed $minutes): string
+    {
+        if (! is_numeric($minutes)) {
+            return 'Kayıt yok';
+        }
+
+        $minutes = max(0, (float) $minutes);
+
+        if ($minutes < 1) {
+            return '1 dk altı';
+        }
+
+        if ($minutes < 60) {
+            return number_format((int) round($minutes), 0, ',', '.').' dk';
+        }
+
+        $hours = (int) floor($minutes / 60);
+        $remainingMinutes = (int) round($minutes - ($hours * 60));
+
+        if ($remainingMinutes === 60) {
+            $hours++;
+            $remainingMinutes = 0;
+        }
+
+        return trim($hours.' sa'.($remainingMinutes > 0 ? ' '.$remainingMinutes.' dk' : ''));
     }
 
     private function miniBars(array $values): array

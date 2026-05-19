@@ -26,6 +26,7 @@ class SocialPublicationResourceTest extends TestCase
         $this->get(SocialPublicationResource::getUrl('index'))
             ->assertOk()
             ->assertSee('Instagram Paylaşımları')
+            ->assertSee('Creative Durumu')
             ->assertSee($publication->article->getTranslation('title', 'tr'));
     }
 
@@ -47,7 +48,7 @@ class SocialPublicationResourceTest extends TestCase
     private function publication(string $status): SocialPublication
     {
         $category = Category::query()->create([
-            'name' => ['tr' => 'Gundem'],
+            'name' => ['tr' => 'Gündem'],
             'slug' => 'gundem',
             'is_active' => true,
         ]);
@@ -55,8 +56,8 @@ class SocialPublicationResourceTest extends TestCase
         $article = NewsArticle::query()->create([
             'title' => ['tr' => 'Instagram Admin Test'],
             'slug' => 'instagram-admin-test',
-            'summary' => ['tr' => 'Ozet'],
-            'content' => ['tr' => 'Icerik'],
+            'summary' => ['tr' => 'Özet'],
+            'content' => ['tr' => 'İçerik'],
             'source' => 'iha',
             'category_id' => $category->id,
             'status' => 'published',

@@ -8,7 +8,14 @@
     <section class="admin-section-panel" data-tour-anchor="media.hero">
         <div class="flex flex-wrap items-center gap-3">
             <div class="min-w-[220px] flex-1">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Dosya adına göre ara..." class="fi-input block w-full" />
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Dosya adı veya koleksiyon ara..." class="fi-input block w-full" />
+            </div>
+            <div class="min-w-[180px]">
+                <select wire:model.live="collectionFilter" class="fi-input block w-full">
+                    @foreach($this->getCollectionOptions() as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
             </div>
             <button wire:click="toggleOrphaned" class="admin-media-toggle inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition {{ $showOrphaned ? 'admin-media-toggle--active' : '' }}">
                 <x-heroicon-o-exclamation-triangle class="h-4 w-4" />

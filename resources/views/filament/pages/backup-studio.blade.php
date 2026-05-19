@@ -13,6 +13,11 @@
                     Bu ekran son alınan dosyaları, aktif klasörü ve komut hazırlığını tek yerde toplar.
                     Yedekleme komutu kayıtlı değilse buton pasif kalır; sahte başarı mesajı üretilmez.
                 </p>
+                <div class="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                    <span class="rounded-full {{ $status['command_available'] ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300' }} px-3 py-1">{{ $status['readiness_label'] }}</span>
+                    <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">Yalnız DB yedeği</span>
+                    <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">Restore yok</span>
+                </div>
             </div>
 
             <div class="admin-page-grid admin-page-grid--three lg:min-w-[38rem]">
@@ -21,21 +26,19 @@
                     <p class="mt-2 text-sm font-semibold {{ $status['command_available'] ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300' }}">
                         {{ $status['command_available'] ? 'backup:run hazır' : 'Yapılandırma eksik' }}
                     </p>
-                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                        {{ $status['command_available'] ? 'Veritabanı yedeği tetiklenebilir.' : 'Spatie backup komutu bu ortamda bulunamadı.' }}
-                    </p>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ $status['readiness_description'] }}</p>
                 </div>
 
                 <div class="admin-section-panel admin-section-panel--compact">
                     <p class="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Son yedek</p>
                     <p class="mt-2 text-sm font-semibold text-slate-900 dark:text-white">{{ $latest['last_modified'] ?? 'Kayıt yok' }}</p>
-                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ $latest['size'] ?? 'Dosya bulunamadı' }}</p>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ $status['latest_backup_age'] }} | {{ $latest['size'] ?? 'Dosya bulunamadı' }}</p>
                 </div>
 
                 <div class="admin-section-panel admin-section-panel--compact">
-                    <p class="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Aktif klasör</p>
-                    <p class="mt-2 break-all text-sm font-semibold text-slate-900 dark:text-white">{{ $status['active_directory'] }}</p>
-                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ number_format($status['total_files']) }} dosya bulundu</p>
+                    <p class="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Dosya özeti</p>
+                    <p class="mt-2 text-sm font-semibold text-slate-900 dark:text-white">{{ number_format($status['total_files']) }} dosya</p>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Toplam boyut: {{ $status['total_size'] }}</p>
                 </div>
             </div>
         </div>
@@ -46,7 +49,7 @@
             <div class="admin-section-head">
                 <div>
                     <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Yedekleme aksiyonu</h3>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Komut hazırsa yeni veritabanı yedeğini buradan başlatın.</p>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Komut hazırsa yalnız veritabanı yedeğini buradan başlatın. Geri yükleme, indirme ve silme bu fazda yoktur.</p>
                 </div>
             </div>
 
@@ -62,6 +65,7 @@
             <div class="admin-action-bar">
                 <x-filament::button
                     wire:click="createBackup"
+                    wire:confirm="backup:run --only-db komutu tetiklenecek. Bu aksiyon yalnız veritabanı yedeği başlatır; restore veya silme yapmaz. Devam etmek istiyor musunuz?"
                     icon="heroicon-o-archive-box-arrow-down"
                     color="primary"
                     :disabled="! $status['command_available']"
@@ -82,11 +86,11 @@
             <div class="mt-4 space-y-3">
                 <div class="rounded-2xl border border-slate-200/80 px-4 py-4 dark:border-slate-800">
                     <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">1. Doğrulama</p>
-                    <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Son dosyanın tarihini ve boyutunu kontrol edin; beklenen klasör görünmüyorsa legacy fallback klasörünü de inceleyin.</p>
+                    <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Son dosyanın tarihini ve boyutunu kontrol edin; beklenen klasör görünmüyorsa fallback klasörü de inceleyin.</p>
                 </div>
                 <div class="rounded-2xl border border-slate-200/80 px-4 py-4 dark:border-slate-800">
                     <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">2. Geri dönüş</p>
-                    <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Canlı geri yükleme öncesi uygulamayı bakım kipine alın, ilgili dump dosyasını önce staging ortamında test edin.</p>
+                    <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Canlı geri yükleme öncesi uygulamayı bakım kipine alın ve ilgili dump dosyasını önce staging ortamında test edin.</p>
                 </div>
                 <div class="rounded-2xl border border-slate-200/80 px-4 py-4 dark:border-slate-800">
                     <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">3. Kayıt</p>
@@ -100,13 +104,13 @@
         <div class="admin-section-head">
             <div>
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Mevcut dosyalar</h3>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">En yeni kayıtlar üstte görünür. Dosya yoksa ilk yedeği bu ekrandan başlatabilirsiniz.</p>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">En yeni kayıtlar üstte görünür. Bu liste yalnız okunurdur.</p>
             </div>
         </div>
 
         @if ($status['total_files'] === 0)
             <div class="admin-empty-state mt-4">
-                Henüz yedek dosyası bulunmuyor. Komut hazırsa ilk yedeği bu ekrandan başlatabilirsiniz.
+                Bu kapsamda yedek dosyası bulunamadı. Komut hazırsa ilk veritabanı yedeğini bu ekrandan başlatabilirsiniz.
             </div>
         @else
             <div class="admin-table-shell mt-4 overflow-x-auto">

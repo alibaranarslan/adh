@@ -11,14 +11,21 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\CreateAction as TableCreateAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class LocalInfoEntryResource extends Resource
@@ -36,12 +43,7 @@ class LocalInfoEntryResource extends Resource
         return $form->schema([
             Select::make('type')
                 ->label('Tür')
-                ->options([
-                    'road_status' => 'Yol Durumu',
-                    'power_outage' => 'Elektrik Kesintisi',
-                    'water_outage' => 'Su Kesintisi',
-                    'other' => 'Diğer',
-                ])
+                ->options(self::typeOptions())
                 ->required(),
 
             TextInput::make('title')
@@ -80,17 +82,18 @@ class LocalInfoEntryResource extends Resource
                         'info' => 'water_outage',
                         'gray' => 'other',
                     ])
-                    ->formatStateUsing(fn ($state) => match ($state) {
-                        'road_status' => 'Yol Durumu',
-                        'power_outage' => 'Elektrik Kesintisi',
-                        'water_outage' => 'Su Kesintisi',
-                        default => 'Diğer',
-                    }),
+                    ->formatStateUsing(fn ($state) => self::typeOptions()[$state] ?? 'Diğer'),
 
                 TextColumn::make('title')
                     ->label('Başlık')
                     ->searchable()
                     ->sortable(),
+
+                TextColumn::make('publication_status')
+                    ->label('Yayın Durumu')
+                    ->badge()
+                    ->state(fn (LocalInfoEntry $record): string => self::statusLabel($record))
+                    ->color(fn (LocalInfoEntry $record): string => self::statusColor($record)),
 
                 TextColumn::make('starts_at')
                     ->label('Başlangıç')
@@ -109,16 +112,68 @@ class LocalInfoEntryResource extends Resource
             ->filters([
                 SelectFilter::make('type')
                     ->label('Tür')
+                    ->options(self::typeOptions()),
+
+                TernaryFilter::make('is_active')
+                    ->label('Aktiflik')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Pasif'),
+
+                SelectFilter::make('publication_status')
+                    ->label('Yayın Durumu')
                     ->options([
-                        'road_status' => 'Yol Durumu',
-                        'power_outage' => 'Elektrik Kesintisi',
-                        'water_outage' => 'Su Kesintisi',
-                        'other' => 'Diğer',
-                    ]),
-            ])
+                        'current' => 'Şu an yayında',
+                        'scheduled' => 'Planlandı',
+                        'expired' => 'Süresi doldu',
+                        'passive' => 'Pasif',
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => self::applyStatusFilter($query, $data['value'] ?? null)),
+
+                Filter::make('starts_at')
+                    ->label('Başlangıç Zamanı')
+                    ->form([
+                        DateTimePicker::make('from')->label('Başlangıç'),
+                        DateTimePicker::make('until')->label('Bitiş'),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['from'] ?? null, fn (Builder $query, string $date) => $query->where('starts_at', '>=', $date))
+                        ->when($data['until'] ?? null, fn (Builder $query, string $date) => $query->where('starts_at', '<=', $date))),
+            ], FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(3)
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                Action::make('deactivate')
+                    ->label('Pasifleştir')
+                    ->icon('heroicon-o-pause-circle')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Yerel bilgiyi pasifleştir')
+                    ->modalDescription('Pasifleştirilen kayıt public yerel bilgi alanlarında görünmez.')
+                    ->visible(fn (LocalInfoEntry $record): bool => (bool) $record->is_active && self::canEdit($record))
+                    ->action(function (LocalInfoEntry $record): void {
+                        $record->update(['is_active' => false]);
+
+                        Notification::make()
+                            ->success()
+                            ->title('Yerel bilgi pasifleştirildi')
+                            ->send();
+                    }),
+
+                EditAction::make()
+                    ->label('Düzenle')
+                    ->icon('heroicon-o-pencil-square'),
+
+                DeleteAction::make()
+                    ->label('Sil')
+                    ->modalHeading('Yerel bilgiyi sil')
+                    ->modalDescription(fn (LocalInfoEntry $record): string => 'Bu kayıt silindiğinde public yerel bilgi alanlarından kaldırılır. Mevcut durum: ' . self::statusLabel($record) . '.'),
+            ])
+            ->emptyStateIcon('heroicon-o-information-circle')
+            ->emptyStateHeading('Bu kapsamda yerel bilgi bulunamadı')
+            ->emptyStateDescription('Arama veya filtreleri genişletin. Yetkiniz varsa yeni yerel bilgi oluşturabilirsiniz.')
+            ->emptyStateActions([
+                TableCreateAction::make()
+                    ->label('Yeni Bilgi')
+                    ->icon('heroicon-o-plus'),
             ])
             ->defaultSort('created_at', 'desc');
     }
@@ -150,5 +205,63 @@ class LocalInfoEntryResource extends Resource
     public static function canDelete(Model $record): bool
     {
         return AdminPrivileges::hasPermission(auth()->user(), 'delete_local_info_entry');
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function typeOptions(): array
+    {
+        return [
+            'road_status' => 'Yol Durumu',
+            'power_outage' => 'Elektrik Kesintisi',
+            'water_outage' => 'Su Kesintisi',
+            'other' => 'Diğer',
+        ];
+    }
+
+    private static function applyStatusFilter(Builder $query, ?string $status): Builder
+    {
+        return match ($status) {
+            'current' => $query
+                ->where('is_active', true)
+                ->where(function (Builder $query) {
+                    $query->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+                })
+                ->where(function (Builder $query) {
+                    $query->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+                }),
+            'scheduled' => $query->where('is_active', true)->where('starts_at', '>', now()),
+            'expired' => $query->where('is_active', true)->whereNotNull('ends_at')->where('ends_at', '<', now()),
+            'passive' => $query->where('is_active', false),
+            default => $query,
+        };
+    }
+
+    private static function statusLabel(LocalInfoEntry $entry): string
+    {
+        if (! $entry->is_active) {
+            return 'Pasif';
+        }
+
+        if ($entry->starts_at && $entry->starts_at->isFuture()) {
+            return 'Planlandı';
+        }
+
+        if ($entry->ends_at && $entry->ends_at->isPast()) {
+            return 'Süresi doldu';
+        }
+
+        return 'Şu an yayında';
+    }
+
+    private static function statusColor(LocalInfoEntry $entry): string
+    {
+        return match (self::statusLabel($entry)) {
+            'Şu an yayında' => 'success',
+            'Planlandı' => 'info',
+            'Süresi doldu', 'Pasif' => 'gray',
+            default => 'warning',
+        };
     }
 }

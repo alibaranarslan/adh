@@ -30,6 +30,31 @@
                     <button type="button" x-data="{}" x-on:click="$dispatch('adh-admin-guide:start', { key: 'dashboard-overview' })" class="admin-btn admin-btn--subtle">{{ $hero['guide_label'] }}</button>
                 </div>
             </div>
+
+            <form method="GET" action="{{ \App\Filament\Pages\Dashboard::getUrl(panel: 'admin') }}" class="admin-filter-bar" data-tour-anchor="dashboard.filters" aria-label="Haber Masası görünüm filtresi">
+                <label class="admin-filter-field">
+                    <span>Zaman aralığı</span>
+                    <select name="filters[window]">
+                        @foreach ($filter_state['window_options'] as $value => $label)
+                            <option value="{{ $value }}" @selected($filter_state['window'] === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </label>
+
+                <label class="admin-filter-field">
+                    <span>İçerik kaynağı</span>
+                    <select name="filters[source]">
+                        @foreach ($filter_state['source_options'] as $value => $label)
+                            <option value="{{ $value }}" @selected($filter_state['source'] === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </label>
+
+                <div class="admin-filter-actions">
+                    <button type="submit" class="admin-btn admin-btn--primary">Uygula</button>
+                    <a href="{{ \App\Filament\Pages\Dashboard::getUrl(panel: 'admin') }}" class="admin-btn admin-btn--ghost">Sıfırla</a>
+                </div>
+            </form>
         </section>
 
         <section class="admin-signal-strip">
@@ -59,41 +84,46 @@
                     <span class="admin-counter">{{ count($primary_queue['rows']) }} kayıt</span>
                 </div>
 
-                <div class="admin-table-shell">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Kova</th>
-                                <th>Başlık</th>
-                                <th>Kategori</th>
-                                <th>Skor</th>
-                                <th>Durum</th>
-                                <th class="text-right">İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($primary_queue['rows'] as $row)
+                @if (count($primary_queue['rows']) > 0)
+                    <div class="admin-table-shell">
+                        <table class="admin-table">
+                            <thead>
                                 <tr>
-                                    <td><span class="admin-inline-pill {{ $tones[$row['tone']] ?? $tones['neutral'] }}">{{ $row['bucket'] }}</span></td>
-                                    <td>
-                                        <div class="admin-table__title">{{ $row['title'] }}</div>
-                                        <div class="admin-table__meta">{{ $row['meta'] }}</div>
+                                    <th>Kova</th>
+                                    <th>Başlık</th>
+                                    <th>Kategori</th>
+                                    <th>Skor</th>
+                                    <th>Durum</th>
+                                    <th class="text-right">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($primary_queue['rows'] as $row)
+                                    <tr>
+                                        <td><span class="admin-inline-pill {{ $tones[$row['tone']] ?? $tones['neutral'] }}">{{ $row['bucket'] }}</span></td>
+                                        <td>
+                                            <div class="admin-table__title">{{ $row['title'] }}</div>
+                                            <div class="admin-table__meta">{{ $row['meta'] }}</div>
                                     </td>
                                     <td>{{ $row['category'] }}</td>
                                     <td>{{ $row['score'] }}</td>
-                                    <td>{{ $row['status'] }}</td>
-                                    <td class="text-right"><a href="{{ $row['url'] }}" class="admin-link">Aç</a></td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6">
-                                        <div class="admin-empty-state">Bu filtrede karar bekleyen yayın kaydı görünmüyor.</div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                                        <td>{{ $row['status'] }}</td>
+                                        <td class="text-right"><a href="{{ $row['url'] }}" class="admin-link">Aç</a></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="admin-empty-state admin-empty-state--queue">
+                        <p class="admin-empty-state__title">{{ $primary_queue['empty_state']['title'] }}</p>
+                        <p>{{ $primary_queue['empty_state']['body'] }}</p>
+                        <div class="admin-empty-state__actions">
+                            <a href="{{ $primary_queue['empty_state']['primary_url'] }}" class="admin-btn admin-btn--primary">{{ $primary_queue['empty_state']['primary_label'] }}</a>
+                            <a href="{{ $primary_queue['empty_state']['secondary_url'] }}" class="admin-btn admin-btn--ghost">{{ $primary_queue['empty_state']['secondary_label'] }}</a>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <div class="admin-panel-surface" data-tour-anchor="dashboard.attention">
@@ -230,7 +260,7 @@
 
             <div class="admin-dashboard-grid admin-dashboard-grid--secondary">
                 <div class="admin-inset-surface">
-                    <p class="admin-subhead">En çok okunanlar</p>
+                    <p class="admin-subhead">{{ $traffic['top_articles_heading'] }}</p>
                     <div class="admin-list-cards">
                         @forelse ($traffic['top_articles'] as $article)
                             <a href="{{ $article['url'] }}" class="admin-list-card">

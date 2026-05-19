@@ -55,21 +55,25 @@ class SeoSettings extends Page implements HasForms
             Section::make('SEO Sağlığı')->schema([
                 Placeholder::make('canonical_status')
                     ->label('Canonical / HTTPS')
-                    ->content(fn (): string => $this->seoSnapshot()['https_ok']
-                        ? 'Hazır: Canonical base URL HTTPS üretiyor.'
-                        : 'Risk: Canonical base URL HTTPS değil. APP_URL ve sitemap çıktısı kontrol edilmeli.'),
+                    ->content(fn (): string => $this->seoCardSummary('Canonical HTTPS')),
                 Placeholder::make('sitemap_status')
                     ->label('Sitemap Durumu')
-                    ->content(fn (): string => $this->sitemapSummary()),
+                    ->content(fn (): string => $this->seoCardSummary('Sitemap')),
                 Placeholder::make('news_sitemap_status')
                     ->label('Google News Sitemap')
-                    ->content(fn (): string => number_format($this->seoSnapshot()['news_sitemap_url_count']) . ' taze haber URL kaydı.'),
+                    ->content(fn (): string => $this->seoCardSummary('News sitemap')),
                 Placeholder::make('recent_article_status')
-                    ->label('Son Haber SEO Kontrolü')
-                    ->content(fn (): string => $this->recentArticleSummary()),
+                    ->label('Son 20 Haber')
+                    ->content(fn (): string => $this->seoCardSummary('Son 20 haber')),
             ])->columns(2),
 
             Section::make('AI Görünürlüğü')->schema([
+                Placeholder::make('ai_crawl_summary')
+                    ->label('AI Crawl Özeti')
+                    ->content(fn (): string => $this->seoCardSummary('AI crawl')),
+                Placeholder::make('feed_summary')
+                    ->label('Feed / llms.txt Özeti')
+                    ->content(fn (): string => $this->seoCardSummary('Feed / llms.txt')),
                 Placeholder::make('llms_txt_status')
                     ->label('/llms.txt')
                     ->content(fn (): string => $this->seoSnapshot()['llms_txt_available']
@@ -101,14 +105,16 @@ class SeoSettings extends Page implements HasForms
                 TextInput::make('default_meta_title')
                     ->label('Varsayılan Meta Başlık Formatı')
                     ->placeholder('{title} - {site_name}')
-                    ->helperText('Kullanılabilir: {title}, {site_name}, {category}'),
+                    ->helperText('Public sayfalarda özel meta başlık yoksa kullanılır. Kullanılabilir: {title}, {site_name}, {category}.'),
 
                 Textarea::make('default_meta_description')
                     ->label('Varsayılan Meta Açıklama')
+                    ->helperText('Haber veya sayfa özel açıklaması yoksa arama sonuçlarında fallback olarak kullanılır.')
                     ->rows(3),
 
                 FileUpload::make('og_image')
                     ->label('Varsayılan OG Görseli')
+                    ->helperText('Sosyal paylaşım görseli olmayan sayfalarda kullanılır.')
                     ->image()
                     ->directory('seo')
                     ->maxSize(AdminImageUploads::maxSizeKb())
@@ -119,15 +125,18 @@ class SeoSettings extends Page implements HasForms
             Section::make('Arama Motorları')->schema([
                 Textarea::make('robots_txt')
                     ->label('Robots.txt')
+                    ->helperText('Crawler erişimi ve sitemap sinyali burada yönetilir. Sitemap üretimi bu ekranda otomatik çalıştırılmaz.')
                     ->rows(6)
                     ->columnSpanFull(),
 
                 TextInput::make('google_search_console_code')
-                    ->label('Google Search Console Doğrulama Kodu'),
+                    ->label('Google Search Console Doğrulama Kodu')
+                    ->helperText('Yalnız doğrulama meta kodu veya token değeri girilmelidir. Tam HTML etiketi gerekiyorsa public çıktı kontrol edilmelidir.'),
 
                 TextInput::make('google_analytics_id')
                     ->label('Google Analytics ID')
-                    ->placeholder('G-XXXXXXXXXX'),
+                    ->placeholder('G-XXXXXXXXXX')
+                    ->helperText('GA4 ölçüm kimliği public analytics scriptinde kullanılır.'),
             ]),
         ])->statePath('data');
     }
@@ -141,7 +150,24 @@ class SeoSettings extends Page implements HasForms
         }
         Setting::set('integration', 'google_analytics_id', $data['google_analytics_id']);
 
-        Notification::make()->success()->title('SEO ayarları kaydedildi')->send();
+        Notification::make()
+            ->success()
+            ->title('SEO ayarları kaydedildi')
+            ->body('Meta, robots.txt, Search Console ve Analytics ayarları güncellendi. Sitemap üretimi otomatik çalıştırılmadı.')
+            ->send();
+    }
+
+    public function settingsSummary(): string
+    {
+        return 'Canonical, sitemap, robots.txt, AI crawl ve varsayılan meta ayarları public arama görünürlüğünü etkiler.';
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function settingsImpactBadges(): array
+    {
+        return ['Public SEO', 'Crawler erişimi', 'Gizli bilgi yok'];
     }
 
     private function seoSnapshot(): array
@@ -168,5 +194,23 @@ class SeoSettings extends Page implements HasForms
             . ' haber kontrol edildi; '
             . $snapshot['recent_missing_meta'] . ' meta eksiği, '
             . $snapshot['recent_missing_image'] . ' görsel eksiği.';
+    }
+
+    private function seoCardSummary(string $label): string
+    {
+        $card = collect(app(SeoHealth::class)->cards())->firstWhere('label', $label);
+
+        if (! $card) {
+            return 'UNVERIFIED: Bu SEO kontrolü için veri üretilemedi.';
+        }
+
+        $tone = match ($card['tone'] ?? null) {
+            'success' => 'Hazır',
+            'warning' => 'Uyarı',
+            'danger' => 'Risk',
+            default => 'Bilgi',
+        };
+
+        return sprintf('%s: %s. %s', $tone, $card['value'] ?? '-', $card['meta'] ?? '');
     }
 }

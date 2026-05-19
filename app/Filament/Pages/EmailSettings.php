@@ -6,6 +6,7 @@ use App\Models\Setting;
 use App\Support\AdminPrivileges;
 use App\Support\DynamicMailConfig;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -53,15 +54,22 @@ class EmailSettings extends Page implements HasForms
     {
         return $form->schema([
             Section::make('SMTP Ayarları')->schema([
+                Placeholder::make('smtp_readiness')
+                    ->label('SMTP Hazırlık Durumu')
+                    ->content(fn (): string => $this->smtpReadinessStatus())
+                    ->columnSpanFull(),
                 TextInput::make('smtp_host')
-                    ->label('SMTP Host'),
+                    ->label('SMTP Host')
+                    ->helperText('SMTP bağlantısının sunucu adresidir; boşsa mevcut mail konfigürasyonu fallback olarak kalabilir.'),
 
                 TextInput::make('smtp_port')
                     ->label('SMTP Port')
-                    ->numeric(),
+                    ->numeric()
+                    ->helperText('Genellikle TLS için 587, SSL için 465 kullanılır.'),
 
                 TextInput::make('smtp_username')
-                    ->label('Kullanıcı Adı'),
+                    ->label('Kullanıcı Adı')
+                    ->helperText('SMTP hesabı kullanıcı adıdır. Gizli değer değildir ancak public yüzeyde gösterilmez.'),
 
                 TextInput::make('smtp_password')
                     ->label('Şifre')
@@ -76,15 +84,22 @@ class EmailSettings extends Page implements HasForms
                         'tls' => 'TLS',
                         'ssl' => 'SSL',
                         'none' => 'Yok',
-                    ]),
+                    ])
+                    ->helperText('Mail sağlayıcısının önerdiği şifreleme tipiyle aynı olmalıdır.'),
             ])->columns(2),
 
             Section::make('Gönderici Bilgileri')->schema([
+                Placeholder::make('sender_status')
+                    ->label('Gönderici Durumu')
+                    ->content(fn (): string => $this->senderStatus())
+                    ->columnSpanFull(),
                 TextInput::make('from_name')
-                    ->label('Gönderici Adı'),
+                    ->label('Gönderici Adı')
+                    ->helperText('Alıcının gelen kutusunda görünen marka adıdır.'),
 
                 TextInput::make('from_email')
                     ->label('Gönderici E-posta')
+                    ->helperText('SPF/DKIM uyumlu alan adıyla aynı olmalıdır.')
                     ->email(),
             ])->columns(2),
         ])->statePath('data');
@@ -102,22 +117,56 @@ class EmailSettings extends Page implements HasForms
             Setting::set('email', $key, $value);
         }
 
-        Notification::make()->success()->title('E-posta ayarları kaydedildi')->send();
+        Notification::make()
+            ->success()
+            ->title('E-posta ayarları kaydedildi')
+            ->body('SMTP ve gönderici ayarları güncellendi. Boş bırakılan SMTP şifresi varsa mevcut değer korundu.')
+            ->send();
     }
 
-    public function sendTestEmail(): void
+    public function sendTestEmail(?string $recipient = null): void
     {
+        $recipient = trim((string) ($recipient ?: $this->testEmail ?: auth()->user()?->email));
+
+        if (! filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
+            Notification::make()
+                ->danger()
+                ->title('Geçerli bir test alıcısı gerekli')
+                ->body('Test e-postası göndermek için geçerli bir e-posta adresi girin veya oturum kullanıcısında geçerli e-posta olduğundan emin olun.')
+                ->send();
+
+            return;
+        }
+
         try {
             DynamicMailConfig::apply();
-            Mail::raw('Bu bir test e-postasıdır.', function ($message) {
-                $message->to(auth()->user()->email)
+            Mail::raw('Bu bir test e-postasıdır.', function ($message) use ($recipient) {
+                $message->to($recipient)
                     ->subject('Test E-postası');
             });
-            Notification::make()->success()->title('Test e-postası gönderildi')->send();
+            Notification::make()
+                ->success()
+                ->title('Test e-postası gönderildi')
+                ->body($recipient . ' adresine test mesajı gönderildi.')
+                ->send();
         } catch (\Exception $e) {
             Notification::make()->danger()->title('Hata: ' . $e->getMessage())->send();
         }
     }
+
+    public function settingsSummary(): string
+    {
+        return 'SMTP ve gönderici ayarları sistem e-postalarını etkiler. Test gönderimi yalnız açık onayla yapılır.';
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function settingsImpactBadges(): array
+    {
+        return ['Operasyonel e-posta', 'Gizli bilgi var', 'Test onayla çalışır'];
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -125,8 +174,55 @@ class EmailSettings extends Page implements HasForms
                 ->label('Test E-postası Gönder')
                 ->icon('heroicon-o-paper-airplane')
                 ->color('gray')
+                ->form([
+                    TextInput::make('test_email')
+                        ->label('Test Alıcısı')
+                        ->email()
+                        ->placeholder(fn (): string => auth()->user()?->email ?? 'ornek@domain.com')
+                        ->helperText('Boş bırakılırsa oturumdaki kullanıcının e-posta adresi kullanılır. Bu değer kaydedilmez.'),
+                ])
                 ->requiresConfirmation()
-                ->action('sendTestEmail'),
+                ->modalHeading('Test e-postası gönder')
+                ->modalDescription('Bu işlem gerçek SMTP yapılandırmasıyla tek bir test e-postası gönderir. Alıcıyı kontrol edin.')
+                ->modalSubmitActionLabel('Test Gönder')
+                ->action(fn (array $data): null => $this->sendTestEmail($data['test_email'] ?? null)),
         ];
+    }
+
+    private function smtpReadinessStatus(): string
+    {
+        $missing = [];
+
+        foreach ([
+            'smtp_host' => 'host',
+            'smtp_port' => 'port',
+            'smtp_username' => 'kullanıcı adı',
+        ] as $field => $label) {
+            if (blank($this->data[$field] ?? null)) {
+                $missing[] = $label;
+            }
+        }
+
+        if (! $this->smtpPasswordConfigured()) {
+            $missing[] = 'şifre';
+        }
+
+        return $missing === []
+            ? 'Hazır: SMTP bağlantısı için temel alanlar tanımlı.'
+            : 'Eksik: ' . implode(', ', $missing) . '. Test göndermeden önce sağlayıcı ayarlarını tamamlayın.';
+    }
+
+    private function senderStatus(): string
+    {
+        if (filled($this->data['from_name'] ?? null) && filled($this->data['from_email'] ?? null)) {
+            return 'Hazır: gönderici adı ve e-posta adresi tanımlı.';
+        }
+
+        return 'Uyarı: gönderici adı veya e-posta adresi eksik. Alıcı gelen kutusunda marka bilgisi zayıf görünebilir.';
+    }
+
+    private function smtpPasswordConfigured(): bool
+    {
+        return filled($this->data['smtp_password'] ?? null) || filled(Setting::get('email', 'smtp_password', ''));
     }
 }

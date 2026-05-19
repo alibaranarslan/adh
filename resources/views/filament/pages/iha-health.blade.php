@@ -11,6 +11,12 @@
 
     <div class="admin-note">
         İHA akışının tazeliğini, son hata özetini ve çeviri yükünü tek ekranda izleyin. Bu ekran operasyonel izleme içindir; içerik yayınına doğrudan müdahale etmez.
+        <span class="ml-2 inline-flex rounded-full {{ $stats['iha_credentials_ready'] ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300' }} px-3 py-1 text-xs font-semibold">
+            {{ $stats['iha_credentials_ready'] ? 'Hazır' : 'Eksik' }}
+        </span>
+        <span class="ml-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            {{ $stats['iha_credentials_source'] }}
+        </span>
     </div>
 
     <div class="admin-page-grid admin-page-grid--three" data-tour-anchor="iha.health.summary">
@@ -23,6 +29,11 @@
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Son başarılı senkron</p>
             <p class="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{{ $stats['last_successful_sync']?->completed_at?->diffForHumans() ?? 'Henüz yok' }}</p>
             <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ $stats['last_successful_sync']?->completed_at?->format('d.m.Y H:i:s') ?? 'İlk başarılı kayıt henüz oluşmadı.' }}</p>
+        </div>
+        <div class="admin-section-panel">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Son koşu durumu</p>
+            <p class="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{{ $stats['latest_sync_label'] }}</p>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ $stats['latest_sync']?->started_at?->format('d.m.Y H:i:s') ?? 'Henüz çalışma kaydı yok.' }}</p>
         </div>
         <div class="admin-section-panel">
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Tazelik farkı</p>
@@ -75,8 +86,11 @@
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Kimlik bilgileri tam değilse akış stabil görünse bile senkron sürdürülebilir olmaz.</p>
             <div class="mt-4 space-y-3">
                 <div class="flex items-center justify-between rounded-2xl border border-slate-200/80 px-4 py-3 dark:border-slate-800">
-                    <span class="text-sm text-slate-600 dark:text-slate-300">İHA kimlik bilgileri</span>
-                    <span class="text-sm font-semibold {{ $stats['iha_credentials_ready'] ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300' }}">{{ $stats['iha_credentials_ready'] ? 'Hazır' : 'Eksik' }}</span>
+                    <div>
+                        <span class="text-sm text-slate-600 dark:text-slate-300">İHA kimlik bilgileri</span>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $stats['iha_credentials_note'] }}</p>
+                    </div>
+                    <span class="text-sm font-semibold {{ $stats['iha_credentials_ready'] ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300' }}">{{ $stats['iha_credentials_ready'] ? $stats['iha_credentials_source'] : 'Eksik' }}</span>
                 </div>
                 <div class="flex items-center justify-between rounded-2xl border border-slate-200/80 px-4 py-3 dark:border-slate-800">
                     <span class="text-sm text-slate-600 dark:text-slate-300">Google Translation anahtarı</span>

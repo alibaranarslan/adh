@@ -23,19 +23,24 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action as TableAction;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\CreateAction as TableCreateAction;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\ForceDeleteBulkAction;
 use Filament\Tables\Actions\RestoreBulkAction;
-use Filament\Tables\Actions\ForceDeleteAction;
 use Filament\Tables\Actions\RestoreAction;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -46,7 +51,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
-use Filament\Resources\Concerns\Translatable;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class NewsArticleResource extends Resource
@@ -60,6 +64,11 @@ class NewsArticleResource extends Resource
     protected static ?string $modelLabel = 'Haber';
     protected static ?string $pluralModelLabel = 'Haberler';
     protected static ?int $navigationSort = 1;
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Tüm Haberler';
+    }
 
     public static function form(Form $form): Form
     {
@@ -274,21 +283,25 @@ class NewsArticleResource extends Resource
             ->columns([
                 ImageColumn::make('featured_image')
                     ->label('Görsel')
-                    ->width(40)
-                    ->height(40)
+                    ->width(48)
+                    ->height(48)
+                    ->square()
                     ->defaultImageUrl(asset('images/news/placeholder-news.jpg')),
 
                 TextColumn::make('title')
                     ->label('Başlık')
                     ->searchable()
                     ->sortable()
-                    ->limit(60)
-                    ->tooltip(fn ($record) => $record->getTranslation('title', 'tr')),
+                    ->limit(72)
+                    ->wrap()
+                    ->formatStateUsing(fn (NewsArticle $record): string => self::tableTitle($record))
+                    ->description(fn (NewsArticle $record): string => self::tableSourceReference($record))
+                    ->tooltip(fn (NewsArticle $record): string => self::tableTitle($record)),
 
                 BadgeColumn::make('category.name')
                     ->label('Kategori')
                     ->sortable()
-                    ->formatStateUsing(fn ($record) => $record->category?->getTranslation('name', 'tr') ?? '-')
+                    ->formatStateUsing(fn (NewsArticle $record): string => $record->category?->getTranslation('name', 'tr') ?? '-')
                     ->colors(['primary']),
 
                 BadgeColumn::make('source')
@@ -298,7 +311,11 @@ class NewsArticleResource extends Resource
                         'info' => 'iha',
                         'success' => 'manuel',
                     ])
-                    ->formatStateUsing(fn ($state) => $state === 'iha' ? 'IHA' : 'Manuel'),
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'iha' => 'İHA',
+                        'manuel' => 'Manuel',
+                        default => $state ?: '-',
+                    }),
 
                 BadgeColumn::make('status')
                     ->label('Durum')
@@ -308,11 +325,11 @@ class NewsArticleResource extends Resource
                         'warning' => 'draft',
                         'gray' => 'archived',
                     ])
-                    ->formatStateUsing(fn ($state) => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'published' => 'Yayında',
                         'draft' => 'Taslak',
                         'archived' => 'Arşiv',
-                        default => $state,
+                        default => $state ?: '-',
                     }),
 
                 BadgeColumn::make('instagramPublication.status')
@@ -324,52 +341,59 @@ class NewsArticleResource extends Resource
                         'danger' => 'failed',
                         'warning' => 'skipped',
                     ])
-                    ->formatStateUsing(fn ($state): string => match ($state) {
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'pending' => 'Bekliyor',
                         'processing' => 'İşleniyor',
                         'published' => 'Yayınlandı',
                         'failed' => 'Hatalı',
                         'skipped' => 'Atlandı',
                         default => $state ?: '-',
-                    }),
+                    })
+                    ->toggleable(),
 
                 TextColumn::make('editorial_score')
                     ->label('Editoryal Puan')
                     ->sortable()
                     ->badge()
-                    ->color(fn (int $state): string => match (true) {
-                        $state >= 70 => 'success',
-                        $state >= 40 => 'warning',
+                    ->color(fn (?int $state): string => match (true) {
+                        (int) $state >= 70 => 'success',
+                        (int) $state >= 40 => 'warning',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn ($state) => ($state ?? 0) . '/100'),
+                    ->formatStateUsing(fn ($state): string => ((int) ($state ?? 0)) . '/100'),
 
                 TextColumn::make('view_count')
                     ->label('Görüntülenme')
                     ->sortable()
-                    ->numeric(),
+                    ->numeric()
+                    ->toggleable(),
 
                 TextColumn::make('published_at')
                     ->label('Yayın Tarihi')
                     ->sortable()
                     ->dateTime('d.m.Y H:i')
-                    ->since(),
+                    ->description(fn (NewsArticle $record): ?string => $record->published_at?->diffForHumans())
+                    ->toggleable(),
 
                 IconColumn::make('is_breaking')
                     ->label('Son Dakika')
                     ->sortable()
-                    ->boolean(),
+                    ->boolean()
+                    ->toggleable(),
 
                 IconColumn::make('is_featured')
                     ->label('Manşet')
                     ->sortable()
-                    ->boolean(),
+                    ->boolean()
+                    ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('category_id')
                     ->label('Kategori')
                     ->relationship('category', 'name')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->getTranslation('name', 'tr')),
+                    ->searchable()
+                    ->preload()
+                    ->getOptionLabelFromRecordUsing(fn (Category $record): string => $record->getTranslation('name', 'tr')),
 
                 SelectFilter::make('status')
                     ->label('Durum')
@@ -382,7 +406,7 @@ class NewsArticleResource extends Resource
                 SelectFilter::make('source')
                     ->label('Kaynak')
                     ->options([
-                        'iha' => 'IHA',
+                        'iha' => 'İHA',
                         'manuel' => 'Manuel',
                     ]),
 
@@ -409,6 +433,7 @@ class NewsArticleResource extends Resource
                     }),
 
                 Filter::make('published_at')
+                    ->label('Yayın Tarihi')
                     ->form([
                         Forms\Components\DatePicker::make('from')->label('Başlangıç'),
                         Forms\Components\DatePicker::make('until')->label('Bitiş'),
@@ -417,73 +442,145 @@ class NewsArticleResource extends Resource
                         ->when($data['from'], fn ($q) => $q->whereDate('published_at', '>=', $data['from']))
                         ->when($data['until'], fn ($q) => $q->whereDate('published_at', '<=', $data['until']))),
 
-                TrashedFilter::make(),
-            ])
+                TrashedFilter::make()
+                    ->label('Silinmiş Kayıtlar')
+                    ->placeholder('Silinmişleri gösterme')
+                    ->trueLabel('Silinmişlerle birlikte')
+                    ->falseLabel('Yalnız silinmişler'),
+            ], FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(3)
             ->bulkActions([
                 BulkActionGroup::make([
                     BulkAction::make('publish')
                         ->label('Yayınla')
                         ->icon('heroicon-o-check-circle')
                         ->visible(fn (): bool => self::canPublishNews())
+                        ->modalHeading('Seçili haberleri yayınla')
+                        ->modalDescription('Seçimde İHA haberi varsa işlem iptal edilir; İHA katalog bütünlüğü yalnızca senkron akışıyla korunur.')
+                        ->modalSubmitActionLabel('Yayınla')
                         ->action(fn (Collection $records) => self::updateManualRecords($records, ['status' => 'published'], 'publish_news_article'))
                         ->requiresConfirmation(),
 
                     BulkAction::make('archive')
                         ->label('Arşivle')
+                        ->icon('heroicon-o-archive-box')
                         ->visible(fn (): bool => self::canPublishNews())
+                        ->modalHeading('Seçili haberleri arşivle')
+                        ->modalDescription('Arşivlenen haberler public arşiv erişimi kapsamında kalabilir; İHA kaydı içeren seçimler iptal edilir.')
+                        ->modalSubmitActionLabel('Arşivle')
                         ->action(fn (Collection $records) => self::updateManualRecords($records, ['status' => 'archived'], 'publish_news_article'))
                         ->requiresConfirmation(),
 
                     BulkAction::make('draft')
                         ->label('Taslağa Al')
+                        ->icon('heroicon-o-document')
                         ->visible(fn (): bool => self::canPublishNews())
+                        ->modalHeading('Seçili haberleri taslağa al')
+                        ->modalDescription('Taslağa alınan haberler sitede görünmez. İHA kaydı içeren seçimler iptal edilir.')
+                        ->modalSubmitActionLabel('Taslağa Al')
                         ->action(fn (Collection $records) => self::updateManualRecords($records, ['status' => 'draft'], 'publish_news_article'))
                         ->requiresConfirmation(),
 
                     BulkAction::make('set_breaking')
                         ->label('Son Dakika Yap')
+                        ->icon('heroicon-o-bolt')
                         ->visible(fn (): bool => self::canPublishNews())
                         ->action(fn (Collection $records) => self::updateManualRecords($records, ['is_breaking' => true], 'publish_news_article')),
 
                     BulkAction::make('unset_breaking')
                         ->label('Son Dakikayı Kaldır')
+                        ->icon('heroicon-o-bolt-slash')
                         ->visible(fn (): bool => self::canPublishNews())
                         ->action(fn (Collection $records) => self::updateManualRecords($records, ['is_breaking' => false], 'publish_news_article')),
 
                     BulkAction::make('set_featured')
                         ->label('Manşete Ekle')
+                        ->icon('heroicon-o-star')
                         ->visible(fn (): bool => self::canPublishNews())
                         ->action(fn (Collection $records) => self::updateManualRecords($records, ['is_featured' => true], 'publish_news_article')),
 
                     BulkAction::make('unset_featured')
                         ->label('Manşetten Kaldır')
+                        ->icon('heroicon-o-x-mark')
                         ->visible(fn (): bool => self::canPublishNews())
                         ->action(fn (Collection $records) => self::updateManualRecords($records, ['is_featured' => false], 'publish_news_article')),
 
                     BulkAction::make('change_category')
                         ->visible(fn (): bool => self::canPublishNews())
                         ->label('Kategori Değiştir')
+                        ->icon('heroicon-o-folder')
                         ->form([
                             Select::make('category_id')
                                 ->label('Kategori')
-                                ->options(Category::all()->mapWithKeys(fn ($c) => [$c->id => $c->getTranslation('name', 'tr')]))
+                                ->options(Category::query()->get()->mapWithKeys(fn (Category $category) => [$category->id => $category->getTranslation('name', 'tr')]))
                                 ->required(),
                         ])
                         ->action(fn (Collection $records, array $data) => self::updateManualRecords($records, ['category_id' => $data['category_id']], 'publish_news_article')),
 
                     DeleteBulkAction::make()
                         ->label('Sil')
+                        ->modalHeading('Seçili haberleri sil')
+                        ->modalDescription('İHA kaydı içeren seçimler iptal edilir; manuel haberler silinebilir.')
                         ->before(fn (DeleteBulkAction $action, Collection $records) => self::cancelIhaBulkMutation($action, $records)),
-                    RestoreBulkAction::make()->label('Geri Al'),
-                    ForceDeleteBulkAction::make()->label('Kalıcı Sil'),
-                ]),
+                    RestoreBulkAction::make()
+                        ->label('Geri Al')
+                        ->modalHeading('Seçili haberleri geri al'),
+                    ForceDeleteBulkAction::make()
+                        ->label('Kalıcı Sil')
+                        ->modalHeading('Seçili haberleri kalıcı olarak sil'),
+                ])->label('Toplu İşlemler'),
             ])
             ->actions([
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                EditAction::make()
+                    ->label('Düzenle')
+                    ->icon('heroicon-o-pencil-square'),
+                TableAction::make('view_site')
+                    ->label('Sitede Gör')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->url(fn (NewsArticle $record): string => route('news.show', ['slug' => $record->slug]))
+                    ->openUrlInNewTab()
+                    ->visible(fn (NewsArticle $record): bool => self::isPubliclyVisibleOnSite($record)),
+                RestoreAction::make()->label('Geri Al'),
+                ForceDeleteAction::make()->label('Kalıcı Sil'),
+            ])
+            ->emptyStateIcon('heroicon-o-newspaper')
+            ->emptyStateHeading('Bu kapsamda haber bulunamadı')
+            ->emptyStateDescription('Arama veya filtreleri genişletin. Haber oluşturma yetkiniz varsa yeni haber ekleyebilirsiniz.')
+            ->emptyStateActions([
+                TableCreateAction::make()
+                    ->label('Yeni Haber')
+                    ->icon('heroicon-o-plus'),
             ])
             ->defaultSort('published_at', 'desc')
+            ->defaultPaginationPageOption(25)
             ->poll('60s');
+    }
+
+    private static function tableTitle(NewsArticle $record): string
+    {
+        return trim((string) $record->getTranslation('title', 'tr', false)) ?: (string) $record->slug;
+    }
+
+    private static function tableSourceReference(NewsArticle $record): string
+    {
+        if ($record->isFromIha()) {
+            return $record->iha_id ? 'İHA ID: ' . $record->iha_id : 'İHA senkron kaydı';
+        }
+
+        return 'Manuel kayıt';
+    }
+
+    private static function isPubliclyVisibleOnSite(NewsArticle $record): bool
+    {
+        if ($record->trashed()) {
+            return false;
+        }
+
+        if (! in_array($record->status, ['published', 'archived'], true)) {
+            return false;
+        }
+
+        return $record->published_at === null || $record->published_at->lessThanOrEqualTo(now());
     }
 
     public static function getRelations(): array
@@ -580,6 +677,12 @@ class NewsArticleResource extends Resource
         }
 
         $records->each->update($attributes);
+
+        Notification::make()
+            ->success()
+            ->title('Toplu işlem tamamlandı')
+            ->body($records->count() . ' haber güncellendi.')
+            ->send();
     }
 
     private static function cancelIhaBulkMutation(BulkAction $action, Collection $records): void
@@ -601,8 +704,8 @@ class NewsArticleResource extends Resource
     {
         Notification::make()
             ->danger()
-            ->title('IHA haberleri toplu islemle degistirilemez')
-            ->body('Secimde IHA kaydi bulundugu icin islem iptal edildi. IHA haber katalog butunlugu yalnizca senkron akisi ile korunur.')
+            ->title('İHA haberleri toplu işlemle değiştirilemez')
+            ->body('Seçimde İHA kaydı bulunduğu için işlem iptal edildi. İHA haber katalog bütünlüğü yalnızca senkron akışıyla korunur.')
             ->send();
     }
 
@@ -610,8 +713,8 @@ class NewsArticleResource extends Resource
     {
         Notification::make()
             ->danger()
-            ->title('Bu toplu islem icin yetki gerekli')
-            ->body('Yayin, vitrin ve kategori etkili toplu islemler yalnizca yayin yetkisi olan kullanicilar tarafindan yapilabilir.')
+            ->title('Bu toplu işlem için yetki gerekli')
+            ->body('Yayın, vitrin ve kategori etkili toplu işlemler yalnızca yayın yetkisi olan kullanıcılar tarafından yapılabilir.')
             ->send();
     }
 

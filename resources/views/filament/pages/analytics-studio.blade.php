@@ -10,7 +10,12 @@
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-primary-600">Editoryal analiz</p>
                 <h2 class="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Trafik ve karar destek görünümü</h2>
-                <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">Bu ekran yalnız toplam sayıları değil, önceki döneme göre hareketi de gösterir. Trafik kaynağı, cihaz dağılımı ve kategori etkisi editoryal önceliklendirmeyi desteklemek için birlikte sunulur.</p>
+                <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">{{ $data['sourceNote'] }} Trafik kaynağı, cihaz dağılımı ve kategori etkisi editoryal önceliklendirmeyi desteklemek için birlikte sunulur.</p>
+                <div class="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                    <span class="rounded-full {{ $data['hasData'] ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' }} px-3 py-1">{{ $data['hasData'] ? 'Hazır' : 'Veri yok' }}</span>
+                    <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">Yerel analytics_page_views</span>
+                    <span class="rounded-full bg-amber-100 px-3 py-1 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">GA/GSC değildir</span>
+                </div>
             </div>
             <div class="flex flex-wrap gap-2">
                 @foreach(['today' => 'Bugün', '7days' => 'Son 7 gün', '30days' => 'Son 30 gün'] as $key => $label)
@@ -22,6 +27,16 @@
         <div class="mt-4 flex flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400">
             <span class="rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800">{{ $data['periodLabel'] }}</span>
             <span class="rounded-full bg-slate-100 px-3 py-1 dark:bg-slate-800">Karşılaştırma: {{ $data['previousPeriodLabel'] }}</span>
+        </div>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:max-w-xl">
+            <label class="text-sm font-medium text-slate-700 dark:text-slate-200">
+                Başlangıç
+                <input type="date" wire:model.live="dateFrom" class="mt-1 w-full rounded-lg border-slate-300 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+            </label>
+            <label class="text-sm font-medium text-slate-700 dark:text-slate-200">
+                Bitiş
+                <input type="date" wire:model.live="dateTo" class="mt-1 w-full rounded-lg border-slate-300 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+            </label>
         </div>
     </section>
 

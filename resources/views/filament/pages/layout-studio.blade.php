@@ -13,6 +13,10 @@
     $moduleCount = count($modules);
     $activeModuleCount = collect($modules)->where('is_active', true)->count();
     $selectedSettings = $selectedModule['settings'] ?? [];
+    $draftSyncLabel = $this->draftSyncLabel();
+    $publishAuthorityLabel = $this->publishAuthorityLabel();
+    $readinessStatusLabel = $this->readinessStatusLabel();
+    $previewFreshnessLabel = $this->previewFreshnessLabel();
     $variantLabels = [
         'default' => 'Varsayılan',
         'editorial' => 'Editoryal',
@@ -241,6 +245,8 @@
                         <div class="flex flex-wrap gap-2">
                             <span class="studio-chip inline-flex items-center px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em]">Taslak -> Önizleme -> Yayın</span>
                             <span class="studio-chip inline-flex items-center px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em]">{{ $activeModuleCount }}/{{ $moduleCount }} aktif modül</span>
+                            <span class="studio-chip inline-flex items-center px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em]">{{ $draftSyncLabel }}</span>
+                            <span class="studio-chip inline-flex items-center px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em]">{{ $publishAuthorityLabel }}</span>
                         </div>
 
                         <h2 class="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-[2rem]">Anasayfa Yerleşim Stüdyosu</h2>
@@ -253,6 +259,7 @@
                             <span class="studio-chip inline-flex items-center px-3 py-1">Manset akışı korunur</span>
                             <span class="studio-chip inline-flex items-center px-3 py-1">TR / EN / KU önizleme hazır</span>
                             <span class="studio-chip inline-flex items-center px-3 py-1">Geri alma destekli yayın</span>
+                            <span class="studio-chip inline-flex items-center px-3 py-1">{{ $readinessStatusLabel }}</span>
                         </div>
                     </div>
 
@@ -260,13 +267,19 @@
                         <div class="studio-stat p-4">
                             <p class="text-[11px] uppercase tracking-[0.22em] text-slate-300">Taslak</p>
                             <p class="mt-3 text-sm font-semibold text-white">{{ $draftRevision->updated_at?->format('d.m.Y H:i') ?? 'Hazır' }}</p>
-                            <p class="mt-2 text-xs text-slate-300">{{ $this->hasUnsavedChanges ? 'Kaydedilmemiş değişiklik var' : 'Veritabanı ile senkron' }}</p>
+                            <p class="mt-2 text-xs text-slate-300">{{ $draftSyncLabel }}</p>
                         </div>
 
                         <div class="studio-stat p-4">
                             <p class="text-[11px] uppercase tracking-[0.22em] text-slate-300">Canlı Sürüm</p>
                             <p class="mt-3 text-sm font-semibold text-white">{{ $publishedRevision?->published_at?->format('d.m.Y H:i') ?? 'Henüz yok' }}</p>
                             <p class="mt-2 text-xs text-slate-300">{{ $publishedRevision?->name ?? 'İlk yayın bekleniyor' }}</p>
+                        </div>
+
+                        <div class="studio-stat p-4">
+                            <p class="text-[11px] uppercase tracking-[0.22em] text-slate-300">Yayın Yetkisi</p>
+                            <p class="mt-3 text-sm font-semibold text-white">{{ $publishAuthorityLabel }}</p>
+                            <p class="mt-2 text-xs text-slate-300">Editör taslak hazırlayabilir; canlıya alma süper admin yetkisindedir.</p>
                         </div>
 
                         <div class="studio-stat p-4">
@@ -284,7 +297,7 @@
                                     </a>
                                 @endforeach
                             </div>
-                            <p class="mt-2 text-xs text-slate-300">Kayıtlı taslak imzalı önizleme ile açılır.</p>
+                            <p class="mt-2 text-xs text-slate-300">{{ $previewFreshnessLabel }}.</p>
                         </div>
                     </div>
                 </div>

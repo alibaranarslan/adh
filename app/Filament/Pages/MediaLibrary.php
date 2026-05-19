@@ -18,6 +18,7 @@ class MediaLibrary extends Page
 
     public string $viewMode = 'grid';
     public string $search = '';
+    public string $collectionFilter = 'all';
     public bool $showOrphaned = false;
     public int $visibleLimit = 24;
     private const MEDIA_BATCH_SIZE = 24;
@@ -77,6 +78,23 @@ class MediaLibrary extends Page
         $this->resetVisibleLimit();
     }
 
+    public function updatedCollectionFilter(): void
+    {
+        $this->resetVisibleLimit();
+    }
+
+    public function getCollectionOptions(): array
+    {
+        return Media::query()
+            ->whereNotNull('collection_name')
+            ->select('collection_name')
+            ->distinct()
+            ->orderBy('collection_name')
+            ->pluck('collection_name', 'collection_name')
+            ->prepend('Tüm koleksiyonlar', 'all')
+            ->all();
+    }
+
     public function deleteMedia(int $id): void
     {
         if (! $this->canDeleteMedia()) {
@@ -100,8 +118,8 @@ class MediaLibrary extends Page
         if (! $this->isOrphaned($media)) {
             Notification::make()
                 ->warning()
-                ->title('Medya kullaniliyor')
-                ->body('Bu dosya bir icerige bagli oldugu icin medya kutuphanesinden silinmedi.')
+                ->title('Medya kullanımda')
+                ->body('Bu dosya bir içeriğe bağlı olduğu için medya kütüphanesinden silinmedi. Bağlı medya ilgili editör kaydından değiştirilmelidir.')
                 ->send();
 
             return;
@@ -125,7 +143,11 @@ class MediaLibrary extends Page
     private function mediaQuery()
     {
         $query = Media::query()
-            ->when($this->search, fn ($q) => $q->where('file_name', 'like', '%' . $this->search . '%'))
+            ->when($this->search, fn ($q) => $q->where(function ($q) {
+                $q->where('file_name', 'like', '%' . $this->search . '%')
+                    ->orWhere('collection_name', 'like', '%' . $this->search . '%');
+            }))
+            ->when($this->collectionFilter !== 'all', fn ($q) => $q->where('collection_name', $this->collectionFilter))
             ->orderByDesc('created_at');
 
         if ($this->showOrphaned) {

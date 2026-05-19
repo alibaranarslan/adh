@@ -70,6 +70,7 @@ class AdminSettingsOperationsFinalSmokeTest extends TestCase
         $this->assertArrayHasKey('command_available', $status);
         $this->assertArrayHasKey('directories', $status);
         $this->assertArrayHasKey('latest_backup', $status);
+        $this->assertArrayHasKey('readiness_label', $status);
         $this->assertIsBool($status['command_available']);
         $this->assertNotEmpty($status['directories']);
     }

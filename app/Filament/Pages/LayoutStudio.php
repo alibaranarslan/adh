@@ -180,8 +180,8 @@ class LayoutStudio extends Page
 
         Notification::make()
             ->success()
-            ->title('Modül ön ayarı uygulandı')
-            ->body('Seçilen blok için hızlı yerleşim kararı taslağa işlendi.')
+            ->title('Modül ön ayarı taslağa işlendi')
+            ->body('Önizleme son kaydedilen taslağı gösterir; değişikliği görmek için taslağı kaydedin.')
             ->send();
     }
 
@@ -206,7 +206,7 @@ class LayoutStudio extends Page
         Notification::make()
             ->success()
             ->title('Modül varsayılanına döndü')
-            ->body('Seçilen bloğun ayarları başlangıç değerlerine alındı.')
+            ->body('Seçilen bloğun ayarları taslakta başlangıç değerlerine alındı.')
             ->send();
     }
 
@@ -266,8 +266,8 @@ class LayoutStudio extends Page
 
         Notification::make()
             ->success()
-            ->title('Görünüm ön ayarı uygulandı')
-            ->body('Sayfanın genel görünüm kararı taslağa işlendi.')
+            ->title('Görünüm ön ayarı taslağa işlendi')
+            ->body('Public görünüm değişmez; önce taslağı kaydedip önizleyin, sonra süper admin canlıya alabilir.')
             ->send();
     }
 
@@ -393,7 +393,7 @@ class LayoutStudio extends Page
         Notification::make()
             ->success()
             ->title('Taslak kaydedildi')
-            ->body('Düzen değişiklikleri önizleme ve yayınlama için hazır.')
+            ->body('Düzen değişiklikleri kaydedildi. İmzalı önizleme artık bu taslakla çalışır.')
             ->send();
     }
 
@@ -489,6 +489,36 @@ class LayoutStudio extends Page
     public function isPublishRestricted(): bool
     {
         return self::canAccess() && ! $this->canPublishLayout();
+    }
+
+    public function draftSyncLabel(): string
+    {
+        return $this->hasUnsavedChanges
+            ? 'Kaydedilmemiş değişiklik var'
+            : 'Taslak veritabanı ile senkron';
+    }
+
+    public function publishAuthorityLabel(): string
+    {
+        return $this->canPublishLayout()
+            ? 'Canlıya alma yetkisi var'
+            : 'Yalnız taslak düzenleme';
+    }
+
+    public function readinessStatusLabel(): string
+    {
+        $readiness = $this->getLayoutReadiness();
+
+        return $readiness['status'] === 'ready'
+            ? 'Kalite kapısı hazır'
+            : 'Kalite kapısı blokluyor';
+    }
+
+    public function previewFreshnessLabel(): string
+    {
+        return $this->hasUnsavedChanges
+            ? 'Önizleme son kaydedilen taslağı gösterir'
+            : 'Önizleme güncel taslakla çalışır';
     }
 
     public function getSelectedModuleIndex(): ?int

@@ -63,6 +63,10 @@ class IntegrationSettings extends Page implements HasForms
             Section::make('İHA API')
                 ->description('Bu alanlar public sitede görünmez; yalnız senkron ve içerik operasyonlarını besler.')
                 ->schema([
+                    Placeholder::make('iha_readiness')
+                        ->label('İHA Hazırlık Durumu')
+                        ->content(fn (): string => $this->ihaReadinessStatus())
+                        ->columnSpanFull(),
                     TextInput::make('iha_user_code')
                         ->label('Kullanıcı Kodu')
                         ->helperText('Sadece entegrasyon kimliği için kullanılır.'),
@@ -96,7 +100,7 @@ class IntegrationSettings extends Page implements HasForms
                         ->helperText('Boş bırakırsanız mevcut API key korunur. Key Google Cloud Console içinde yalnız Cloud Translation API ile sınırlandırılmalıdır.'),
                     Placeholder::make('google_translate_flow')
                         ->label('Çeviri Akışı')
-                        ->content('API key kaydedildiğinde eksik haber çevirileri otomatik olarak kuyruğa alınır. Ayrıca "İHA Sağlığı" ekranındaki "Çeviri Sürecini Başlat" aksiyonu aynı süreci panelden yeniden tetikler. Sunucuda çalışan queue worker işleri arka planda tamamlar.')
+                        ->content('API key kaydedildiğinde eksik haber çevirileri kuyruğa alınır. Dış servise test çağrısı bu ekranda yapılmaz; çalışan queue worker işleri arka planda tamamlar.')
                         ->columnSpanFull(),
                 ])->columns(2),
 
@@ -116,7 +120,7 @@ class IntegrationSettings extends Page implements HasForms
                         ->columnSpan(1),
                     Placeholder::make('instagram_flow')
                         ->label('Paylaşım Akışı')
-                        ->content('Yayınlanan yeni haberler 2 dakika gecikmeyle Instagram kuyruğuna alınır. Haber görseli varsa başlık, özet, link ve hashtag formatında caption üretilir.')
+                        ->content('Yayınlanan yeni haberler 2 dakika gecikmeyle Instagram kuyruğuna alınır. Bu ekran kaydetme sırasında Instagram API test çağrısı yapmaz.')
                         ->columnSpanFull(),
                     Toggle::make('instagram_enabled')
                         ->label('Instagram otomatik paylaşım aktif')
@@ -134,6 +138,10 @@ class IntegrationSettings extends Page implements HasForms
                         ->label('AdSense Client ID')
                         ->placeholder('ca-pub-XXXXXXXXXXXXXXXX')
                         ->helperText('Google AdSense scriptinde public istemci kimliği olarak kullanılır. Yalnız müşterinin AdSense hesabındaki ca-pub... değeri girilmelidir.'),
+                    Placeholder::make('adsense_status')
+                        ->label('AdSense Durumu')
+                        ->content(fn (): string => $this->adsenseStatus())
+                        ->columnSpanFull(),
                 ])->columns(2),
         ])->statePath('data');
     }
@@ -168,17 +176,31 @@ class IntegrationSettings extends Page implements HasForms
 
         $notification = Notification::make()
             ->success()
-            ->title('Entegrasyon ayarları kaydedildi');
+            ->title('Entegrasyon ayarları kaydedildi')
+            ->body('İHA, çeviri, Instagram ve AdSense ayarları güncellendi; ilgili cache kayıtları temizlendi. Dış servis test çağrısı yapılmadı.');
 
         if ($translationResult !== null) {
             $notification->body(
                 $translationResult['queued'] > 0
-                    ? "{$translationResult['queued']} eksik haber çevirisi kuyruğa alındı; {$translationResult['skipped_duplicates']} tekrar kayıt atlandı."
-                    : 'Google çeviri hazır. Eksik çeviri kuyruğu zaten güncel görünüyor.'
+                    ? "{$translationResult['queued']} eksik haber çevirisi kuyruğa alındı; {$translationResult['skipped_duplicates']} tekrar kayıt atlandı. Cache kayıtları temizlendi."
+                    : 'Google çeviri hazır. Eksik çeviri kuyruğu zaten güncel görünüyor; cache kayıtları temizlendi.'
             );
         }
 
         $notification->send();
+    }
+
+    public function settingsSummary(): string
+    {
+        return 'İHA, Google Çeviri, Instagram ve AdSense ayarları içerik akışlarını etkiler; gizli değerler yazma amaçlıdır ve boş bırakıldığında korunur.';
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function settingsImpactBadges(): array
+    {
+        return ['Operasyonel entegrasyon', 'Gizli bilgi var', 'Dış test çağrısı yok'];
     }
 
     private function instagramStatus(): array
@@ -189,5 +211,33 @@ class IntegrationSettings extends Page implements HasForms
     private function secretConfigured(string $group, string $key, ?string $fallback = null): bool
     {
         return filled(Setting::get($group, $key, $fallback ?? ''));
+    }
+
+    private function ihaReadinessStatus(): string
+    {
+        $missing = [];
+
+        if (blank($this->data['iha_user_code'] ?? null) && blank(config('services.iha.user_code'))) {
+            $missing[] = 'kullanıcı kodu';
+        }
+
+        if (blank($this->data['iha_username'] ?? null) && blank(config('services.iha.username'))) {
+            $missing[] = 'kullanıcı adı';
+        }
+
+        if (! $this->secretConfigured('integration', 'iha_password', config('services.iha.password'))) {
+            $missing[] = 'şifre';
+        }
+
+        return $missing === []
+            ? 'Hazır: İHA kimlik bilgileri ayar veya konfigürasyon katmanında mevcut görünüyor.'
+            : 'Eksik: ' . implode(', ', $missing) . '. Senkron akışı bu alanlar tamamlanmadan güvenilir çalışmaz.';
+    }
+
+    private function adsenseStatus(): string
+    {
+        return filled($this->data['adsense_client_id'] ?? null)
+            ? 'Hazır: AdSense Client ID tanımlı. Reklam kayıtlarında ayrıca slot ID gerekir.'
+            : 'Eksik: AdSense Client ID yok. AdSense türündeki reklamlar publicte render edilemez.';
     }
 }

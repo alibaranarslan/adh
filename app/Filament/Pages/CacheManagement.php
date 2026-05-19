@@ -21,19 +21,41 @@ class CacheManagement extends Page
         return AdminPrivileges::canManageSystemSettings(auth()->user());
     }
 
+    public function getCacheStatus(): array
+    {
+        return [
+            'default_store' => (string) config('cache.default', 'file'),
+            'page_cache' => 'Misafir GET sayfaları route bazlı TTL ile cachelenir',
+            'public_effect' => 'Public sayfa cache, rota, görünüm ve config katmanları ilk istekleri etkileyebilir.',
+            'safe_first' => 'Önce hedefli temizlik, yalnız gerekliyse tam temizlik kullanın.',
+        ];
+    }
+
     public function clearConfig(): void
     {
-        $this->runCommand('config:clear', 'Yapılandırma önbelleği temizlendi');
+        $this->runCommand(
+            'config:clear',
+            'Yapılandırma önbelleği temizlendi',
+            'Config değerleri bir sonraki istekte yeniden okunur.'
+        );
     }
 
     public function clearView(): void
     {
-        $this->runCommand('view:clear', 'Görünüm önbelleği temizlendi');
+        $this->runCommand(
+            'view:clear',
+            'Görünüm önbelleği temizlendi',
+            'Derlenmiş Blade çıktıları yeniden üretilecek.'
+        );
     }
 
     public function clearRoute(): void
     {
-        $this->runCommand('route:clear', 'Rota önbelleği temizlendi');
+        $this->runCommand(
+            'route:clear',
+            'Rota önbelleği temizlendi',
+            'Rota listesi bir sonraki istekte yeniden çözülecek.'
+        );
     }
 
     public function clearAll(): void
@@ -52,21 +74,29 @@ class CacheManagement extends Page
             Notification::make()
                 ->danger()
                 ->title('Tüm önbellek temizlenemedi')
-                ->body(implode(' | ', $errors))
+                ->body('Başarısız komutlar: ' . implode(' | ', $errors))
                 ->send();
 
             return;
         }
 
-        Notification::make()->success()->title('Tüm önbellek temizlendi')->send();
+        Notification::make()
+            ->success()
+            ->title('Tüm önbellek temizlendi')
+            ->body('Uygulama, yapılandırma, görünüm ve rota önbelleği temizlendi. İlk isteklerde kısa süreli yavaşlama olabilir.')
+            ->send();
     }
 
     public function optimizeApp(): void
     {
-        $this->runCommand('optimize', 'Uygulama optimize edildi');
+        $this->runCommand(
+            'optimize',
+            'Uygulama optimizasyonu yenilendi',
+            'Optimize edilmiş uygulama önbelleği yeniden üretildi.'
+        );
     }
 
-    private function runCommand(string $command, string $successTitle): void
+    private function runCommand(string $command, string $successTitle, string $successBody): void
     {
         $exitCode = Artisan::call($command);
         $output = trim(Artisan::output());
@@ -75,12 +105,16 @@ class CacheManagement extends Page
             Notification::make()
                 ->danger()
                 ->title('İşlem tamamlanamadı')
-                ->body($output !== '' ? $output : $command . ' komutu sıfır dışı çıkış kodu ile döndü.')
+                ->body($output !== '' ? "{$command}: {$output}" : "{$command} komutu sıfır dışı çıkış kodu ile döndü.")
                 ->send();
 
             return;
         }
 
-        Notification::make()->success()->title($successTitle)->send();
+        Notification::make()
+            ->success()
+            ->title($successTitle)
+            ->body($successBody)
+            ->send();
     }
 }

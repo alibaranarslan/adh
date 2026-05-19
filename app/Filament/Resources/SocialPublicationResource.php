@@ -6,15 +6,20 @@ use App\Filament\Resources\SocialPublicationResource\Pages;
 use App\Models\SocialPublication;
 use App\Services\SocialPublicationService;
 use App\Support\AdminPrivileges;
+use App\Support\AdminSafeText;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class SocialPublicationResource extends Resource
@@ -37,54 +42,68 @@ class SocialPublicationResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('creative_image_url')
-                    ->label('Creative')
+                    ->label('Görsel')
                     ->square()
                     ->size(56),
+
                 TextColumn::make('article.title')
                     ->label('Haber')
                     ->limit(55)
                     ->searchable()
-                    ->formatStateUsing(fn ($record): string => $record->article?->getTranslation('title', 'tr') ?? '-')
-                    ->url(fn ($record): ?string => $record->article ? NewsArticleResource::getUrl('edit', ['record' => $record->article]) : null),
-                BadgeColumn::make('status')
+                    ->formatStateUsing(fn (SocialPublication $record): string => $record->article?->getTranslation('title', 'tr') ?? '-')
+                    ->description(fn (SocialPublication $record): string => $record->article?->slug ?? 'Haber bağlantısı yok')
+                    ->url(fn (SocialPublication $record): ?string => $record->article ? NewsArticleResource::getUrl('edit', ['record' => $record->article]) : null),
+
+                TextColumn::make('status')
                     ->label('Durum')
-                    ->colors([
-                        'gray' => SocialPublication::STATUS_PENDING,
-                        'info' => SocialPublication::STATUS_PROCESSING,
-                        'success' => SocialPublication::STATUS_PUBLISHED,
-                        'danger' => SocialPublication::STATUS_FAILED,
-                        'warning' => SocialPublication::STATUS_SKIPPED,
-                    ])
-                    ->formatStateUsing(fn ($state): string => match ($state) {
-                        SocialPublication::STATUS_PENDING => 'Bekliyor',
-                        SocialPublication::STATUS_PROCESSING => 'İşleniyor',
-                        SocialPublication::STATUS_PUBLISHED => 'Yayınlandı',
-                        SocialPublication::STATUS_FAILED => 'Hatalı',
-                        SocialPublication::STATUS_SKIPPED => 'Atlandı',
-                        default => (string) $state,
-                    }),
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => self::statusLabel($state))
+                    ->color(fn (?string $state): string => self::statusColor($state)),
+
+                TextColumn::make('creative_state')
+                    ->label('Creative')
+                    ->badge()
+                    ->state(fn (SocialPublication $record): string => filled($record->creative_image_url) ? 'Hazır' : 'Eksik')
+                    ->color(fn (SocialPublication $record): string => filled($record->creative_image_url) ? 'success' : 'warning'),
+
                 TextColumn::make('attempts')
                     ->label('Deneme')
                     ->numeric()
                     ->sortable(),
+
                 TextColumn::make('media_id')
                     ->label('Media ID')
                     ->copyable()
-                    ->limit(24),
+                    ->limit(24)
+                    ->placeholder('-')
+                    ->toggleable(),
+
+                TextColumn::make('container_id')
+                    ->label('Container ID')
+                    ->copyable()
+                    ->limit(24)
+                    ->placeholder('-')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('caption')
-                    ->label('Caption')
+                    ->label('Açıklama')
                     ->limit(70)
-                    ->tooltip(fn ($record): ?string => $record->caption),
+                    ->tooltip(fn (SocialPublication $record): ?string => $record->caption)
+                    ->toggleable(),
+
                 TextColumn::make('error_message')
-                    ->label('Hata')
-                    ->limit(60)
-                    ->tooltip(fn ($record): ?string => $record->error_message),
+                    ->label('Hata Özeti')
+                    ->formatStateUsing(fn (?string $state): string => AdminSafeText::limit($state, 60) ?: '-')
+                    ->tooltip(fn (SocialPublication $record): string => AdminSafeText::redact($record->error_message))
+                    ->toggleable(),
+
                 TextColumn::make('published_at')
-                    ->label('Yayın')
+                    ->label('Yayın Tarihi')
                     ->dateTime('d.m.Y H:i')
                     ->sortable(),
+
                 TextColumn::make('updated_at')
-                    ->label('Güncelleme')
+                    ->label('Son Güncelleme')
                     ->since()
                     ->sortable(),
             ])
@@ -98,7 +117,43 @@ class SocialPublicationResource extends Resource
                         SocialPublication::STATUS_FAILED => 'Hatalı',
                         SocialPublication::STATUS_SKIPPED => 'Atlandı',
                     ]),
-            ])
+
+                SelectFilter::make('creative_state')
+                    ->label('Creative Durumu')
+                    ->options([
+                        'ready' => 'Creative hazır',
+                        'missing' => 'Creative eksik',
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => match ($data['value'] ?? null) {
+                        'ready' => $query->whereNotNull('creative_image_url')->where('creative_image_url', '!=', ''),
+                        'missing' => $query->where(function (Builder $query): void {
+                            $query->whereNull('creative_image_url')->orWhere('creative_image_url', '');
+                        }),
+                        default => $query,
+                    }),
+
+                Filter::make('attempts')
+                    ->label('Deneme Sayısı')
+                    ->form([
+                        TextInput::make('min_attempts')
+                            ->label('En az')
+                            ->numeric()
+                            ->minValue(0),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['min_attempts'] ?? null, fn (Builder $query, string|int $attempts): Builder => $query->where('attempts', '>=', (int) $attempts))),
+
+                Filter::make('updated_at')
+                    ->label('Güncelleme Tarihi')
+                    ->form([
+                        DatePicker::make('updated_from')->label('Başlangıç'),
+                        DatePicker::make('updated_until')->label('Bitiş'),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['updated_from'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('updated_at', '>=', $date))
+                        ->when($data['updated_until'] ?? null, fn (Builder $query, string $date): Builder => $query->whereDate('updated_at', '<=', $date))),
+            ], FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(4)
             ->actions([
                 Action::make('retry')
                     ->label('Tekrar Dene')
@@ -108,6 +163,9 @@ class SocialPublicationResource extends Resource
                         SocialPublication::STATUS_SKIPPED,
                         SocialPublication::STATUS_PENDING,
                     ], true))
+                    ->modalHeading('Instagram paylaşımını yeniden kuyruğa al')
+                    ->modalDescription('Bu işlem paylaşımı pending durumuna alır ve job kuyruğuna gönderir. Doğrudan paylaşım garantisi vermez; sonuç için durum ve hata alanlarını takip edin.')
+                    ->modalSubmitActionLabel('Kuyruğa Al')
                     ->requiresConfirmation()
                     ->action(function (SocialPublication $record): void {
                         app(SocialPublicationService::class)->retry($record);
@@ -115,11 +173,15 @@ class SocialPublicationResource extends Resource
                         Notification::make()
                             ->success()
                             ->title('Instagram paylaşımı yeniden kuyruğa alındı')
+                            ->body('Paylaşım pending durumuna alındı. Queue worker çalışıyorsa işlem arka planda ilerler.')
                             ->send();
                     }),
             ])
             ->defaultSort('updated_at', 'desc')
-            ->poll('60s');
+            ->poll('60s')
+            ->emptyStateIcon('heroicon-o-megaphone')
+            ->emptyStateHeading('Bu kapsamda Instagram paylaşımı bulunamadı')
+            ->emptyStateDescription('Filtreleri genişletin veya haber yayınlama akışının Instagram otomasyonu üretip üretmediğini kontrol edin.');
     }
 
     public static function canViewAny(): bool
@@ -147,5 +209,29 @@ class SocialPublicationResource extends Resource
         return [
             'index' => Pages\ListSocialPublications::route('/'),
         ];
+    }
+
+    private static function statusLabel(?string $status): string
+    {
+        return match ($status) {
+            SocialPublication::STATUS_PENDING => 'Bekliyor',
+            SocialPublication::STATUS_PROCESSING => 'İşleniyor',
+            SocialPublication::STATUS_PUBLISHED => 'Yayınlandı',
+            SocialPublication::STATUS_FAILED => 'Hatalı',
+            SocialPublication::STATUS_SKIPPED => 'Atlandı',
+            default => (string) $status,
+        };
+    }
+
+    private static function statusColor(?string $status): string
+    {
+        return match ($status) {
+            SocialPublication::STATUS_PENDING => 'gray',
+            SocialPublication::STATUS_PROCESSING => 'info',
+            SocialPublication::STATUS_PUBLISHED => 'success',
+            SocialPublication::STATUS_FAILED => 'danger',
+            SocialPublication::STATUS_SKIPPED => 'warning',
+            default => 'gray',
+        };
     }
 }

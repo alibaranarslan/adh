@@ -17,12 +17,19 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\CreateAction as TableCreateAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
@@ -181,15 +188,78 @@ class AdvertisementResource extends Resource
 
                 TextColumn::make('start_date')
                     ->label('Başlangıç')
-                    ->date('d.m.Y'),
+                    ->date('d.m.Y')
+                    ->toggleable(),
 
                 TextColumn::make('end_date')
                     ->label('Bitiş')
-                    ->date('d.m.Y'),
+                    ->date('d.m.Y')
+                    ->toggleable(),
             ])
+            ->filters([
+                SelectFilter::make('position')
+                    ->label('Pozisyon')
+                    ->options(AdvertisementPlacement::options()),
+
+                SelectFilter::make('type')
+                    ->label('Tür')
+                    ->options([
+                        Advertisement::TYPE_BANNER => 'Manuel Banner',
+                        Advertisement::TYPE_ADSENSE => 'Google AdSense',
+                    ]),
+
+                SelectFilter::make('render_status')
+                    ->label('Yayın Durumu')
+                    ->options([
+                        'ready' => 'Yayına hazır',
+                        'passive' => 'Pasif',
+                        'scheduled' => 'Planlı',
+                        'expired' => 'Süresi doldu',
+                        'missing_banner_image' => 'Eksik görsel',
+                        'missing_adsense_slot' => 'Eksik Slot ID',
+                        'missing_adsense_client' => 'Eksik Client ID',
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => self::applyRenderStatusFilter($query, $data['value'] ?? null)),
+
+                TernaryFilter::make('is_active')
+                    ->label('Aktiflik')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Pasif'),
+
+                Filter::make('date_window')
+                    ->label('Tarih Aralığı')
+                    ->form([
+                        DatePicker::make('from')->label('Başlangıç'),
+                        DatePicker::make('until')->label('Bitiş'),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['from'] ?? null, fn (Builder $query, string $date) => $query->whereDate('start_date', '>=', $date))
+                        ->when($data['until'] ?? null, fn (Builder $query, string $date) => $query->whereDate('end_date', '<=', $date))),
+            ], FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(3)
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                Action::make('adsense_settings')
+                    ->label('AdSense Ayarları')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->url('/admin/integration-settings')
+                    ->visible(fn (Advertisement $record): bool => $record->renderStatus(self::adsenseClientId()) === 'missing_adsense_client'),
+
+                EditAction::make()
+                    ->label('Düzenle')
+                    ->icon('heroicon-o-pencil-square'),
+
+                DeleteAction::make()
+                    ->label('Sil')
+                    ->modalHeading('Reklamı sil')
+                    ->modalDescription(fn (Advertisement $record): string => self::deleteImpactDescription($record)),
+            ])
+            ->emptyStateIcon('heroicon-o-megaphone')
+            ->emptyStateHeading('Bu kapsamda reklam bulunamadı')
+            ->emptyStateDescription('Arama veya filtreleri genişletin. Yetkiniz varsa yeni reklam oluşturabilirsiniz.')
+            ->emptyStateActions([
+                TableCreateAction::make()
+                    ->label('Yeni Reklam')
+                    ->icon('heroicon-o-plus'),
             ])
             ->defaultSort('sort_order');
     }
@@ -265,5 +335,70 @@ class AdvertisementResource extends Resource
             'passive', 'expired' => 'gray',
             default => 'danger',
         };
+    }
+
+    private static function applyRenderStatusFilter(Builder $query, ?string $status): Builder
+    {
+        $today = now()->toDateString();
+
+        $currentWindow = function (Builder $query) use ($today): void {
+            $query
+                ->where(function (Builder $query) use ($today) {
+                    $query->whereNull('start_date')->orWhereDate('start_date', '<=', $today);
+                })
+                ->where(function (Builder $query) use ($today) {
+                    $query->whereNull('end_date')->orWhereDate('end_date', '>=', $today);
+                });
+        };
+
+        return match ($status) {
+            'ready' => $query
+                ->where('is_active', true)
+                ->where($currentWindow)
+                ->where(function (Builder $query) {
+                    $query
+                        ->where(function (Builder $query) {
+                            $query->where('type', Advertisement::TYPE_BANNER)
+                                ->where(function (Builder $query) {
+                                    $query->whereNotNull('desktop_image_path')->orWhereNotNull('image_path');
+                                });
+                        })
+                        ->orWhere(function (Builder $query) {
+                            $query->where('type', Advertisement::TYPE_ADSENSE)
+                                ->whereNotNull('adsense_slot')
+                                ->when(blank(self::adsenseClientId()), fn (Builder $query) => $query->whereRaw('1 = 0'));
+                        });
+                }),
+            'passive' => $query->where('is_active', false),
+            'scheduled' => $query->whereDate('start_date', '>', $today),
+            'expired' => $query->whereDate('end_date', '<', $today),
+            'missing_banner_image' => $query
+                ->where('type', Advertisement::TYPE_BANNER)
+                ->where('is_active', true)
+                ->where($currentWindow)
+                ->whereNull('desktop_image_path')
+                ->whereNull('image_path'),
+            'missing_adsense_slot' => $query
+                ->where('type', Advertisement::TYPE_ADSENSE)
+                ->where('is_active', true)
+                ->where($currentWindow)
+                ->where(function (Builder $query) {
+                    $query->whereNull('adsense_slot')->orWhere('adsense_slot', '');
+                }),
+            'missing_adsense_client' => $query
+                ->where('type', Advertisement::TYPE_ADSENSE)
+                ->where('is_active', true)
+                ->where($currentWindow)
+                ->whereNotNull('adsense_slot')
+                ->when(filled(self::adsenseClientId()), fn (Builder $query) => $query->whereRaw('1 = 0')),
+            default => $query,
+        };
+    }
+
+    private static function deleteImpactDescription(Advertisement $advertisement): string
+    {
+        $status = self::renderStatusLabel($advertisement);
+
+        return "Bu reklam silindiğinde ilgili public slotta artık değerlendirilmez. Mevcut yayın durumu: {$status}.";
     }
 }

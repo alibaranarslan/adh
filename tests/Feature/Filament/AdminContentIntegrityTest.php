@@ -51,6 +51,12 @@ class AdminContentIntegrityTest extends TestCase
         $this->assertSame('draft', $manualArticle->refresh()->status);
 
         Livewire::test(ListNewsArticles::class)
+            ->callTableBulkAction('archive', [$ihaArticle, $manualArticle]);
+
+        $this->assertSame('draft', $ihaArticle->refresh()->status);
+        $this->assertSame('draft', $manualArticle->refresh()->status);
+
+        Livewire::test(ListNewsArticles::class)
             ->callTableBulkAction('set_featured', [$ihaArticle]);
 
         $this->assertFalse($ihaArticle->refresh()->is_featured);
@@ -64,6 +70,194 @@ class AdminContentIntegrityTest extends TestCase
             ->callTableBulkAction('delete', [$ihaArticle]);
 
         $this->assertNotSoftDeleted($ihaArticle);
+    }
+
+    public function test_news_list_surface_uses_clean_turkish_operational_labels(): void
+    {
+        $admin = $this->admin();
+        $category = $this->category('gundem');
+
+        $this->article($category, [
+            'slug' => 'liste-etiketleri',
+            'title' => ['tr' => 'Liste Etiketleri Haberi'],
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->get('/admin/news-articles')
+            ->assertOk()
+            ->assertSee('Tüm Haberler')
+            ->assertSee('Tümü')
+            ->assertSee('Yayında')
+            ->assertSee('İHA')
+            ->assertSee('Manuel')
+            ->assertSee('Manşet')
+            ->assertSee('Arşiv')
+            ->assertSee('Başlık')
+            ->assertSee('Görsel')
+            ->assertSee('Görüntülenme')
+            ->assertDontSee('TÃ¼m')
+            ->assertDontSee('YayÄ±nda')
+            ->assertDontSee('GÃ¶rsel')
+            ->assertDontSee('ManÅŸet');
+    }
+
+    public function test_news_list_tabs_show_operational_counts_and_filter_records(): void
+    {
+        $admin = $this->admin();
+        $category = $this->category('gundem');
+
+        $iha = $this->article($category, [
+            'slug' => 'iha-yayinda',
+            'source' => 'iha',
+            'iha_id' => 'IHA-TAB-1',
+            'status' => 'published',
+        ]);
+        $draft = $this->article($category, [
+            'slug' => 'manuel-taslak',
+            'source' => 'manuel',
+            'status' => 'draft',
+        ]);
+        $breaking = $this->article($category, [
+            'slug' => 'manuel-son-dakika',
+            'source' => 'manuel',
+            'status' => 'published',
+            'is_breaking' => true,
+        ]);
+        $featured = $this->article($category, [
+            'slug' => 'manuel-manset',
+            'source' => 'manuel',
+            'status' => 'published',
+            'is_featured' => true,
+        ]);
+        $archived = $this->article($category, [
+            'slug' => 'manuel-arsiv',
+            'source' => 'manuel',
+            'status' => 'archived',
+        ]);
+
+        $this->actingAs($admin);
+
+        $tabs = Livewire::test(ListNewsArticles::class)->instance()->getTabs();
+
+        $this->assertSame(5, $tabs['all']->getBadge());
+        $this->assertSame(3, $tabs['published']->getBadge());
+        $this->assertSame(1, $tabs['draft']->getBadge());
+        $this->assertSame(1, $tabs['iha']->getBadge());
+        $this->assertSame(4, $tabs['manual']->getBadge());
+        $this->assertSame(1, $tabs['breaking']->getBadge());
+        $this->assertSame(1, $tabs['featured']->getBadge());
+        $this->assertSame(1, $tabs['archived']->getBadge());
+
+        Livewire::test(ListNewsArticles::class)
+            ->set('activeTab', 'iha')
+            ->assertCanSeeTableRecords([$iha])
+            ->assertCanNotSeeTableRecords([$draft, $breaking, $featured, $archived]);
+
+        Livewire::test(ListNewsArticles::class)
+            ->set('activeTab', 'manual')
+            ->assertCanSeeTableRecords([$draft, $breaking, $featured, $archived])
+            ->assertCanNotSeeTableRecords([$iha]);
+
+        Livewire::test(ListNewsArticles::class)
+            ->set('activeTab', 'featured')
+            ->assertCanSeeTableRecords([$featured])
+            ->assertCanNotSeeTableRecords([$iha, $draft, $breaking, $archived]);
+
+        Livewire::test(ListNewsArticles::class)
+            ->set('activeTab', 'archived')
+            ->assertCanSeeTableRecords([$archived])
+            ->assertCanNotSeeTableRecords([$iha, $draft, $breaking, $featured]);
+    }
+
+    public function test_news_list_filters_limit_records_by_source_status_editorial_category_and_date(): void
+    {
+        $admin = $this->admin();
+        $gundem = $this->category('gundem');
+        $asayis = $this->category('asayis');
+
+        $target = $this->article($gundem, [
+            'slug' => 'filtre-hedef',
+            'source' => 'iha',
+            'iha_id' => 'IHA-FILTER-1',
+            'status' => 'published',
+            'editorial_score' => 85,
+            'published_at' => now()->subHours(2),
+        ]);
+        $other = $this->article($asayis, [
+            'slug' => 'filtre-diger',
+            'source' => 'manuel',
+            'status' => 'draft',
+            'editorial_score' => 15,
+            'published_at' => now()->subDays(5),
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(ListNewsArticles::class)
+            ->filterTable('source', 'iha')
+            ->assertCanSeeTableRecords([$target])
+            ->assertCanNotSeeTableRecords([$other]);
+
+        Livewire::test(ListNewsArticles::class)
+            ->filterTable('status', 'draft')
+            ->assertCanSeeTableRecords([$other])
+            ->assertCanNotSeeTableRecords([$target]);
+
+        Livewire::test(ListNewsArticles::class)
+            ->filterTable('category_id', $gundem->id)
+            ->assertCanSeeTableRecords([$target])
+            ->assertCanNotSeeTableRecords([$other]);
+
+        Livewire::test(ListNewsArticles::class)
+            ->filterTable('editorial_band', 'high')
+            ->assertCanSeeTableRecords([$target])
+            ->assertCanNotSeeTableRecords([$other]);
+
+        Livewire::test(ListNewsArticles::class)
+            ->filterTable('published_at', [
+                'from' => now()->subDay()->toDateString(),
+                'until' => now()->toDateString(),
+            ])
+            ->assertCanSeeTableRecords([$target])
+            ->assertCanNotSeeTableRecords([$other]);
+    }
+
+    public function test_news_list_site_action_visibility_follows_public_access(): void
+    {
+        $admin = $this->admin();
+        $category = $this->category('gundem');
+
+        $published = $this->article($category, [
+            'slug' => 'sitede-gor-yayinda',
+            'status' => 'published',
+            'published_at' => now()->subMinute(),
+        ]);
+        $archived = $this->article($category, [
+            'slug' => 'sitede-gor-arsiv',
+            'status' => 'archived',
+            'published_at' => now()->subDay(),
+        ]);
+        $draft = $this->article($category, [
+            'slug' => 'sitede-gor-taslak',
+            'status' => 'draft',
+            'published_at' => now()->subDay(),
+        ]);
+        $future = $this->article($category, [
+            'slug' => 'sitede-gor-gelecek',
+            'status' => 'published',
+            'published_at' => now()->addDay(),
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(ListNewsArticles::class)
+            ->assertTableActionVisible('edit', $published)
+            ->assertTableActionVisible('view_site', $published)
+            ->assertTableActionVisible('view_site', $archived)
+            ->assertTableActionHidden('view_site', $draft)
+            ->assertTableActionHidden('view_site', $future);
     }
 
     public function test_iha_edit_page_hides_delete_action(): void

@@ -5,8 +5,6 @@ namespace App\Filament\Pages;
 use App\Models\AnalyticsPageView;
 use App\Models\NewsArticle;
 use App\Support\AdminPrivileges;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
 use Filament\Pages\Page;
 use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -49,8 +47,12 @@ class Analytics extends Page
 
     public function getViewData(): array
     {
-        $from = Carbon::parse($this->dateFrom)->startOfDay();
-        $to = Carbon::parse($this->dateTo)->endOfDay();
+        $from = Carbon::parse($this->dateFrom ?: now()->subDays(7)->format('Y-m-d'))->startOfDay();
+        $to = Carbon::parse($this->dateTo ?: now()->format('Y-m-d'))->endOfDay();
+
+        if ($from->gt($to)) {
+            [$from, $to] = [$to->copy()->startOfDay(), $from->copy()->endOfDay()];
+        }
 
         $current = $this->buildSnapshot($from, $to);
         $previousRange = $this->resolvePreviousRange($from, $to);
@@ -66,6 +68,8 @@ class Analytics extends Page
             'comparison' => $comparison,
             'periodLabel' => $from->format('d.m.Y') . ' - ' . $to->format('d.m.Y'),
             'previousPeriodLabel' => $previousRange['from']->format('d.m.Y') . ' - ' . $previousRange['to']->format('d.m.Y'),
+            'sourceNote' => 'Bu ekran yalnız yerel analytics_page_views tablosundan gelen ölçümleri gösterir; GA veya GSC verisi değildir.',
+            'hasData' => $current['totalViews'] > 0,
         ]);
     }
 
@@ -76,36 +80,40 @@ class Analytics extends Page
         return response()->streamDownload(function () use ($data) {
             $handle = fopen('php://output', 'w');
 
-            fputcsv($handle, ['metric', 'value']);
-            fputcsv($handle, ['total_views', $data['totalViews']]);
-            fputcsv($handle, ['unique_visitors', $data['uniqueVisitors']]);
-            fputcsv($handle, ['views_delta', $data['comparison']['views']['difference']]);
-            fputcsv($handle, ['visitors_delta', $data['comparison']['visitors']['difference']]);
+            fputcsv($handle, ['ADH Performans Raporu', $data['periodLabel']]);
+            fputcsv($handle, ['Veri kaynağı', 'Yerel analytics_page_views']);
             fputcsv($handle, []);
 
-            fputcsv($handle, ['device_distribution']);
-            fputcsv($handle, ['device', 'count']);
+            fputcsv($handle, ['Metrik', 'Değer']);
+            fputcsv($handle, ['Toplam görüntülenme', $data['totalViews']]);
+            fputcsv($handle, ['Benzersiz ziyaretçi', $data['uniqueVisitors']]);
+            fputcsv($handle, ['Görüntülenme farkı', $data['comparison']['views']['difference']]);
+            fputcsv($handle, ['Ziyaretçi farkı', $data['comparison']['visitors']['difference']]);
+            fputcsv($handle, []);
+
+            fputcsv($handle, ['Cihaz kırılımı']);
+            fputcsv($handle, ['Cihaz', 'Sayı']);
             foreach ($data['deviceDistribution'] as $device => $count) {
                 fputcsv($handle, [$device ?: 'unknown', $count]);
             }
 
             fputcsv($handle, []);
-            fputcsv($handle, ['traffic_sources']);
-            fputcsv($handle, ['source', 'count']);
+            fputcsv($handle, ['Trafik kaynakları']);
+            fputcsv($handle, ['Kaynak', 'Sayı']);
             foreach ($data['trafficSources'] as $source => $count) {
                 fputcsv($handle, [$source, $count]);
             }
 
             fputcsv($handle, []);
-            fputcsv($handle, ['category_distribution']);
-            fputcsv($handle, ['category', 'views']);
+            fputcsv($handle, ['Kategori dağılımı']);
+            fputcsv($handle, ['Kategori', 'Görüntülenme']);
             foreach ($data['categoryDistribution'] as $category => $count) {
                 fputcsv($handle, [$category, $count]);
             }
 
             fputcsv($handle, []);
-            fputcsv($handle, ['top_articles']);
-            fputcsv($handle, ['title', 'page_views']);
+            fputcsv($handle, ['En çok okunan haberler']);
+            fputcsv($handle, ['Başlık', 'Görüntülenme']);
             foreach ($data['topArticles'] as $article) {
                 fputcsv($handle, [
                     $article->getTranslation('title', 'tr'),
@@ -114,14 +122,14 @@ class Analytics extends Page
             }
 
             fputcsv($handle, []);
-            fputcsv($handle, ['daily_views']);
-            fputcsv($handle, ['date', 'views']);
+            fputcsv($handle, ['Günlük trend']);
+            fputcsv($handle, ['Tarih', 'Görüntülenme']);
             foreach ($data['dailyViews'] as $date => $count) {
                 fputcsv($handle, [$date, $count]);
             }
 
             fclose($handle);
-        }, 'adh-analytics.csv', [
+        }, 'adh-performans-' . now()->format('YmdHis') . '.csv', [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
@@ -160,7 +168,7 @@ class Analytics extends Page
             ->sortDesc();
 
         $categoryDistribution = $topArticles
-            ->groupBy(fn (NewsArticle $article) => $article->category?->getTranslation('name', 'tr') ?: 'Diger')
+            ->groupBy(fn (NewsArticle $article) => $article->category?->getTranslation('name', 'tr') ?: 'Diğer')
             ->map(fn ($group) => $group->sum('page_views_count'))
             ->sortDesc();
 

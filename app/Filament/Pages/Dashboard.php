@@ -4,14 +4,12 @@ namespace App\Filament\Pages;
 
 use App\Services\AdhControlCenterService;
 use App\Support\ControlCenter\AdhControlCenterPresenter;
-use Filament\Forms\Components\Select;
 use Filament\Pages\Dashboard as BaseDashboard;
-use Filament\Pages\Dashboard\Actions\FilterAction;
-use Filament\Pages\Dashboard\Concerns\HasFiltersAction;
+use Filament\Pages\Dashboard\Concerns\HasFilters;
 
 class Dashboard extends BaseDashboard
 {
-    use HasFiltersAction;
+    use HasFilters;
 
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
@@ -36,37 +34,17 @@ class Dashboard extends BaseDashboard
         return 1;
     }
 
-    protected function getHeaderActions(): array
+    public function persistsFiltersInSession(): bool
     {
-        return [
-            FilterAction::make()
-                ->label('Görünüm')
-                ->form([
-                    Select::make('window')
-                        ->label('Zaman aralığı')
-                        ->options([
-                            'today' => 'Bugün',
-                            '24h' => 'Son 24 saat',
-                            '7d' => 'Son 7 gün',
-                        ])
-                        ->default('24h')
-                        ->native(false),
-                    Select::make('source')
-                        ->label('İçerik kaynağı')
-                        ->options([
-                            'all' => 'Tüm içerik',
-                            'iha' => 'Yalnız İHA',
-                            'manual' => 'Yalnız manuel',
-                        ])
-                        ->default('all')
-                        ->native(false),
-                ]),
-        ];
+        return false;
     }
 
     public function getViewData(): array
     {
-        $snapshot = app(AdhControlCenterService::class)->snapshot($this->filters ?? [], auth()->user());
+        $snapshot = app(AdhControlCenterService::class)->snapshot(
+            (array) ($this->filters ?? request()->query('filters', [])),
+            auth()->user()
+        );
 
         return app(AdhControlCenterPresenter::class)->present($snapshot);
     }

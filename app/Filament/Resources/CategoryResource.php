@@ -13,10 +13,18 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\CreateAction as TableCreateAction;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -93,35 +101,100 @@ class CategoryResource extends Resource
                 TextColumn::make('name')
                     ->label('Ad')
                     ->formatStateUsing(fn ($record) => $record->getTranslation('name', 'tr'))
+                    ->description(fn (Category $record): string => $record->slug)
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('iha_category_code')
-                    ->label('IHA Kodu')
-                    ->sortable(),
+                    ->label('İHA Eşleşmesi')
+                    ->sortable()
+                    ->badge()
+                    ->placeholder('Eşleşme yok')
+                    ->formatStateUsing(fn (?int $state): string => $state ? 'İHA #' . $state : 'Eşleşme yok')
+                    ->color(fn (?int $state): string => $state ? 'info' : 'gray'),
 
                 TextColumn::make('parent.name')
                     ->label('Üst Kategori')
                     ->formatStateUsing(fn ($record) => $record->parent?->getTranslation('name', 'tr') ?? '-'),
 
                 TextColumn::make('articles_count')
-                    ->label('Haber Sayısı')
+                    ->label('Haber')
                     ->counts('articles')
-                    ->sortable(),
+                    ->sortable()
+                    ->badge()
+                    ->color(fn (?int $state): string => ((int) $state) > 0 ? 'success' : 'gray')
+                    ->formatStateUsing(fn (?int $state): string => ((int) $state) . ' haber'),
 
                 TextColumn::make('sort_order')
                     ->label('Sıra')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
 
                 IconColumn::make('is_active')
                     ->label('Aktif')
                     ->boolean(),
             ])
+            ->filters([
+                TernaryFilter::make('is_active')
+                    ->label('Durum')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Pasif'),
+
+                SelectFilter::make('parent_scope')
+                    ->label('Hiyerarşi')
+                    ->options([
+                        'root' => 'Üst kategori',
+                        'child' => 'Alt kategori',
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return match ($data['value'] ?? null) {
+                            'root' => $query->whereNull('parent_id'),
+                            'child' => $query->whereNotNull('parent_id'),
+                            default => $query,
+                        };
+                    }),
+
+                SelectFilter::make('iha_mapping')
+                    ->label('İHA Eşleşmesi')
+                    ->options([
+                        'mapped' => 'Eşleşmiş',
+                        'unmapped' => 'Eşleşmemiş',
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return match ($data['value'] ?? null) {
+                            'mapped' => $query->whereNotNull('iha_category_code'),
+                            'unmapped' => $query->whereNull('iha_category_code'),
+                            default => $query,
+                        };
+                    }),
+            ], FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(3)
             ->reorderable('sort_order', fn (): bool => self::canReorder())
             ->defaultSort('sort_order')
             ->actions([
-                \Filament\Tables\Actions\EditAction::make(),
-                \Filament\Tables\Actions\DeleteAction::make(),
+                Action::make('view_site')
+                    ->label('Sitede Gör')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->url(fn (Category $record): string => route('news.category', ['slug' => $record->slug]))
+                    ->openUrlInNewTab()
+                    ->visible(fn (Category $record): bool => (bool) $record->is_active),
+
+                EditAction::make()
+                    ->label('Düzenle')
+                    ->icon('heroicon-o-pencil-square'),
+
+                DeleteAction::make()
+                    ->label('Sil')
+                    ->modalHeading('Kategoriyi sil')
+                    ->modalDescription(fn (Category $record): string => self::deleteImpactDescription($record)),
+            ])
+            ->emptyStateIcon('heroicon-o-folder')
+            ->emptyStateHeading('Bu kapsamda kategori bulunamadı')
+            ->emptyStateDescription('Arama veya filtreleri genişletin. Yetkiniz varsa yeni kategori oluşturabilirsiniz.')
+            ->emptyStateActions([
+                TableCreateAction::make()
+                    ->label('Yeni Kategori')
+                    ->icon('heroicon-o-plus'),
             ]);
     }
 
@@ -162,5 +235,23 @@ class CategoryResource extends Resource
     public static function getTranslatableLocales(): array
     {
         return ['tr', 'en', 'ku'];
+    }
+
+    private static function deleteImpactDescription(Category $category): string
+    {
+        $primaryCount = $category->articles()->count();
+        $additionalCount = $category->additionalArticles()->count();
+        $childCount = $category->children()->count();
+
+        if (($primaryCount + $additionalCount + $childCount) === 0) {
+            return 'Bu kategori haberlerde veya alt kategorilerde kullanılmıyor; silme işlemi yalnız kategori kaydını kaldırır.';
+        }
+
+        return sprintf(
+            'Bu kategori %d ana haber, %d ek haber ilişkisi ve %d alt kategoriyle bağlantılı. Silmeden önce haberleri taşıyın veya hiyerarşiyi temizleyin.',
+            $primaryCount,
+            $additionalCount,
+            $childCount,
+        );
     }
 }

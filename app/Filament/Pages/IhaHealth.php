@@ -38,6 +38,9 @@ class IhaHealth extends Page
                 ->label('Senkronu Başlat')
                 ->icon('heroicon-o-arrow-path')
                 ->color('primary')
+                ->modalHeading('İHA senkronunu başlat')
+                ->modalDescription('Bu aksiyon mevcut iha:sync akışını kuyruğa alır. Uzak servis testi yapmaz; sonuçlar senkron kayıtları üzerinden izlenir.')
+                ->modalSubmitActionLabel('Senkronu Başlat')
                 ->requiresConfirmation()
                 ->action(function (): void {
                     $result = app(IhaSyncTriggerService::class)->triggerQueued();
@@ -60,6 +63,9 @@ class IhaHealth extends Page
                 ->label('Çeviri Sürecini Başlat')
                 ->icon('heroicon-o-language')
                 ->color('warning')
+                ->modalHeading('Eksik İHA çevirilerini kuyruğa al')
+                ->modalDescription('Bu aksiyon yalnız eksik çevirileri queue işlerine dönüştürür. Google bağlantı testi yapmaz; queue worker çalışıyorsa işler arka planda tamamlanır.')
+                ->modalSubmitActionLabel('Çeviri Kuyruğunu Başlat')
                 ->requiresConfirmation()
                 ->action(function (): void {
                     if (! TranslationSettings::ready()) {
@@ -125,12 +131,15 @@ class IhaHealth extends Page
             ->where('started_at', '>=', now()->subDay())
             ->get();
 
+        $credentialStatus = $this->ihaCredentialStatus();
+
         return [
             'stats' => [
                 'effective_interval' => self::EFFECTIVE_SYNC_INTERVAL_MINUTES . ' dakika',
                 'schedule_note' => 'Operasyonel kural sabittir. İHA senkronu cron üzerinden her 15 dakikada bir çalışır.',
                 'last_successful_sync' => $lastSuccessfulSync,
                 'latest_sync' => $latestSync,
+                'latest_sync_label' => $this->statusLabel($latestSync?->status),
                 'freshness_lag_minutes' => $freshnessLagMinutes,
                 'freshness_state' => match (true) {
                     $freshnessLagMinutes === null => 'unknown',
@@ -148,7 +157,9 @@ class IhaHealth extends Page
                 ],
                 'translation_backlog' => $translationBacklog,
                 'queued_translation_jobs' => $queuedTranslationJobs,
-                'iha_credentials_ready' => $this->ihaCredentialsReady(),
+                'iha_credentials_ready' => $credentialStatus['ready'],
+                'iha_credentials_source' => $credentialStatus['source'],
+                'iha_credentials_note' => $credentialStatus['note'],
                 'translation_credentials_ready' => TranslationSettings::ready(),
                 'last_error' => AdminSafeText::redact($lastFailedSync?->error_message),
                 'last_error_at' => $lastFailedSync?->completed_at,
@@ -196,18 +207,52 @@ class IhaHealth extends Page
         return 'Şu anda açık bir yeniden deneme ihtiyacı görünmüyor.';
     }
 
-    private function ihaCredentialsReady(): bool
+    /**
+     * @return array{ready: bool, source: string, note: string}
+     */
+    private function ihaCredentialStatus(): array
     {
-        return filled($this->integrationSettingOrConfig('iha_user_code', 'services.iha.user_code'))
-            && filled($this->integrationSettingOrConfig('iha_username', 'services.iha.username'))
-            && filled($this->integrationSettingOrConfig('iha_password', 'services.iha.password'));
+        $settingReady = filled(Setting::get('integration', 'iha_user_code'))
+            && filled(Setting::get('integration', 'iha_username'))
+            && filled(Setting::get('integration', 'iha_password'));
+
+        $configReady = filled(config('services.iha.user_code'))
+            && filled(config('services.iha.username'))
+            && filled(config('services.iha.password'));
+
+        if ($settingReady) {
+            return [
+                'ready' => true,
+                'source' => 'Ayar tablosu hazır',
+                'note' => 'İHA kimlik bilgileri admin ayarlarından okunuyor.',
+            ];
+        }
+
+        if ($configReady) {
+            return [
+                'ready' => true,
+                'source' => 'Config/env fallback hazır',
+                'note' => 'Ayar tablosu boş olsa bile runtime config değerleri kullanılabilir görünüyor.',
+            ];
+        }
+
+        return [
+            'ready' => false,
+            'source' => 'Eksik',
+            'note' => 'İHA senkronu için user code, kullanıcı adı ve şifre tamamlanmalıdır.',
+        ];
     }
 
-    private function integrationSettingOrConfig(string $settingKey, string $configKey): string
+    private function statusLabel(?string $status): string
     {
-        $value = Setting::get('integration', $settingKey);
-
-        return (string) (filled($value) ? $value : config($configKey, ''));
+        return match ($status) {
+            'success' => 'Başarılı',
+            'failed' => 'Hatalı',
+            'partial' => 'Kısmi',
+            'running' => 'Çalışıyor',
+            null => 'Veri yok',
+            default => (string) $status,
+        };
     }
 
     private function flushHealthCache(): void

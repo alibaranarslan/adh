@@ -21,11 +21,16 @@ use Filament\Forms\Get;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\CreateAction as TableCreateAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class HeaderThemeResource extends Resource
 {
@@ -189,19 +194,56 @@ class HeaderThemeResource extends Resource
                     ->label('Takvim')
                     ->state(fn (HeaderTheme $record) => $record->scheduleLabel())
                     ->wrap(),
+                TextColumn::make('schedule_status')
+                    ->label('Zamanlama')
+                    ->badge()
+                    ->state(fn (HeaderTheme $record): string => self::scheduleStatusLabel($record))
+                    ->color(fn (HeaderTheme $record): string => self::scheduleStatusColor($record)),
+                TextColumn::make('readiness')
+                    ->label('Hazırlık')
+                    ->badge()
+                    ->state(fn (HeaderTheme $record): string => self::readinessLabel($record))
+                    ->color(fn (HeaderTheme $record): string => self::readinessColor($record)),
                 TextColumn::make('mode')
                     ->label('Mod')
                     ->formatStateUsing(fn (string $state) => HeaderTheme::modeOptions()[$state] ?? $state),
                 IconColumn::make('show_flag')
                     ->label('Bayrak')
-                    ->boolean(),
+                    ->boolean()
+                    ->toggleable(),
                 IconColumn::make('show_ataturk')
                     ->label('Atatürk')
-                    ->boolean(),
+                    ->boolean()
+                    ->toggleable(),
                 IconColumn::make('is_enabled')
                     ->label('Aktif')
                     ->boolean(),
             ])
+            ->filters([
+                TernaryFilter::make('is_enabled')
+                    ->label('Aktiflik')
+                    ->trueLabel('Aktif')
+                    ->falseLabel('Pasif'),
+
+                SelectFilter::make('mode')
+                    ->label('Mod')
+                    ->options(HeaderTheme::modeOptions()),
+
+                SelectFilter::make('theme_type')
+                    ->label('Tarih Kuralı')
+                    ->options(HeaderTheme::typeOptions()),
+
+                SelectFilter::make('schedule_scope')
+                    ->label('Zamanlama')
+                    ->options([
+                        'active_today' => 'Bugün aktif',
+                        'scheduled_range' => 'Planlı tarih aralığı',
+                        'expired_range' => 'Süresi dolmuş aralık',
+                        'manual_only' => 'Sadece manuel',
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => self::applyScheduleScopeFilter($query, $data['value'] ?? null)),
+            ], FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(4)
             ->actions([
                 Action::make('preview')
                     ->label('Önizle')
@@ -224,8 +266,21 @@ class HeaderThemeResource extends Resource
                             $data['preview_date'] ?? null,
                         ));
                     }),
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->label('Düzenle')
+                    ->icon('heroicon-o-pencil-square'),
+                DeleteAction::make()
+                    ->label('Sil')
+                    ->modalHeading('Milli gün temasını sil')
+                    ->modalDescription('Tema silindiğinde public header bu kayıt için otomatik fallback kullanır. Silmeden önce aktiflik ve tarih kapsamını kontrol edin.'),
+            ])
+            ->emptyStateIcon('heroicon-o-flag')
+            ->emptyStateHeading('Bu kapsamda milli gün teması bulunamadı')
+            ->emptyStateDescription('Arama veya filtreleri genişletin. Yetkiniz varsa yeni tema oluşturabilirsiniz.')
+            ->emptyStateActions([
+                TableCreateAction::make()
+                    ->label('Yeni Milli Gün Teması')
+                    ->icon('heroicon-o-plus'),
             ]);
     }
 
@@ -277,5 +332,109 @@ class HeaderThemeResource extends Resource
             data_get($asset, 'license', 'Lisans bilgisi eksik'),
             data_get($asset, 'source_url', 'Kaynak bilgisi eksik'),
         );
+    }
+
+    private static function applyScheduleScopeFilter(Builder $query, ?string $scope): Builder
+    {
+        $today = now()->toDateString();
+        $month = (int) now()->month;
+        $day = (int) now()->day;
+
+        return match ($scope) {
+            'active_today' => $query->where(function (Builder $query) use ($today, $month, $day) {
+                $query
+                    ->where(function (Builder $query) use ($month, $day) {
+                        $query->where('theme_type', HeaderTheme::TYPE_FIXED)
+                            ->where('month', $month)
+                            ->where('day', $day);
+                    })
+                    ->orWhere(function (Builder $query) use ($today) {
+                        $query->where('theme_type', HeaderTheme::TYPE_RANGE)
+                            ->whereDate('starts_at', '<=', $today)
+                            ->whereDate('ends_at', '>=', $today);
+                    });
+            }),
+            'scheduled_range' => $query
+                ->where('theme_type', HeaderTheme::TYPE_RANGE)
+                ->whereDate('starts_at', '>', $today),
+            'expired_range' => $query
+                ->where('theme_type', HeaderTheme::TYPE_RANGE)
+                ->whereDate('ends_at', '<', $today),
+            'manual_only' => $query->where('theme_type', HeaderTheme::TYPE_MANUAL_ONLY),
+            default => $query,
+        };
+    }
+
+    private static function scheduleStatusLabel(HeaderTheme $theme): string
+    {
+        if (! $theme->is_enabled || $theme->mode === HeaderTheme::MODE_DISABLED) {
+            return 'Kapalı';
+        }
+
+        if ($theme->mode === HeaderTheme::MODE_MANUAL_ON) {
+            return 'Manuel açık';
+        }
+
+        if ($theme->theme_type === HeaderTheme::TYPE_MANUAL_ONLY) {
+            return 'Sadece manuel';
+        }
+
+        if ($theme->matchesDate(now())) {
+            return 'Bugün aktif';
+        }
+
+        if ($theme->theme_type === HeaderTheme::TYPE_RANGE && $theme->starts_at?->isFuture()) {
+            return 'Planlandı';
+        }
+
+        if ($theme->theme_type === HeaderTheme::TYPE_RANGE && $theme->ends_at?->isPast()) {
+            return 'Süresi doldu';
+        }
+
+        return 'Takvimli';
+    }
+
+    private static function scheduleStatusColor(HeaderTheme $theme): string
+    {
+        return match (self::scheduleStatusLabel($theme)) {
+            'Bugün aktif', 'Manuel açık' => 'success',
+            'Planlandı', 'Takvimli' => 'info',
+            'Kapalı', 'Süresi doldu' => 'gray',
+            default => 'warning',
+        };
+    }
+
+    private static function readinessLabel(HeaderTheme $theme): string
+    {
+        if (! $theme->is_enabled || $theme->mode === HeaderTheme::MODE_DISABLED) {
+            return 'Kapalı';
+        }
+
+        $hasSchedule = match ($theme->theme_type) {
+            HeaderTheme::TYPE_FIXED => filled($theme->month) && filled($theme->day),
+            HeaderTheme::TYPE_RANGE => filled($theme->starts_at) && filled($theme->ends_at),
+            HeaderTheme::TYPE_NTH_WEEKDAY => filled($theme->month) && $theme->weekday !== null && filled($theme->nth_week),
+            HeaderTheme::TYPE_MANUAL_ONLY => true,
+            default => false,
+        };
+
+        if (! $hasSchedule) {
+            return 'Takvim eksik';
+        }
+
+        if ($theme->illustration_mode === 'custom_asset' && blank($theme->illustration_asset)) {
+            return 'Görsel eksik';
+        }
+
+        return 'Hazır';
+    }
+
+    private static function readinessColor(HeaderTheme $theme): string
+    {
+        return match (self::readinessLabel($theme)) {
+            'Hazır' => 'success',
+            'Kapalı' => 'gray',
+            default => 'warning',
+        };
     }
 }

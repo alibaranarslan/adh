@@ -102,6 +102,10 @@ class GeneralSettings extends Page implements HasForms
                         ->maxSize(AdminImageUploads::maxSizeKb())
                         ->acceptedFileTypes(AdminImageUploads::acceptedMimeTypes())
                         ->getUploadedFileNameForStorageUsing(fn (TemporaryUploadedFile $file): string => AdminImageUploads::storedFileName($file)),
+                    Placeholder::make('brand_asset_status')
+                        ->label('Marka Durumu')
+                        ->content(fn (): string => $this->brandAssetStatus())
+                        ->columnSpanFull(),
                 ])->columns(2),
 
             Section::make('İletişim Bilgileri')
@@ -125,6 +129,10 @@ class GeneralSettings extends Page implements HasForms
                         isTextarea: true,
                         rows: 3,
                     ),
+                    Placeholder::make('contact_routing_status')
+                        ->label('Form Alıcı Durumu')
+                        ->content(fn (): string => $this->contactRoutingStatus())
+                        ->columnSpanFull(),
                 ])->columns(2),
 
             Section::make('Arşiv Politikası')
@@ -150,7 +158,7 @@ class GeneralSettings extends Page implements HasForms
                         ->default(true),
                     Placeholder::make('house_ads_contact_note')
                         ->label('İletişim kaynağı')
-                        ->content('Dolgu alanlarında Genel Ayarlar > Telefon değeri kullanılır. Telefon yoksa e-posta, o da yoksa iletişim sayfası bağlantısı gösterilir.'),
+                        ->content(fn (): string => $this->houseAdsContactStatus()),
                 ])->columns(2),
 
             Section::make('Sosyal Medya')
@@ -173,6 +181,9 @@ class GeneralSettings extends Page implements HasForms
                                 ->url(),
                         ])
                         ->columns(2),
+                    Placeholder::make('social_links_status')
+                        ->label('Sosyal Bağlantı Durumu')
+                        ->content(fn (): string => $this->socialLinksStatus()),
                 ]),
         ])->statePath('data');
     }
@@ -194,7 +205,24 @@ class GeneralSettings extends Page implements HasForms
         Setting::set('general', 'archive_active_days', $data['archive_active_days'] ?? 90);
         Setting::set('advertising', 'house_ads_enabled', ! empty($data['house_ads_enabled']) ? '1' : '0');
 
-        Notification::make()->success()->title('Ayarlar kaydedildi')->send();
+        Notification::make()
+            ->success()
+            ->title('Genel ayarlar kaydedildi')
+            ->body('Public header, footer, iletişim ve reklam dolgu ayarları güncellendi.')
+            ->send();
+    }
+
+    public function settingsSummary(): string
+    {
+        return 'Site adı, marka görselleri, iletişim yönlendirmesi ve reklam dolgu davranışı public yüzeyi doğrudan etkiler.';
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function settingsImpactBadges(): array
+    {
+        return ['Public header/footer', 'İletişim formu', 'Gizli bilgi yok'];
     }
 
     private function localizedTextTabs(
@@ -227,5 +255,63 @@ class GeneralSettings extends Page implements HasForms
                     ->values()
                     ->all()
             );
+    }
+
+    private function brandAssetStatus(): string
+    {
+        $missing = [];
+
+        foreach ([
+            'logo_path' => 'açık tema logosu',
+            'dark_logo_path' => 'koyu tema logosu',
+            'favicon_path' => 'favicon',
+        ] as $field => $label) {
+            if (blank($this->data[$field] ?? null)) {
+                $missing[] = $label;
+            }
+        }
+
+        if ($missing === []) {
+            return 'Hazır: logo, koyu tema logosu ve favicon tanımlı.';
+        }
+
+        return 'Eksik: ' . implode(', ', $missing) . '. Public yüzey ilgili alanlarda fallback kullanır.';
+    }
+
+    private function contactRoutingStatus(): string
+    {
+        if (filled($this->data['contact_recipient_email'] ?? null)) {
+            return 'Hazır: iletişim formu mesajları form alıcı e-posta adresine gönderilir.';
+        }
+
+        if (filled($this->data['contact_email'] ?? null)) {
+            return 'Fallback: form alıcısı boş, iletişim formu footer e-posta adresini kullanır.';
+        }
+
+        return 'Risk: form alıcısı ve footer e-posta adresi boş. İletişim formu hedefi belirsiz kalabilir.';
+    }
+
+    private function houseAdsContactStatus(): string
+    {
+        if (filled($this->data['contact_phone'] ?? null)) {
+            return 'Dolgu reklam alanlarında telefon numarası satış çağrısı için kullanılabilir.';
+        }
+
+        if (filled($this->data['contact_email'] ?? null)) {
+            return 'Telefon yok; dolgu reklam alanları e-posta adresini kullanır.';
+        }
+
+        return 'Telefon ve e-posta yok; dolgu reklam alanları yalnız iletişim sayfası bağlantısına düşer.';
+    }
+
+    private function socialLinksStatus(): string
+    {
+        $count = collect($this->data['social_links'] ?? [])
+            ->filter(fn (array $link): bool => filled($link['platform'] ?? null) && filled($link['url'] ?? null))
+            ->count();
+
+        return $count > 0
+            ? "{$count} sosyal bağlantı header/footer ikonlarını besler."
+            : 'Sosyal bağlantı tanımlı değil; header/footer sosyal ikonları boş kalabilir.';
     }
 }

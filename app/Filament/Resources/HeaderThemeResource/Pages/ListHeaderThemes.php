@@ -13,7 +13,7 @@ class ListHeaderThemes extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Yeni milli gün teması'),
+            Actions\CreateAction::make()->label('Yeni Milli Gün Teması'),
         ];
     }
 }

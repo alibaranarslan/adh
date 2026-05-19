@@ -68,6 +68,7 @@ class AnalyticsAndOperationsPagesTest extends TestCase
             ->get('/admin/analytics')
             ->assertOk()
             ->assertSee('Trafik ve karar destek görünümü')
+            ->assertSee('Yerel analytics_page_views')
             ->assertSee('En çok okunan haberler')
             ->assertSee('Trafik kaynakları')
             ->assertSee('Cihaz kırılımı');
@@ -91,7 +92,7 @@ class AnalyticsAndOperationsPagesTest extends TestCase
 
         $response = $page->exportCsv();
 
-        $this->assertStringContainsString('adh-analytics.csv', (string) $response->headers->get('content-disposition'));
+        $this->assertStringContainsString('adh-performans-', (string) $response->headers->get('content-disposition'));
         $this->assertStringContainsString('text/csv', (string) $response->headers->get('content-type'));
     }
 

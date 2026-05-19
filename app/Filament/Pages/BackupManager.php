@@ -54,7 +54,7 @@ class BackupManager extends Page
             }
         }
 
-        usort($files, fn ($a, $b) => ($b['last_modified_ts'] ?? 0) <=> ($a['last_modified_ts'] ?? 0));
+        usort($files, fn (array $a, array $b): int => ($b['last_modified_ts'] ?? 0) <=> ($a['last_modified_ts'] ?? 0));
 
         return $files;
     }
@@ -88,7 +88,7 @@ class BackupManager extends Page
             Notification::make()
                 ->success()
                 ->title('Yedekleme başlatıldı')
-                ->body('Veritabanı yedeği komutu başarıyla tetiklendi.')
+                ->body('Yalnız veritabanı yedeği için backup:run --only-db komutu tetiklendi. Dosya oluşumunu listeden doğrulayın.')
                 ->send();
         } catch (\Throwable $e) {
             Notification::make()
@@ -103,14 +103,24 @@ class BackupManager extends Page
     {
         $files = $this->getBackupFiles();
         $latest = $files[0] ?? null;
+        $totalSize = array_sum(array_column($files, 'size_bytes'));
+        $commandAvailable = $this->isBackupCommandAvailable();
 
         return [
-            'command_available' => $this->isBackupCommandAvailable(),
+            'command_available' => $commandAvailable,
+            'readiness_label' => $commandAvailable ? 'Hazır' : 'Eksik',
+            'readiness_description' => $commandAvailable
+                ? 'backup:run --only-db komutu tetiklenebilir.'
+                : 'Spatie backup komutu bu ortamda bulunamadı; sahte başarı üretilmez.',
             'directories' => $this->getBackupDirectories(),
             'active_directory' => $latest['directory'] ?? $this->getBackupDirectories()[0],
             'files' => $files,
             'total_files' => count($files),
+            'total_size' => $this->humanFileSize((int) $totalSize),
             'latest_backup' => $latest,
+            'latest_backup_age' => isset($latest['last_modified_ts'])
+                ? now()->setTimestamp((int) $latest['last_modified_ts'])->diffForHumans()
+                : 'Kayıt yok',
         ];
     }
 
