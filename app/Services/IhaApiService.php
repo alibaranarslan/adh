@@ -111,6 +111,14 @@ class IhaApiService
             libxml_use_internal_errors($previous);
 
             if ($parsed === false) {
+                if ($this->looksLikeCredentialRejection($xml)) {
+                    Log::warning('IHA credential rejection', [
+                        'xml_snippet' => $this->sanitizeMessage(substr($xml, 0, 500)),
+                    ]);
+
+                    throw new IhaSyncException('IHA kimlik bilgileri reddedildi. Entegrasyon ayarlarini ve IP yetkisini kontrol edin.');
+                }
+
                 Log::warning('IHA XML parse hatası', ['xml_snippet' => substr($xml, 0, 500)]);
                 throw new IhaSyncException('IHA XML parse hatası.');
             }
@@ -163,7 +171,7 @@ class IhaApiService
         if (! $response->successful()) {
             Log::error('IHA API başarısız yanıt', array_merge($context, [
                 'status' => $response->status(),
-                'body' => substr($response->body(), 0, 500),
+                'body' => $this->sanitizeMessage(substr($response->body(), 0, 500)),
             ]));
 
             throw new IhaSyncException('IHA API başarısız yanıt döndürdü. HTTP ' . $response->status() . '.');
@@ -193,12 +201,22 @@ class IhaApiService
     private function sanitizeMessage(string $message): string
     {
         $patterns = [
+            '/(UserCode\s*=\s*)[^,\]&\s]+/i',
+            '/(UserName\s*=\s*)[^,\]&\s]+/i',
+            '/(UserPassword\s*=\s*)[^,\]&\s]+/i',
             '/(UserCode=)[^&\\s]+/i',
             '/(UserName=)[^&\\s]+/i',
             '/(UserPassword=)[^&\\s]+/i',
         ];
 
         return preg_replace($patterns, '$1***', $message) ?? $message;
+    }
+
+    private function looksLikeCredentialRejection(string $body): bool
+    {
+        return str_contains($body, 'UserPassword=')
+            || str_contains($body, 'UserName=')
+            || str_contains($body, 'UserCode=');
     }
 
     private function xmlItemToArray(\SimpleXMLElement $item): array

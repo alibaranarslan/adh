@@ -3,6 +3,9 @@
 namespace Tests\Unit\Services;
 
 use App\Services\IhaApiService;
+use App\Services\IhaSyncException;
+use Illuminate\Support\Facades\Log;
+use Mockery;
 use PHPUnit\Framework\Attributes\Test;
 use ReflectionClass;
 use Tests\TestCase;
@@ -34,5 +37,33 @@ XML;
 
         $this->assertCount(1, $articles);
         $this->assertSame('İlk paragraf.'."\n".'İkinci paragraf.', $articles[0]['content']);
+    }
+    #[Test]
+    public function parse_xml_response_sanitizes_iha_credential_rejection_logs(): void
+    {
+        Log::spy();
+
+        $service = (new ReflectionClass(IhaApiService::class))->newInstanceWithoutConstructor();
+        $body = 'Musteri Bilgisi kullanici adi sifreden bulunamadi. [ UserCode=21718 , UserName=adiyamandijital , UserPassword=very-secret ]';
+
+        try {
+            $service->parseXmlResponse($body);
+            $this->fail('Expected IHA credential rejection exception.');
+        } catch (IhaSyncException $exception) {
+            $this->assertStringContainsString('IHA kimlik bilgileri reddedildi', $exception->getMessage());
+        }
+
+        Log::shouldHaveReceived('warning')
+            ->once()
+            ->with('IHA credential rejection', Mockery::on(function (array $context): bool {
+                $snippet = $context['xml_snippet'] ?? '';
+
+                return str_contains($snippet, 'UserCode=***')
+                    && str_contains($snippet, 'UserName=***')
+                    && str_contains($snippet, 'UserPassword=***')
+                    && ! str_contains($snippet, '21718')
+                    && ! str_contains($snippet, 'adiyamandijital')
+                    && ! str_contains($snippet, 'very-secret');
+            }));
     }
 }

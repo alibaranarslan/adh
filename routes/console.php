@@ -22,7 +22,18 @@ $onScheduleFailure = function (\Illuminate\Console\Scheduling\ScheduledTaskFaile
 Schedule::command('iha:sync')->cron('*/15 * * * *')->withoutOverlapping()
     ->onFailure($onScheduleFailure);
 
+if (filter_var(env('SCHEDULE_QUEUE_WORKER', false), FILTER_VALIDATE_BOOL)) {
+    Schedule::command('queue:work database --queue=default,analytics,instagram --sleep=1 --tries=3 --max-time=50 --stop-when-empty')
+        ->everyMinute()
+        ->withoutOverlapping(5)
+        ->onFailure($onScheduleFailure);
+}
+
 Schedule::command('iha:monitor-forward --limit=20')->hourly()
+    ->onFailure($onScheduleFailure);
+
+Schedule::command('adh:security-ingest-audit --freshness-minutes=120')->hourly()
+    ->when(fn () => app()->environment('production'))
     ->onFailure($onScheduleFailure);
 
 Schedule::command('iha:refresh-images')->cron('5,20,35,50 * * * *')

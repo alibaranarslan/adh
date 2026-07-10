@@ -9,6 +9,7 @@ use App\Models\NewsArticle;
 use App\Models\Setting;
 use App\Services\IhaCategoryMapper;
 use Database\Seeders\CustomerContentSeeder;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -332,6 +333,31 @@ class PublicPagesTest extends TestCase
         $this->get(route('contact'))
             ->assertOk()
             ->assertSee('<title>İletişim | Adıyaman Dijital Haber</title>', false);
+    }
+
+    public function test_seeded_public_baseline_makes_core_navigation_pages_available_without_mojibake(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $this->assertGreaterThan(0, Category::query()->count());
+        $this->assertGreaterThan(0, \App\Models\User::query()->count());
+        $this->assertGreaterThan(0, \App\Models\Page::query()->count());
+        $this->assertGreaterThan(0, Setting::query()->count());
+
+        foreach ([
+            route('home'),
+            route('news.category', ['slug' => 'gundem']),
+            route('contact'),
+            route('page.about'),
+            route('page.privacy'),
+            route('page.kvkk'),
+            route('page.cookies'),
+        ] as $url) {
+            $response = $this->get($url);
+
+            $response->assertOk();
+            $this->assertDoesNotMatchRegularExpression('/\x{00C3}|\x{00C4}|\x{00C5}|\x{00C2}|\x{00E2}/u', $response->getContent());
+        }
     }
 
     public function test_health_endpoint_reports_ok_with_testing_database(): void
