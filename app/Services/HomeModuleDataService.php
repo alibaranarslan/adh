@@ -21,18 +21,19 @@ class HomeModuleDataService
         $moduleMap = collect($layoutState['modules'] ?? [])->keyBy('key');
         $editorialOrder = 'editorial_score DESC, published_at DESC';
         $freshNewsOrder = 'is_breaking DESC, published_at DESC, editorial_score DESC';
+        $newsValueOrder = $this->newsValueOrder();
 
         $heroSideLimit = max(1, (int) data_get($moduleMap, 'hero.settings.content_limit', 5));
         $heroMain = NewsArticle::published()
             ->with('category')
-            ->orderByRaw($freshNewsOrder)
+            ->orderByRaw($newsValueOrder)
             ->first();
 
         $heroSide = $this->diversifyByCategory(
             NewsArticle::published()
                 ->with('category')
                 ->whereNot('id', $heroMain?->id ?? 0)
-                ->orderByRaw($freshNewsOrder)
+                ->orderByRaw($newsValueOrder)
                 ->take(max($heroSideLimit * 4, 20))
                 ->get(),
             $heroSideLimit,
@@ -62,7 +63,7 @@ class HomeModuleDataService
             NewsArticle::published()
                 ->with('category')
                 ->whereNotIn('id', $heroIds)
-                ->orderByRaw($editorialOrder)
+                ->orderByRaw($newsValueOrder)
                 ->take(24)
                 ->get(),
             (int) data_get($moduleMap, 'highlights.settings.content_limit', 4),
@@ -73,7 +74,7 @@ class HomeModuleDataService
             $highlights = $this->diversifyByCategory(
                 NewsArticle::published()
                     ->with('category')
-                    ->orderByRaw($freshNewsOrder)
+                    ->orderByRaw($newsValueOrder)
                     ->take(24)
                     ->get(),
                 (int) data_get($moduleMap, 'highlights.settings.content_limit', 4),
@@ -176,7 +177,7 @@ class HomeModuleDataService
             ->breaking()
             ->with('category')
             ->whereNotIn('id', $heroIds)
-            ->orderByRaw($freshNewsOrder)
+            ->orderByRaw($newsValueOrder)
             ->take($breakingLimit)
             ->get();
 
@@ -186,7 +187,7 @@ class HomeModuleDataService
                     NewsArticle::published()
                         ->with('category')
                         ->whereNotIn('id', array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
-                        ->orderByRaw($freshNewsOrder)
+                        ->orderByRaw($newsValueOrder)
                         ->take($breakingLimit - $breakingNews->count())
                         ->get()
                 )
@@ -199,7 +200,7 @@ class HomeModuleDataService
                     NewsArticle::published()
                         ->with('category')
                         ->whereNotIn('id', array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
-                        ->orderByRaw($freshNewsOrder)
+                        ->orderByRaw($newsValueOrder)
                         ->take($breakingLimit - $breakingNews->count())
                         ->get()
                 )
@@ -349,5 +350,27 @@ class HomeModuleDataService
         }
 
         return $result;
+    }
+
+    private function newsValueOrder(): string
+    {
+        return "(CASE
+            WHEN featured_image IS NOT NULL
+                AND featured_image != ''
+                AND featured_image NOT LIKE '%placeholder%'
+            THEN 120 ELSE 0
+        END
+        + CASE WHEN is_breaking = 1 THEN 20 ELSE 0 END
+        + CASE WHEN is_featured = 1 THEN 16 ELSE 0 END
+        + CASE
+            WHEN city_code = 3 THEN 10
+            WHEN city_code = 2 THEN 6
+            ELSE 0
+        END
+        + CASE
+            WHEN COALESCE(editorial_score, 0) > 100 THEN 100
+            WHEN COALESCE(editorial_score, 0) < 0 THEN 0
+            ELSE COALESCE(editorial_score, 0)
+        END) DESC, published_at DESC";
     }
 }

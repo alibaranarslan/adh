@@ -12,16 +12,35 @@ class HomeController extends Controller
     public function index()
     {
         $editorialOrder = 'editorial_score DESC, published_at DESC';
+        $freshNewsOrder = 'is_breaking DESC, published_at DESC, editorial_score DESC';
+        $newsValueOrder = "(CASE
+            WHEN featured_image IS NOT NULL
+                AND featured_image != ''
+                AND featured_image NOT LIKE '%placeholder%'
+            THEN 120 ELSE 0
+        END
+        + CASE WHEN is_breaking = 1 THEN 20 ELSE 0 END
+        + CASE WHEN is_featured = 1 THEN 16 ELSE 0 END
+        + CASE
+            WHEN city_code = 3 THEN 10
+            WHEN city_code = 2 THEN 6
+            ELSE 0
+        END
+        + CASE
+            WHEN COALESCE(editorial_score, 0) > 100 THEN 100
+            WHEN COALESCE(editorial_score, 0) < 0 THEN 0
+            ELSE COALESCE(editorial_score, 0)
+        END) DESC, published_at DESC";
 
         $heroMain = NewsArticle::published()
             ->with('category')
-            ->orderByRaw($editorialOrder)
+            ->orderByRaw($newsValueOrder)
             ->first();
 
         $heroSidePool = NewsArticle::published()
             ->with('category')
             ->whereNot('id', $heroMain?->id ?? 0)
-            ->orderByRaw($editorialOrder)
+            ->orderByRaw($newsValueOrder)
             ->take(30)
             ->get();
 
@@ -36,7 +55,7 @@ class HomeController extends Controller
         $localNews = NewsArticle::published()
             ->with('category')
             ->where('city_code', 3)
-            ->orderByRaw($editorialOrder)
+            ->orderByRaw($freshNewsOrder)
             ->take(6)
             ->get();
 
@@ -54,7 +73,7 @@ class HomeController extends Controller
             ->with('category')
             ->where('city_code', 2)
             ->whereNotIn('id', $usedIds)
-            ->orderByRaw($editorialOrder)
+            ->orderByRaw($freshNewsOrder)
             ->take(6)
             ->get();
 
@@ -63,7 +82,7 @@ class HomeController extends Controller
         $latestNews = NewsArticle::published()
             ->with('category')
             ->whereNotIn('id', $usedIds)
-            ->orderByRaw($editorialOrder)
+            ->orderByRaw($freshNewsOrder)
             ->take(12)
             ->get();
 

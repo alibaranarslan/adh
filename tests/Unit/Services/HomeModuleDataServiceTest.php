@@ -123,7 +123,7 @@ class HomeModuleDataServiceTest extends TestCase
         $this->assertSame('ads', $sections[0]['key'] ?? null);
     }
 
-    public function test_breaking_news_fallback_preserves_editorial_score_priority(): void
+    public function test_breaking_news_fallback_prioritizes_visual_news_value(): void
     {
         $category = Category::create([
             'name' => ['tr' => 'Asayis'],
@@ -174,13 +174,17 @@ class HomeModuleDataServiceTest extends TestCase
             ]);
         }
 
-        $layoutState = app(LayoutConfigService::class)->getDraftState();
+        $layoutState = [
+            'modules' => [
+                ['key' => 'hero', 'settings' => ['content_limit' => 1]],
+                ['key' => 'breaking_bar', 'settings' => ['content_limit' => 4]],
+            ],
+        ];
         $payload = app(HomeModuleDataService::class)->collect($layoutState);
 
         $this->assertGreaterThanOrEqual(4, $payload['breakingNews']->count());
-        $this->assertSame('gorselsiz-eski-haber-6', $payload['breakingNews']->first()->slug);
         $this->assertSame(
-            ['gorselsiz-eski-haber-6', 'gorselli-son-haber-1', 'gorselli-son-haber-2', 'gorselli-son-haber-3'],
+            ['gorselli-son-haber-2', 'gorselli-son-haber-3', 'gorselli-son-haber-4', 'gorselsiz-eski-haber-1'],
             $payload['breakingNews']->take(4)->pluck('slug')->all(),
         );
     }

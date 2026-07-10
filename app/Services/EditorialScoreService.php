@@ -4,119 +4,116 @@ namespace App\Services;
 
 use App\Models\NewsArticle;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class EditorialScoreService
 {
     private const CRITICAL_KEYWORDS = [
-        'deprem', 'sel', 'yangın', 'patlama', 'ölü', 'ölüm', 'öldü',
-        'savaş', 'terör', 'tsunami', 'çığ',
+        'deprem', 'sel', 'yangin', 'patlama', 'olu', 'olum', 'oldur', 'sehit',
+        'katliam', 'zehirlen', 'teror', 'savas', 'tsunami', 'cig',
     ];
 
     private const HIGH_KEYWORDS = [
-        'yaralı', 'kaza', 'saldırı', 'operasyon', 'gözaltı', 'tutuklama',
-        'vali', 'bakan', 'cumhurbaşkan', 'başbakan', 'milletvekili',
-        'fırtına', 'heyelan', 'ambulans', 'hastane', 'acil',
+        'yarali', 'kaza', 'saldiri', 'operasyon', 'gozalti', 'tutuklama',
+        'vali', 'bakan', 'cumhurbaskan', 'basbakan', 'milletvekili',
+        'firtina', 'heyelan', 'ambulans', 'hastane', 'acil', 'trafik',
     ];
 
     private const MEDIUM_KEYWORDS = [
-        'belediye başkan', 'meclis', 'seçim', 'ihale', 'proje',
-        'açılış', 'ödül', 'şampiyon', 'rekor', 'festival',
-        'kurtarıl', 'arama', 'kayıp',
+        'belediye baskan', 'belediye', 'meclis', 'secim', 'ihale', 'proje',
+        'acilis', 'odul', 'sampiyon', 'rekor', 'festival', 'kurtaril',
+        'arama', 'kayip',
+    ];
+
+    private const CATEGORY_WEIGHTS = [
+        'asayis' => 12,
+        'gundem' => 10,
+        'saglik' => 9,
+        'siyaset' => 8,
+        'ekonomi' => 7,
+        'egitim' => 6,
+        'spor' => 4,
+        'yasam' => 3,
+        'magazin' => -4,
     ];
 
     public static function computeFromRaw(array $data, int $localityScore): int
     {
         $score = 0;
-        $title = mb_strtolower($data['title'] ?? '');
-        $summary = mb_strtolower($data['summary'] ?? $data['content'] ?? '');
+        $title = self::normalizeText($data['title'] ?? '');
+        $summary = self::normalizeText($data['summary'] ?? $data['content'] ?? '');
+        $combined = trim($title.' '.$summary);
+        $category = self::normalizeText(($data['category_name'] ?? '').' '.($data['ust_kategori'] ?? ''));
 
-        if (!empty($data['son_dakika'])) {
-            $score += 35;
+        if (! empty($data['son_dakika'])) {
+            $score += 30;
         }
 
-        if ($localityScore === 3) {
-            $score += 15;
-        } elseif ($localityScore === 2) {
-            $score += 8;
-        }
+        $score += match ($localityScore) {
+            IhaCategoryMapper::LOCALITY_LOCAL => 18,
+            IhaCategoryMapper::LOCALITY_REGION => 10,
+            default => 2,
+        };
 
-        if (!empty($data['image_url'])) {
+        if (! empty($data['image_url'])) {
             $score += 10;
         }
 
-        $criticalHits = 0;
-        foreach (self::CRITICAL_KEYWORDS as $kw) {
-            if (mb_strpos($title, $kw) !== false) {
-                $score += ($criticalHits === 0) ? 20 : 10;
-                $criticalHits++;
-                if ($criticalHits >= 2) break;
+        $score += self::categoryWeight($category);
+
+        $criticalHits = self::keywordHits($combined, self::CRITICAL_KEYWORDS);
+        if ($criticalHits > 0) {
+            $score += 25 + (min($criticalHits, 2) - 1) * 12;
+            $score += self::keywordHits($title, self::CRITICAL_KEYWORDS) > 0 ? 4 : 0;
+        } else {
+            $highHits = self::keywordHits($combined, self::HIGH_KEYWORDS);
+            if ($highHits > 0) {
+                $score += 14 + (min($highHits, 2) - 1) * 7;
+                $score += self::keywordHits($title, self::HIGH_KEYWORDS) > 0 ? 3 : 0;
+            } elseif (self::keywordHits($combined, self::MEDIUM_KEYWORDS) > 0) {
+                $score += 6;
             }
         }
 
-        if ($criticalHits === 0) {
-            $highHits = 0;
-            foreach (self::HIGH_KEYWORDS as $kw) {
-                if (mb_strpos($title, $kw) !== false) {
-                    $score += ($highHits === 0) ? 12 : 6;
-                    $highHits++;
-                    if ($highHits >= 2) break;
-                }
-            }
-
-            if ($highHits === 0) {
-                foreach (self::MEDIUM_KEYWORDS as $kw) {
-                    if (mb_strpos($title, $kw) !== false) {
-                        $score += 5;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (preg_match('/\d+\s*(ölü|yaralı|kişi hayat|can kaybı)/u', $title, $m)) {
-            preg_match('/(\d+)/', $title, $numMatch);
+        if (preg_match('/\d+\s*(olu|yarali|kisi hayat|can kaybi|sehit)/u', $combined)) {
+            preg_match('/(\d+)/', $combined, $numMatch);
             $num = (int) ($numMatch[1] ?? 0);
-            if ($num >= 5) {
-                $score += 15;
-            } elseif ($num >= 2) {
-                $score += 8;
-            } else {
-                $score += 4;
-            }
+            $score += $num >= 5 ? 15 : ($num >= 2 ? 8 : 4);
         }
 
-        if (!empty($data['published_at'])) {
+        if (! empty($data['published_at'])) {
             try {
-                $pub = Carbon::parse($data['published_at']);
-                $hoursAgo = max(0, $pub->diffInHours(now()));
+                $hoursAgo = max(0, Carbon::parse($data['published_at'])->diffInHours(now()));
                 if ($hoursAgo <= 1) {
-                    $score += 10;
+                    $score += 12;
                 } elseif ($hoursAgo <= 3) {
-                    $score += 7;
+                    $score += 8;
                 } elseif ($hoursAgo <= 6) {
-                    $score += 4;
+                    $score += 5;
                 } elseif ($hoursAgo <= 12) {
-                    $score += 2;
+                    $score += 3;
                 }
             } catch (\Exception) {
             }
         }
 
-        return min($score, 100);
+        return max(0, min($score, 100));
     }
 
     public static function computeFromModel(NewsArticle $article): int
     {
         $data = [
-            'title'        => $article->getTranslation('title', 'tr', false) ?: $article->title,
-            'summary'      => $article->getTranslation('summary', 'tr', false) ?: ($article->summary ?? ''),
-            'son_dakika'   => $article->is_breaking,
-            'image_url'    => $article->featured_image,
+            'title' => $article->getTranslation('title', 'tr', false) ?: $article->title,
+            'summary' => $article->getTranslation('summary', 'tr', false) ?: ($article->summary ?? ''),
+            'son_dakika' => $article->is_breaking,
+            'image_url' => $article->featured_image,
             'published_at' => $article->published_at?->toDateTimeString(),
+            'category_name' => $article->category?->slug
+                ?? $article->category?->getTranslation('name', 'tr', false)
+                ?? '',
         ];
 
-        $localityScore = $article->city_code ?? 1;
-        $score = self::computeFromRaw($data, $localityScore);
+        $score = self::computeFromRaw($data, $article->city_code ?? IhaCategoryMapper::LOCALITY_NATIONAL);
 
         if (($article->view_count ?? 0) > 50) {
             $score += 8;
@@ -141,6 +138,39 @@ class EditorialScoreService
                 $count++;
             }
         });
+
         return $count;
+    }
+
+    private static function normalizeText(?string $value): string
+    {
+        return Str::of((string) $value)->ascii()->lower()->toString();
+    }
+
+    /**
+     * @param array<int, string> $keywords
+     */
+    private static function keywordHits(string $text, array $keywords): int
+    {
+        $hits = 0;
+
+        foreach ($keywords as $keyword) {
+            if (str_contains($text, $keyword)) {
+                $hits++;
+            }
+        }
+
+        return $hits;
+    }
+
+    private static function categoryWeight(string $category): int
+    {
+        foreach (self::CATEGORY_WEIGHTS as $needle => $weight) {
+            if (str_contains($category, $needle)) {
+                return $weight;
+            }
+        }
+
+        return 0;
     }
 }

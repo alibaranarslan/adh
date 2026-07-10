@@ -112,8 +112,8 @@ class SyncIhaNewsJobTest extends TestCase
 
         $categoryMapper = $this->mock(IhaCategoryMapper::class, function (MockInterface $mock): void {
             $mock->shouldNotReceive('mapFromArticle');
-            $mock->shouldNotReceive('localityScore');
-            $mock->shouldNotReceive('detectCitySlug');
+            $mock->shouldReceive('localityScore')->once()->andReturn(IhaCategoryMapper::LOCALITY_REGION);
+            $mock->shouldReceive('detectCitySlug')->once()->andReturn('malatya');
         });
 
         $imageService = $this->mock(IhaImageService::class, function (MockInterface $mock): void {
@@ -129,6 +129,10 @@ class SyncIhaNewsJobTest extends TestCase
         $this->assertSame($existing->id, NewsArticle::query()->where('iha_id', 'IHA-200')->value('id'));
         $this->assertSame('Güncel Başlık', $existing->getTranslation('title', 'tr'));
         $this->assertSame('Güncel özet', $existing->getTranslation('summary', 'tr'));
+
+        $this->assertSame(IhaCategoryMapper::LOCALITY_REGION, $existing->city_code);
+        $this->assertSame('malatya', $existing->city_slug);
+        $this->assertIsInt($existing->editorial_score);
 
         Bus::assertDispatched(TranslateArticleJob::class, fn (TranslateArticleJob $job) => true);
     }

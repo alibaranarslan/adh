@@ -149,7 +149,7 @@ class PublicPagesTest extends TestCase
             ->assertSee('Yerellik skorlu Adiyaman haberi');
     }
 
-    public function test_home_editorial_priority_does_not_require_featured_image(): void
+    public function test_home_lead_prioritizes_visual_editorial_story_before_text_only_story(): void
     {
         $category = Category::create([
             'name' => ['tr' => 'Gundem'],
@@ -195,7 +195,7 @@ class PublicPagesTest extends TestCase
         ]);
 
         $this->assertSame(
-            'Yuksek Skorlu Gorselsiz Haber',
+            'Dusuk Skorlu Gorselli Haber',
             $data['heroMain']?->getTranslation('title', 'tr')
         );
 
@@ -206,7 +206,7 @@ class PublicPagesTest extends TestCase
             ->assertDontSee('placeholder-news.jpg', false);
     }
 
-    public function test_breaking_fallback_uses_editorial_score_before_recent_image(): void
+    public function test_breaking_fallback_uses_visual_news_value_before_text_only_score(): void
     {
         $category = Category::create([
             'name' => ['tr' => 'Gundem'],
@@ -245,11 +245,11 @@ class PublicPagesTest extends TestCase
         ]);
 
         $this->assertSame(
-            'Acil Gorselsiz Yuksek Skor',
+            'Acil Gorselli Dusuk Skor',
             $data['breakingNews']->first()?->getTranslation('title', 'tr')
         );
         $this->assertSame(
-            'Acil Gorselli Dusuk Skor',
+            'Acil Gorselsiz Yuksek Skor',
             $data['breakingNews']->skip(1)->first()?->getTranslation('title', 'tr')
         );
     }
@@ -314,6 +314,20 @@ class PublicPagesTest extends TestCase
             ->assertSee('User-agent: *')
             ->assertSee('Allow: /')
             ->assertSee('Sitemap: ' . url('/sitemap.xml'), false);
+    }
+
+    public function test_sitemap_xml_output_rewrites_localhost_urls_to_configured_canonical_domain(): void
+    {
+        config(['app.url' => 'https://adiyamandijitalhaber.com.tr']);
+
+        $xml = '<loc>http://localhost:8000/sitemap-pages.xml</loc>'
+            . '<loc>http://127.0.0.1:8000/kategori/gundem</loc>';
+
+        $this->assertSame(
+            '<loc>https://adiyamandijitalhaber.com.tr/sitemap-pages.xml</loc>'
+            . '<loc>https://adiyamandijitalhaber.com.tr/kategori/gundem</loc>',
+            \App\Support\SeoUrls::sanitizeXml($xml)
+        );
     }
 
     public function test_static_public_robots_file_is_not_present_to_bypass_laravel_route(): void
