@@ -16,6 +16,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
+$sitemapResponse = function (string $filename) {
+    $path = public_path($filename);
+    abort_unless(file_exists($path), 404);
+
+    return response(\App\Support\SeoUrls::sanitizeXml((string) file_get_contents($path)), 200)
+        ->header('Content-Type', 'application/xml; charset=UTF-8');
+};
+
 Route::get('/health', function () {
     $checks = [
         'status' => 'ok',
@@ -57,14 +65,9 @@ Route::middleware('auth')->prefix('admin')->group(function () {
         ->name('admin.guides.progress.store');
 });
 
-Route::get('/sitemap.xml', function () {
-    $path = public_path('sitemap.xml');
-    abort_unless(file_exists($path), 404);
+Route::get('/sitemap.xml', fn () => $sitemapResponse('sitemap.xml'));
 
-    return response()->file($path, ['Content-Type' => 'application/xml']);
-});
-
-Route::get('/{sitemap}', function (string $sitemap) {
+Route::get('/{sitemap}', function (string $sitemap) use ($sitemapResponse) {
     abort_unless(in_array($sitemap, [
         'sitemap-pages.xml',
         'sitemap-categories.xml',
@@ -72,10 +75,7 @@ Route::get('/{sitemap}', function (string $sitemap) {
         'sitemap-news.xml',
     ], true), 404);
 
-    $path = public_path($sitemap);
-    abort_unless(file_exists($path), 404);
-
-    return response()->file($path, ['Content-Type' => 'application/xml']);
+    return $sitemapResponse($sitemap);
 })->where('sitemap', 'sitemap-(pages|categories|articles|news)\.xml');
 
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])

@@ -81,7 +81,7 @@ class IntegrationSettings extends Page implements HasForms
                         ->helperText('Boş bırakırsanız mevcut şifre korunur; yeni değer yalnız kaydetme sırasında yazılır.'),
                     Placeholder::make('iha_sync_interval_notice')
                         ->label('Efektif Senkron Aralığı')
-                        ->content('İHA senkronu operasyonel olarak her 15 dakikada bir cron ile çalışır. Güncel durum için "İHA Sağlığı" ekranını kullanın.'),
+                        ->content('İHA senkronu operasyonel olarak her 10 dakikada bir cron ile çalışır. Güncel durum için "İHA Sağlığı" ekranını kullanın.'),
                 ])->columns(2),
 
             Section::make('Google Çeviri')
