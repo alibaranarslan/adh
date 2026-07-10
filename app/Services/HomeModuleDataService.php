@@ -69,6 +69,18 @@ class HomeModuleDataService
             1
         );
 
+        if ($highlights->isEmpty()) {
+            $highlights = $this->diversifyByCategory(
+                NewsArticle::published()
+                    ->with('category')
+                    ->orderByRaw($freshNewsOrder)
+                    ->take(24)
+                    ->get(),
+                (int) data_get($moduleMap, 'highlights.settings.content_limit', 4),
+                1
+            );
+        }
+
         $usedIds = array_merge($heroIds, $highlights->pluck('id')->toArray());
 
         $mostReadLimit = (int) data_get($moduleMap, 'most_read.settings.content_limit', 5);
@@ -104,6 +116,18 @@ class HomeModuleDataService
             ->take((int) data_get($moduleMap, 'region_news.settings.content_limit', 6))
             ->get();
 
+        if ($regionNews->isEmpty()) {
+            $regionNews = $this->diversifyByCategory(
+                NewsArticle::published()
+                    ->with('category')
+                    ->orderByRaw($freshNewsOrder)
+                    ->take(30)
+                    ->get(),
+                (int) data_get($moduleMap, 'region_news.settings.content_limit', 6),
+                2
+            );
+        }
+
         $usedIds = array_merge($usedIds, $regionNews->pluck('id')->toArray());
 
         $latestNews = NewsArticle::published()
@@ -112,6 +136,14 @@ class HomeModuleDataService
             ->orderByRaw($freshNewsOrder)
             ->take((int) data_get($moduleMap, 'latest_news.settings.content_limit', 8))
             ->get();
+
+        if ($latestNews->isEmpty()) {
+            $latestNews = NewsArticle::published()
+                ->with('category')
+                ->orderByRaw($freshNewsOrder)
+                ->take((int) data_get($moduleMap, 'latest_news.settings.content_limit', 8))
+                ->get();
+        }
 
         $usedIds = array_merge($usedIds, $latestNews->pluck('id')->toArray());
 
