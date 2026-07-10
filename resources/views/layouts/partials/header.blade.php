@@ -6,7 +6,28 @@
     $headerTheme = $activeHeaderTheme ?? null;
 @endphp
 
-<header id="adh-site-header" x-data="{ mobileOpen: false, searchOpen: false }" class="border-b-2 border-adh-border dark:border-adh-blue {{ data_get($headerTheme, 'header_class') }}">
+<header
+    id="adh-site-header"
+    x-data="{
+        mobileOpen: false,
+        searchOpen: false,
+        currentTime: '{{ now()->format('H:i') }}',
+        init() {
+            const updateClock = () => {
+                this.currentTime = new Intl.DateTimeFormat('tr-TR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                    timeZone: 'Europe/Istanbul'
+                }).format(new Date());
+            };
+
+            updateClock();
+            setInterval(updateClock, 30000);
+        }
+    }"
+    class="border-b-2 border-adh-border dark:border-adh-blue {{ data_get($headerTheme, 'header_class') }}"
+>
     @if (data_get($headerTheme, 'message'))
         <div class="adh-theme-banner">
             <div class="max-w-7xl mx-auto px-4 adh-theme-banner__inner">
@@ -41,8 +62,8 @@
                 <span class="hidden md:inline text-white/30">|</span>
                 <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
                    class="hidden md:inline hover:text-adh-red-light transition-colors">{{ __('Günün Haberleri') }}</a>
-                <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
-                   class="hidden md:inline hover:text-adh-red-light transition-colors">{{ __('Günün Gazetesi') }}</a>
+                <a href="{{ \App\Support\LocalizedUrl::route('home') }}#son-dakika"
+                   class="hidden md:inline hover:text-adh-red-light transition-colors">{{ __('Son Dakika') }}</a>
                 <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => 'gundem']) }}"
                    class="hidden md:inline hover:text-adh-red-light transition-colors">{{ __('Gündem') }}</a>
                 <a href="{{ \App\Support\LocalizedUrl::route('news.category', ['slug' => 'siyaset']) }}"
@@ -57,7 +78,7 @@
                 <div class="adh-mobile-local-pill inline-flex max-w-full items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-bold leading-none text-white shadow-sm shadow-black/10"
                      data-testid="mobile-local-info-pill"
                      aria-label="{{ __('Yerel saat ve hava durumu') }}">
-                    <span class="tabular-nums">{{ now()->locale(app()->getLocale())->translatedFormat('H:i') }}</span>
+                    <span class="tabular-nums" x-text="currentTime">{{ now()->format('H:i') }}</span>
                     <span class="h-3 w-px bg-white/25"></span>
                     <span class="truncate">{{ __('Adıyaman') }} {{ $weather['temp'] ?? '--' }}&deg;</span>
                 </div>
@@ -139,6 +160,11 @@
                     <p class="mt-1 text-xs text-adh-gray dark:text-gray-400">
                         {{ now()->locale(app()->getLocale())->translatedFormat('l') }}
                     </p>
+                    <div class="mt-2 inline-flex items-center gap-2 rounded-sm border border-adh-border bg-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-adh-text shadow-sm dark:border-gray-700 dark:bg-adh-navy/60 dark:text-gray-100">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true"></span>
+                        <span>{{ __('Canlı saat') }}</span>
+                        <span class="tabular-nums text-adh-red dark:text-red-300" x-text="currentTime">{{ now()->format('H:i') }}</span>
+                    </div>
                     <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
                        class="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-adh-red transition hover:text-red-700">{{ __('Günün Seçkisi') }}</a>
                 </div>

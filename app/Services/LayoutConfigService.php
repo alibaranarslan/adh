@@ -19,8 +19,8 @@ class LayoutConfigService
     {
         return [
             'breaking_bar' => [
-                'name' => 'Son Dakika Bandi',
-                'description' => 'Ustteki acil gundem satiri.',
+                'name' => 'Son Dakika Bandı',
+                'description' => 'Üstteki acil gündem ve hızlı haber satırı.',
                 'settings' => $this->defaultModuleSettings([
                     'variant' => 'ticker',
                     'content_limit' => 10,
@@ -28,8 +28,8 @@ class LayoutConfigService
                 ]),
             ],
             'hero' => [
-                'name' => 'Editoryal Manset',
-                'description' => 'Ana haber ve yan seckiler.',
+                'name' => 'Güvenilir Yerel Manşet',
+                'description' => 'Ana haber, kaynak güveni ve yan seçkiler.',
                 'settings' => $this->defaultModuleSettings([
                     'variant' => 'editorial',
                     'content_limit' => 5,
@@ -40,8 +40,8 @@ class LayoutConfigService
                 ]),
             ],
             'local_news' => [
-                'name' => 'Adiyaman Gundemi',
-                'description' => 'Yerel odakli haber blogu.',
+                'name' => 'Adıyaman Gündemi',
+                'description' => 'Adıyaman merkezli yerel haber akışı.',
                 'settings' => $this->defaultModuleSettings([
                     'variant' => 'feature-list',
                     'content_limit' => 6,
@@ -49,8 +49,8 @@ class LayoutConfigService
                 ]),
             ],
             'highlights' => [
-                'name' => 'Gunun Onemli Gelismeleri',
-                'description' => 'One cikan editoryal secki.',
+                'name' => 'Günün Önemli Gelişmeleri',
+                'description' => 'Öne çıkan editoryal seçki.',
                 'settings' => $this->defaultModuleSettings([
                     'variant' => 'cards',
                     'content_limit' => 4,
@@ -61,8 +61,8 @@ class LayoutConfigService
                 ]),
             ],
             'most_read' => [
-                'name' => 'En Cok Okunan',
-                'description' => 'Okunma skoruna gore liste.',
+                'name' => 'En Çok Okunan',
+                'description' => 'Okunma skoruna göre liste.',
                 'settings' => $this->defaultModuleSettings([
                     'variant' => 'ranked-list',
                     'content_limit' => 5,
@@ -70,8 +70,8 @@ class LayoutConfigService
                 ]),
             ],
             'region_news' => [
-                'name' => 'Bolge Haberleri',
-                'description' => 'Bolgesel haberlerin derli toplu akisi.',
+                'name' => 'Bölge Haberleri',
+                'description' => 'Bölgesel haberlerin derli toplu akışı.',
                 'settings' => $this->defaultModuleSettings([
                     'variant' => 'cards',
                     'content_limit' => 6,
@@ -82,15 +82,27 @@ class LayoutConfigService
             ],
             'latest_news' => [
                 'name' => 'Son Haberler',
-                'description' => 'Guncel haber akisi.',
+                'description' => 'Güncel haber akışı.',
                 'settings' => $this->defaultModuleSettings([
                     'variant' => 'lead-with-list',
                     'content_limit' => 12,
                 ]),
             ],
+            'news_river' => [
+                'name' => 'Haber Akışı',
+                'description' => 'Anasayfayı canlı tutan kompakt ek haber akışı.',
+                'settings' => $this->defaultModuleSettings([
+                    'variant' => 'lead-with-list',
+                    'content_limit' => 16,
+                    'padding_scale' => 'compact',
+                    'columns_mobile' => 1,
+                    'columns_tablet' => 2,
+                    'columns_desktop' => 4,
+                ]),
+            ],
             'category_shortcuts' => [
-                'name' => 'Kategori Kisayollari',
-                'description' => 'Kategoriya hizli erisim blogu.',
+                'name' => 'Kategori Kısayolları',
+                'description' => 'Kategorilere hızlı erişim bloğu.',
                 'settings' => $this->defaultModuleSettings([
                     'variant' => 'shortcut-grid',
                     'content_limit' => 9,
@@ -100,7 +112,7 @@ class LayoutConfigService
                 ]),
             ],
             'sidebar_widgets' => [
-                'name' => 'Bilgi Widgetlari',
+                'name' => 'Bilgi Widgetları',
                 'description' => 'Hava durumu, eczane, namaz, yerel bilgi.',
                 'settings' => $this->defaultModuleSettings([
                     'variant' => 'stack',
@@ -108,8 +120,8 @@ class LayoutConfigService
                 ]),
             ],
             'ads' => [
-                'name' => 'Reklam Alanlari',
-                'description' => 'Sidebar ve vitrin reklam slotlari.',
+                'name' => 'Reklam Alanları',
+                'description' => 'Sidebar ve vitrin reklam slotları.',
                 'settings' => $this->defaultModuleSettings([
                     'variant' => 'slots',
                     'padding_scale' => 'compact',

@@ -20,18 +20,19 @@ class HomeModuleDataService
     {
         $moduleMap = collect($layoutState['modules'] ?? [])->keyBy('key');
         $editorialOrder = 'editorial_score DESC, published_at DESC';
+        $freshNewsOrder = 'is_breaking DESC, published_at DESC, editorial_score DESC';
 
         $heroSideLimit = max(1, (int) data_get($moduleMap, 'hero.settings.content_limit', 5));
         $heroMain = NewsArticle::published()
             ->with('category')
-            ->orderByRaw($editorialOrder)
+            ->orderByRaw($freshNewsOrder)
             ->first();
 
         $heroSide = $this->diversifyByCategory(
             NewsArticle::published()
                 ->with('category')
                 ->whereNot('id', $heroMain?->id ?? 0)
-                ->orderByRaw($editorialOrder)
+                ->orderByRaw($freshNewsOrder)
                 ->take(max($heroSideLimit * 4, 20))
                 ->get(),
             $heroSideLimit,
@@ -53,7 +54,7 @@ class HomeModuleDataService
                             ->where('city_code', IhaCategoryMapper::LOCALITY_LOCAL);
                     });
             })
-            ->orderByRaw($editorialOrder)
+            ->orderByRaw($freshNewsOrder)
             ->take((int) data_get($moduleMap, 'local_news.settings.content_limit', 6))
             ->get();
 
@@ -99,7 +100,7 @@ class HomeModuleDataService
             ->with('category')
             ->where('city_code', IhaCategoryMapper::LOCALITY_REGION)
             ->whereNotIn('id', $usedIds)
-            ->orderByRaw($editorialOrder)
+            ->orderByRaw($freshNewsOrder)
             ->take((int) data_get($moduleMap, 'region_news.settings.content_limit', 6))
             ->get();
 
@@ -108,9 +109,34 @@ class HomeModuleDataService
         $latestNews = NewsArticle::published()
             ->with('category')
             ->whereNotIn('id', $usedIds)
-            ->orderByRaw($editorialOrder)
+            ->orderByRaw($freshNewsOrder)
             ->take((int) data_get($moduleMap, 'latest_news.settings.content_limit', 8))
             ->get();
+
+        $usedIds = array_merge($usedIds, $latestNews->pluck('id')->toArray());
+
+        $newsRiverLimit = (int) data_get($moduleMap, 'news_river.settings.content_limit', 16);
+        $newsRiver = NewsArticle::published()
+            ->with('category')
+            ->whereNotIn('id', $usedIds)
+            ->orderByRaw($freshNewsOrder)
+            ->take($newsRiverLimit)
+            ->get();
+
+        if ($newsRiver->count() < min(8, $newsRiverLimit)) {
+            $newsRiver = $newsRiver
+                ->merge(
+                    NewsArticle::published()
+                        ->with('category')
+                        ->whereNotIn('id', array_merge($heroIds, $newsRiver->pluck('id')->toArray()))
+                        ->orderByRaw($freshNewsOrder)
+                        ->take($newsRiverLimit - $newsRiver->count())
+                        ->get()
+                )
+                ->unique('id')
+                ->take($newsRiverLimit)
+                ->values();
+        }
 
         $breakingLimit = min(6, (int) data_get($moduleMap, 'breaking_bar.settings.content_limit', 6));
 
@@ -118,7 +144,7 @@ class HomeModuleDataService
             ->breaking()
             ->with('category')
             ->whereNotIn('id', $heroIds)
-            ->orderByRaw($editorialOrder)
+            ->orderByRaw($freshNewsOrder)
             ->take($breakingLimit)
             ->get();
 
@@ -128,7 +154,7 @@ class HomeModuleDataService
                     NewsArticle::published()
                         ->with('category')
                         ->whereNotIn('id', array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
-                        ->orderByRaw($editorialOrder)
+                        ->orderByRaw($freshNewsOrder)
                         ->take($breakingLimit - $breakingNews->count())
                         ->get()
                 )
@@ -141,7 +167,7 @@ class HomeModuleDataService
                     NewsArticle::published()
                         ->with('category')
                         ->whereNotIn('id', array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
-                        ->orderByRaw($editorialOrder)
+                        ->orderByRaw($freshNewsOrder)
                         ->take($breakingLimit - $breakingNews->count())
                         ->get()
                 )
@@ -175,6 +201,7 @@ class HomeModuleDataService
             'mostRead',
             'regionNews',
             'latestNews',
+            'newsRiver',
             'breakingNews',
             'categories',
             'ads'
@@ -220,6 +247,7 @@ class HomeModuleDataService
             'most_read' => ($data['mostRead'] ?? collect())->isNotEmpty(),
             'region_news' => ($data['regionNews'] ?? collect())->isNotEmpty(),
             'latest_news' => ($data['latestNews'] ?? collect())->isNotEmpty(),
+            'news_river' => ($data['newsRiver'] ?? collect())->isNotEmpty(),
             'category_shortcuts' => ($data['categories'] ?? collect())->isNotEmpty(),
             'sidebar_widgets' => true,
             'ads' => $this->hasRenderableAds($data['ads'] ?? collect()) || $this->houseAdsEnabled(),

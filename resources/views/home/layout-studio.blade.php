@@ -157,6 +157,10 @@
                             @include('home.sections.latest-news', ['settings' => $settings, 'latestNews' => $latestNews])
                             @break
 
+                        @case('news_river')
+                            @include('home.sections.news-river', ['settings' => $settings, 'newsRiver' => $newsRiver])
+                            @break
+
                         @case('category_shortcuts')
                             @include('home.sections.category-shortcuts', ['settings' => $settings, 'categories' => $categories])
                             @break
