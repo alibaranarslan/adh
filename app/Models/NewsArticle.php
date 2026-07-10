@@ -35,6 +35,10 @@ class NewsArticle extends Model implements HasMedia
         'city_code',
         'city_slug',
         'editorial_score',
+        'homepage_pin_area',
+        'homepage_pin_until',
+        'homepage_exclude_until',
+        'editorial_score_breakdown',
         'status',
         'is_breaking',
         'is_featured',
@@ -53,6 +57,9 @@ class NewsArticle extends Model implements HasMedia
             'view_count' => 'integer',
             'city_code' => 'integer',
             'editorial_score' => 'integer',
+            'homepage_pin_until' => 'datetime',
+            'homepage_exclude_until' => 'datetime',
+            'editorial_score_breakdown' => 'array',
         ];
     }
 
@@ -141,6 +148,30 @@ class NewsArticle extends Model implements HasMedia
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);
+    }
+
+    public function scopeHomepageVisible($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('homepage_exclude_until')
+                ->orWhere('homepage_exclude_until', '<=', now());
+        });
+    }
+
+    public function scopeWithRealImage($query)
+    {
+        return $query->whereNotNull('featured_image')
+            ->where('featured_image', '!=', '')
+            ->where('featured_image', 'not like', '%placeholder%');
+    }
+
+    public function scopePinnedFor($query, string $area)
+    {
+        return $query->where('homepage_pin_area', $area)
+            ->where(function ($q) {
+                $q->whereNull('homepage_pin_until')
+                    ->orWhere('homepage_pin_until', '>=', now());
+            });
     }
 
     public function scopeFromIha($query)

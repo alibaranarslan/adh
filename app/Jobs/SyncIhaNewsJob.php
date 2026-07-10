@@ -222,7 +222,8 @@ class SyncIhaNewsJob implements ShouldQueue
 
         $localityScore = $categoryMapper->localityScore($articleData);
         $citySlug = $categoryMapper->detectCitySlug($articleData);
-        $editorialScore = EditorialScoreService::computeFromRaw($articleData, $localityScore);
+        $editorialScorePayload = EditorialScoreService::computeBreakdownFromRaw($articleData, $localityScore);
+        $editorialScore = $editorialScorePayload['score'];
         $existing = NewsArticle::where('iha_id', $ihaId)->first();
 
         if ($existing) {
@@ -242,6 +243,7 @@ class SyncIhaNewsJob implements ShouldQueue
             $existing->city_code = $localityScore;
             $existing->city_slug = $citySlug;
             $existing->editorial_score = $editorialScore;
+            $existing->editorial_score_breakdown = $editorialScorePayload;
 
             if (! empty($articleData['image_url']) && empty($existing->featured_image)) {
                 $downloaded = $imageService->downloadImage($articleData['image_url'], $existing->slug);
@@ -292,6 +294,7 @@ class SyncIhaNewsJob implements ShouldQueue
             'city_code' => $localityScore,
             'city_slug' => $citySlug,
             'editorial_score' => $editorialScore,
+            'editorial_score_breakdown' => $editorialScorePayload,
             'status' => $this->hasBodyQualityRisk($quality) ? 'draft' : 'published',
             'is_breaking' => $articleData['son_dakika'] ?? false,
             'published_at' => $articleData['published_at'] ?? now(),

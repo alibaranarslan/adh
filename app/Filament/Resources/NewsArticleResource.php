@@ -231,6 +231,26 @@ class NewsArticleResource extends Resource
                         ->disabled(fn ($record): bool => $isIhaReadonly($record) || $cannotPublish())
                         ->label('Manşet'),
 
+                    Select::make('homepage_pin_area')
+                        ->label('Anasayfa sabitleme alani')
+                        ->options(self::homepagePinAreaOptions())
+                        ->helperText('Suresi dolana kadar ilgili blokta oncelikli gosterilir. Hero ve yan manset icin gercek gorsel gerekir.')
+                        ->nullable()
+                        ->searchable()
+                        ->disabled(fn (): bool => $cannotPublish()),
+
+                    DateTimePicker::make('homepage_pin_until')
+                        ->label('Sabitleme bitis zamani')
+                        ->helperText('Bos kalirsa sabitleme manuel kaldirilana kadar surer.')
+                        ->native(false)
+                        ->disabled(fn (): bool => $cannotPublish()),
+
+                    DateTimePicker::make('homepage_exclude_until')
+                        ->label('Anasayfadan dislama bitis zamani')
+                        ->helperText('Bu tarihe kadar haber anasayfa bloklarinda secilmez; haber detayi yayinda kalabilir.')
+                        ->native(false)
+                        ->disabled(fn (): bool => $cannotPublish()),
+
                     DateTimePicker::make('published_at')
                         ->label('Yayın Tarihi')
                         ->disabled(fn ($record): bool => $isIhaReadonly($record) || $cannotPublish())
@@ -267,6 +287,13 @@ class NewsArticleResource extends Resource
                                 $record->editorial_score ?? 0
                             );
                         })
+                        ->columnSpanFull(),
+
+                    Placeholder::make('editorial_score_breakdown_view')
+                        ->label('Puan gerekcesi')
+                        ->content(fn (?NewsArticle $record): string => $record
+                            ? self::editorialScoreBreakdownText($record)
+                            : 'Kayit olusturulduktan sonra puan gerekcesi gorunur.')
                         ->columnSpanFull(),
                 ])->columns(2),
 
@@ -377,6 +404,12 @@ class NewsArticleResource extends Resource
                     })
                     ->formatStateUsing(fn ($state): string => ((int) ($state ?? 0)) . '/100'),
 
+                BadgeColumn::make('homepage_pin_area')
+                    ->label('Anasayfa')
+                    ->formatStateUsing(fn (?string $state): string => self::homepagePinAreaOptions()[$state] ?? '-')
+                    ->colors(['info'])
+                    ->toggleable(),
+
                 TextColumn::make('view_count')
                     ->label('Görüntülenme')
                     ->sortable()
@@ -428,6 +461,10 @@ class NewsArticleResource extends Resource
                 SelectFilter::make('city_slug')
                     ->label('Public Şehir')
                     ->options(fn (): array => IhaCategoryMapper::getActiveCities()),
+
+                SelectFilter::make('homepage_pin_area')
+                    ->label('Anasayfa alani')
+                    ->options(self::homepagePinAreaOptions()),
 
                 TernaryFilter::make('is_breaking')
                     ->label('Son Dakika'),
@@ -600,6 +637,36 @@ class NewsArticleResource extends Resource
         }
 
         return $record->published_at === null || $record->published_at->lessThanOrEqualTo(now());
+    }
+
+    private static function homepagePinAreaOptions(): array
+    {
+        return [
+            'hero' => 'Ana manset',
+            'hero_side' => 'Yan manset',
+            'local_news' => 'Adiyaman gundemi',
+            'asayis_news' => 'Asayis',
+            'region_news' => 'Bolge',
+            'politics_economy' => 'Siyaset ve ekonomi',
+            'life_digest' => 'Yasam',
+            'latest_news' => 'Son haberler',
+        ];
+    }
+
+    private static function editorialScoreBreakdownText(NewsArticle $record): string
+    {
+        $factors = collect($record->editorial_score_breakdown['factors'] ?? [])
+            ->filter(fn ($factor): bool => is_array($factor) && isset($factor['label'], $factor['points']))
+            ->sortByDesc(fn ($factor): int => (int) ($factor['points'] ?? 0))
+            ->take(5)
+            ->map(fn ($factor): string => sprintf('%s %+d', $factor['label'], (int) $factor['points']))
+            ->values();
+
+        if ($factors->isEmpty()) {
+            return 'Puan gerekcesi henuz olusmadi; bir sonraki IHA sync veya editorial:recalculate sonrasinda guncellenir.';
+        }
+
+        return 'One cikan faktorler: '.$factors->implode(', ');
     }
 
     public static function getRelations(): array

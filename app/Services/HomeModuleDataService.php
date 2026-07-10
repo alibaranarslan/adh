@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\NewsArticle;
 use App\Models\Setting;
 use App\Support\AdvertisementPlacement;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class HomeModuleDataService
@@ -22,79 +23,58 @@ class HomeModuleDataService
         $editorialOrder = 'editorial_score DESC, published_at DESC';
         $freshNewsOrder = 'is_breaking DESC, published_at DESC, editorial_score DESC';
         $newsValueOrder = $this->newsValueOrder();
+        $usedIds = [];
 
         $heroSideLimit = max(1, (int) data_get($moduleMap, 'hero.settings.content_limit', 5));
-        $heroMain = NewsArticle::published()
-            ->with('category')
-            ->orderByRaw($newsValueOrder)
-            ->first();
+        $heroMain = $this->pickPinnedOrBest('hero', $usedIds, $newsValueOrder, true);
+        $this->rememberUsed(collect([$heroMain])->filter(), $usedIds);
 
-        $heroSide = $this->diversifyByCategory(
-            NewsArticle::published()
-                ->with('category')
-                ->whereNot('id', $heroMain?->id ?? 0)
-                ->orderByRaw($newsValueOrder)
-                ->take(max($heroSideLimit * 4, 20))
-                ->get(),
+        $heroSide = $this->selectModuleArticles(
+            'hero_side',
+            $usedIds,
             $heroSideLimit,
+            fn (Builder $query): Builder => $query,
+            $newsValueOrder,
+            true,
             2
         );
+        $heroIds = $usedIds;
 
-        $heroIds = collect([$heroMain?->id])
-            ->merge($heroSide->pluck('id'))
-            ->filter()
-            ->values()
-            ->toArray();
-
-        $localNews = NewsArticle::published()
-            ->with('category')
-            ->where(function ($query) {
+        $localNews = $this->selectModuleArticles(
+            'local_news',
+            $usedIds,
+            (int) data_get($moduleMap, 'local_news.settings.content_limit', 6),
+            fn (Builder $query): Builder => $query->where(function ($query) {
                 $query->where('city_slug', 'adiyaman')
                     ->orWhere(function ($fallbackQuery) {
                         $fallbackQuery->whereNull('city_slug')
                             ->where('city_code', IhaCategoryMapper::LOCALITY_LOCAL);
                     });
-            })
-            ->orderByRaw($freshNewsOrder)
-            ->take((int) data_get($moduleMap, 'local_news.settings.content_limit', 6))
-            ->get();
+            }),
+            $newsValueOrder,
+            false,
+            2
+        );
 
-        $highlights = $this->diversifyByCategory(
-            NewsArticle::published()
-                ->with('category')
-                ->whereNotIn('id', $heroIds)
-                ->orderByRaw($newsValueOrder)
-                ->take(24)
-                ->get(),
+        $highlights = $this->selectModuleArticles(
+            'highlights',
+            $usedIds,
             (int) data_get($moduleMap, 'highlights.settings.content_limit', 4),
+            fn (Builder $query): Builder => $query,
+            $newsValueOrder,
+            false,
             1
         );
 
-        if ($highlights->isEmpty()) {
-            $highlights = $this->diversifyByCategory(
-                NewsArticle::published()
-                    ->with('category')
-                    ->orderByRaw($newsValueOrder)
-                    ->take(24)
-                    ->get(),
-                (int) data_get($moduleMap, 'highlights.settings.content_limit', 4),
-                1
-            );
-        }
-
-        $usedIds = array_merge($heroIds, $highlights->pluck('id')->toArray());
-
         $mostReadLimit = (int) data_get($moduleMap, 'most_read.settings.content_limit', 5);
-        $mostRead = NewsArticle::published()
-            ->with('category')
+        $mostRead = $this->baseHomepageQuery()
             ->where('published_at', '>=', now()->subDays(7))
             ->orderByDesc('view_count')
             ->take($mostReadLimit)
             ->get();
 
         if ($mostRead->isEmpty()) {
-            $mostRead = NewsArticle::published()
-                ->with('category')
+            $mostRead = $this->baseHomepageQuery()
                 ->orderByDesc('view_count')
                 ->orderByRaw($editorialOrder)
                 ->take($mostReadLimit)
@@ -102,81 +82,77 @@ class HomeModuleDataService
         }
 
         if ($mostRead->isEmpty()) {
-            $mostRead = NewsArticle::published()
-                ->with('category')
+            $mostRead = $this->baseHomepageQuery()
                 ->orderByRaw($editorialOrder)
                 ->take($mostReadLimit)
                 ->get();
         }
 
-        $regionNews = NewsArticle::published()
-            ->with('category')
-            ->where('city_code', IhaCategoryMapper::LOCALITY_REGION)
-            ->whereNotIn('id', $usedIds)
-            ->orderByRaw($freshNewsOrder)
-            ->take((int) data_get($moduleMap, 'region_news.settings.content_limit', 6))
-            ->get();
+        $asayisNews = $this->selectModuleArticles(
+            'asayis_news',
+            $usedIds,
+            (int) data_get($moduleMap, 'asayis_news.settings.content_limit', 6),
+            fn (Builder $query): Builder => $this->whereCategorySlugIn($query, ['asayis']),
+            $newsValueOrder,
+            false,
+            2
+        );
 
-        if ($regionNews->isEmpty()) {
-            $regionNews = $this->diversifyByCategory(
-                NewsArticle::published()
-                    ->with('category')
-                    ->orderByRaw($freshNewsOrder)
-                    ->take(30)
-                    ->get(),
-                (int) data_get($moduleMap, 'region_news.settings.content_limit', 6),
-                2
-            );
-        }
+        $regionNews = $this->selectModuleArticles(
+            'region_news',
+            $usedIds,
+            (int) data_get($moduleMap, 'region_news.settings.content_limit', 6),
+            fn (Builder $query): Builder => $query->where('city_code', IhaCategoryMapper::LOCALITY_REGION),
+            $newsValueOrder,
+            false,
+            2
+        );
 
-        $usedIds = array_merge($usedIds, $regionNews->pluck('id')->toArray());
+        $politicsEconomyNews = $this->selectModuleArticles(
+            'politics_economy',
+            $usedIds,
+            (int) data_get($moduleMap, 'politics_economy.settings.content_limit', 6),
+            fn (Builder $query): Builder => $this->whereCategorySlugIn($query, ['siyaset', 'ekonomi']),
+            $newsValueOrder,
+            false,
+            2
+        );
 
-        $latestNews = NewsArticle::published()
-            ->with('category')
-            ->whereNotIn('id', $usedIds)
-            ->orderByRaw($freshNewsOrder)
-            ->take((int) data_get($moduleMap, 'latest_news.settings.content_limit', 8))
-            ->get();
+        $lifeDigestNews = $this->selectModuleArticles(
+            'life_digest',
+            $usedIds,
+            (int) data_get($moduleMap, 'life_digest.settings.content_limit', 6),
+            fn (Builder $query): Builder => $this->whereCategorySlugIn($query, ['yasam', 'egitim', 'saglik', 'kultur-sanat', 'teknoloji']),
+            $newsValueOrder,
+            false,
+            2
+        );
 
-        if ($latestNews->isEmpty()) {
-            $latestNews = NewsArticle::published()
-                ->with('category')
-                ->orderByRaw($freshNewsOrder)
-                ->take((int) data_get($moduleMap, 'latest_news.settings.content_limit', 8))
-                ->get();
-        }
-
-        $usedIds = array_merge($usedIds, $latestNews->pluck('id')->toArray());
+        $latestNews = $this->selectModuleArticles(
+            'latest_news',
+            $usedIds,
+            (int) data_get($moduleMap, 'latest_news.settings.content_limit', 8),
+            fn (Builder $query): Builder => $query,
+            $freshNewsOrder,
+            false,
+            2
+        );
 
         $newsRiverLimit = (int) data_get($moduleMap, 'news_river.settings.content_limit', 16);
-        $newsRiver = NewsArticle::published()
-            ->with('category')
-            ->whereNotIn('id', $usedIds)
-            ->orderByRaw($freshNewsOrder)
-            ->take($newsRiverLimit)
-            ->get();
-
-        if ($newsRiver->count() < min(8, $newsRiverLimit)) {
-            $newsRiver = $newsRiver
-                ->merge(
-                    NewsArticle::published()
-                        ->with('category')
-                        ->whereNotIn('id', array_merge($heroIds, $newsRiver->pluck('id')->toArray()))
-                        ->orderByRaw($freshNewsOrder)
-                        ->take($newsRiverLimit - $newsRiver->count())
-                        ->get()
-                )
-                ->unique('id')
-                ->take($newsRiverLimit)
-                ->values();
-        }
+        $newsRiver = $this->selectModuleArticles(
+            'news_river',
+            $usedIds,
+            $newsRiverLimit,
+            fn (Builder $query): Builder => $query,
+            $freshNewsOrder,
+            false,
+            3
+        );
 
         $breakingLimit = min(6, (int) data_get($moduleMap, 'breaking_bar.settings.content_limit', 6));
 
-        $breakingNews = NewsArticle::published()
+        $breakingNews = $this->excludeUsed($this->baseHomepageQuery(), $heroIds)
             ->breaking()
-            ->with('category')
-            ->whereNotIn('id', $heroIds)
             ->orderByRaw($newsValueOrder)
             ->take($breakingLimit)
             ->get();
@@ -184,9 +160,7 @@ class HomeModuleDataService
         if ($breakingNews->count() < $breakingLimit) {
             $breakingNews = $breakingNews
                 ->merge(
-                    NewsArticle::published()
-                        ->with('category')
-                        ->whereNotIn('id', array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
+                    $this->excludeUsed($this->baseHomepageQuery(), array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
                         ->orderByRaw($newsValueOrder)
                         ->take($breakingLimit - $breakingNews->count())
                         ->get()
@@ -197,9 +171,7 @@ class HomeModuleDataService
         if ($breakingNews->count() < $breakingLimit) {
             $breakingNews = $breakingNews
                 ->merge(
-                    NewsArticle::published()
-                        ->with('category')
-                        ->whereNotIn('id', array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
+                    $this->excludeUsed($this->baseHomepageQuery(), array_merge($heroIds, $breakingNews->pluck('id')->toArray()))
                         ->orderByRaw($newsValueOrder)
                         ->take($breakingLimit - $breakingNews->count())
                         ->get()
@@ -231,8 +203,11 @@ class HomeModuleDataService
             'heroSide',
             'localNews',
             'highlights',
+            'asayisNews',
             'mostRead',
             'regionNews',
+            'politicsEconomyNews',
+            'lifeDigestNews',
             'latestNews',
             'newsRiver',
             'breakingNews',
@@ -277,8 +252,11 @@ class HomeModuleDataService
             'hero' => filled($data['heroMain'] ?? null),
             'local_news' => ($data['localNews'] ?? collect())->isNotEmpty(),
             'highlights' => ($data['highlights'] ?? collect())->isNotEmpty(),
+            'asayis_news' => ($data['asayisNews'] ?? collect())->isNotEmpty(),
             'most_read' => ($data['mostRead'] ?? collect())->isNotEmpty(),
             'region_news' => ($data['regionNews'] ?? collect())->isNotEmpty(),
+            'politics_economy' => ($data['politicsEconomyNews'] ?? collect())->isNotEmpty(),
+            'life_digest' => ($data['lifeDigestNews'] ?? collect())->isNotEmpty(),
             'latest_news' => ($data['latestNews'] ?? collect())->isNotEmpty(),
             'news_river' => ($data['newsRiver'] ?? collect())->isNotEmpty(),
             'category_shortcuts' => ($data['categories'] ?? collect())->isNotEmpty(),
@@ -314,8 +292,120 @@ class HomeModuleDataService
         ) ?? true;
     }
 
+    private function baseHomepageQuery(): Builder
+    {
+        return NewsArticle::published()
+            ->homepageVisible()
+            ->with('category');
+    }
+
+    private function pickPinnedOrBest(string $area, array $usedIds, string $order, bool $imageRequired = false): ?NewsArticle
+    {
+        $pinnedQuery = $this->excludeUsed($this->baseHomepageQuery()->pinnedFor($area), $usedIds);
+
+        if ($imageRequired) {
+            $pinnedQuery->withRealImage();
+        }
+
+        $pinned = $pinnedQuery
+            ->orderByRaw($order)
+            ->first();
+
+        if ($pinned) {
+            return $pinned;
+        }
+
+        $query = $this->excludeUsed($this->baseHomepageQuery(), $usedIds);
+
+        if ($imageRequired) {
+            $query->withRealImage();
+        }
+
+        return $query
+            ->orderByRaw($order)
+            ->first();
+    }
+
+    /**
+     * @param array<int, int> $usedIds
+     * @param callable(Builder): Builder $constraint
+     */
+    private function selectModuleArticles(
+        string $area,
+        array &$usedIds,
+        int $limit,
+        callable $constraint,
+        string $order,
+        bool $imageRequired = false,
+        int $maxPerCategory = 2
+    ): Collection {
+        $limit = max(1, $limit);
+        $pinnedQuery = $constraint($this->excludeUsed($this->baseHomepageQuery()->pinnedFor($area), $usedIds));
+
+        if ($imageRequired) {
+            $pinnedQuery->withRealImage();
+        }
+
+        $pinned = $pinnedQuery
+            ->orderByRaw($order)
+            ->take($limit)
+            ->get();
+
+        $moduleUsedIds = array_values(array_unique(array_merge($usedIds, $pinned->pluck('id')->toArray())));
+        $poolQuery = $constraint($this->excludeUsed($this->baseHomepageQuery(), $moduleUsedIds));
+
+        if ($imageRequired) {
+            $poolQuery->withRealImage();
+        }
+
+        $pool = $poolQuery
+            ->orderByRaw($order)
+            ->take(max($limit * 4, 24))
+            ->get();
+
+        $selected = $pinned
+            ->merge($this->diversifyByCategory($pool, $limit - $pinned->count(), $maxPerCategory))
+            ->unique('id')
+            ->take($limit)
+            ->values();
+
+        $this->rememberUsed($selected, $usedIds);
+
+        return $selected;
+    }
+
+    /**
+     * @param array<int, int> $usedIds
+     */
+    private function excludeUsed(Builder $query, array $usedIds): Builder
+    {
+        $usedIds = array_values(array_filter(array_unique($usedIds)));
+
+        return empty($usedIds) ? $query : $query->whereNotIn('id', $usedIds);
+    }
+
+    /**
+     * @param array<int, int> $usedIds
+     */
+    private function rememberUsed(Collection $articles, array &$usedIds): void
+    {
+        $usedIds = array_values(array_unique(array_merge($usedIds, $articles->pluck('id')->filter()->toArray())));
+    }
+
+    /**
+     * @param array<int, string> $slugs
+     */
+    private function whereCategorySlugIn(Builder $query, array $slugs): Builder
+    {
+        return $query->whereHas('category', fn (Builder $categoryQuery): Builder => $categoryQuery->whereIn('slug', $slugs));
+    }
+
     private function diversifyByCategory(Collection $pool, int $limit, int $maxPerCategory = 2): Collection
     {
+        if ($limit <= 0) {
+            return collect();
+        }
+
         $result = collect();
         $categoryCount = [];
 

@@ -49,4 +49,23 @@ class EditorialScoreServiceTest extends TestCase
 
         $this->assertGreaterThan($national, $adiyaman);
     }
+
+    public function test_breakdown_explains_score_factors(): void
+    {
+        $breakdown = EditorialScoreService::computeBreakdownFromRaw([
+            'title' => 'Adiyaman yolunda kaza: 3 yarali',
+            'summary' => 'Trafik kazasinda yaralilar hastaneye kaldirildi.',
+            'category_name' => 'asayis',
+            'image_url' => '/images/crash.jpg',
+            'son_dakika' => true,
+            'published_at' => now()->subMinutes(10)->toDateTimeString(),
+        ], IhaCategoryMapper::LOCALITY_LOCAL);
+
+        $this->assertIsInt($breakdown['score']);
+        $this->assertGreaterThanOrEqual(70, $breakdown['score']);
+        $this->assertNotEmpty($breakdown['factors']);
+        $this->assertContains('breaking', collect($breakdown['factors'])->pluck('key')->all());
+        $this->assertContains('locality', collect($breakdown['factors'])->pluck('key')->all());
+        $this->assertContains('image', collect($breakdown['factors'])->pluck('key')->all());
+    }
 }

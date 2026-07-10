@@ -142,6 +142,10 @@
                             @include('home.sections.highlights', ['settings' => $settings, 'highlights' => $highlights])
                             @break
 
+                        @case('asayis_news')
+                            @include('home.sections.asayis-news', ['settings' => $settings, 'asayisNews' => $asayisNews])
+                            @break
+
                         @case('most_read')
                             @include('home.sections.most-read', ['settings' => $settings, 'mostRead' => $mostRead])
                             @break
@@ -151,6 +155,14 @@
                             <div class="mt-3 md:mt-4">
                                 <x-ad-slot position="home-lower" />
                             </div>
+                            @break
+
+                        @case('politics_economy')
+                            @include('home.sections.politics-economy', ['settings' => $settings, 'politicsEconomyNews' => $politicsEconomyNews])
+                            @break
+
+                        @case('life_digest')
+                            @include('home.sections.life-digest', ['settings' => $settings, 'lifeDigestNews' => $lifeDigestNews])
                             @break
 
                         @case('latest_news')

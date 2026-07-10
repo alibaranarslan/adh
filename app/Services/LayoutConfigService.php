@@ -60,6 +60,18 @@ class LayoutConfigService
                     'image_ratio' => '16:10',
                 ]),
             ],
+            'asayis_news' => [
+                'name' => 'Asayis',
+                'description' => 'Kaza, yangin, operasyon ve guvenlik odakli haberler.',
+                'settings' => $this->defaultModuleSettings([
+                    'variant' => 'cards',
+                    'content_limit' => 6,
+                    'columns_mobile' => 1,
+                    'columns_tablet' => 2,
+                    'columns_desktop' => 3,
+                    'image_ratio' => '16:10',
+                ]),
+            ],
             'most_read' => [
                 'name' => 'En Çok Okunan',
                 'description' => 'Okunma skoruna göre liste.',
@@ -78,6 +90,30 @@ class LayoutConfigService
                     'columns_mobile' => 1,
                     'columns_tablet' => 2,
                     'columns_desktop' => 3,
+                ]),
+            ],
+            'politics_economy' => [
+                'name' => 'Siyaset ve Ekonomi',
+                'description' => 'Karar, kurum, ekonomi ve kamu gundemi haberleri.',
+                'settings' => $this->defaultModuleSettings([
+                    'variant' => 'cards',
+                    'content_limit' => 6,
+                    'columns_mobile' => 1,
+                    'columns_tablet' => 2,
+                    'columns_desktop' => 3,
+                    'image_ratio' => '16:10',
+                ]),
+            ],
+            'life_digest' => [
+                'name' => 'Yasam',
+                'description' => 'Egitim, saglik, kultur, teknoloji ve yasam haberleri.',
+                'settings' => $this->defaultModuleSettings([
+                    'variant' => 'cards',
+                    'content_limit' => 6,
+                    'columns_mobile' => 1,
+                    'columns_tablet' => 2,
+                    'columns_desktop' => 3,
+                    'image_ratio' => '16:10',
                 ]),
             ],
             'latest_news' => [
