@@ -24,6 +24,8 @@
                         <x-news-card :article="$article" />
                     @endforeach
                 </div>
+
+                <x-ad-slot position="between-news" class="mt-4" />
             </div>
 
             @if ($listItems->isNotEmpty())

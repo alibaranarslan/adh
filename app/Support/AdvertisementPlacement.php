@@ -191,6 +191,7 @@ final class AdvertisementPlacement
             'home-lower',
             'sidebar-top',
             'sidebar-bottom',
+            'article-bottom',
             'footer',
         ];
     }
