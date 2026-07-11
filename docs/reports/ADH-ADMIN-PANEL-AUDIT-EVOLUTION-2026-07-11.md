@@ -196,7 +196,6 @@ Priority order for the next admin evolution pass:
 
 - P1: complete deeper NewsArticle admin audit around IHA record mutation, score controls, homepage editorial controls, and public card/detail effects.
 - P1: exercise IHA Health actions from the panel, including test sync, translation queue button, and operation audit records.
-- P2: decide whether the news-list view-count signal should be pinned/always-visible on desktop admin list or moved into a compact row description.
 - P3: decide whether `/admin/shield/roles` should remain direct-route guarded or become a fully usable super-admin role management surface.
 
 ## Pass 2 - News and IHA Operations
@@ -251,7 +250,7 @@ Public effect: admin-created manual content has verified public visibility, whil
 
 ### New Backlog Note
 
-- P2: browser viewport did not expose the `Görüntülenme` table column even though table-level tests cover the column. In the next UI pass, decide whether the view-count signal should be pinned/always-visible on desktop admin list or moved into a compact row description.
+- Closed in Pass 5: browser viewport did not expose the `Görüntülenme` table column reliably, so the high-signal metrics were moved into the title row description.
 
 ## Pass 3 - Layout Studio, Media, Ads, and Settings
 
@@ -386,6 +385,52 @@ Public effect: admin preview now has a verified path from management table to si
 
 Signed preview URLs are host-sensitive. A URL signed for `localhost:8000` correctly returns `403 Invalid Signature` if manually rewritten to `127.0.0.1:8000`. The admin action itself redirects to the generated signed URL, so the local management flow works. Production still requires `APP_URL` to match the canonical public/admin host.
 
+## Pass 5 - News List High-Signal Row Summary
+
+### Additional Fix Applied
+
+Problem: the news list table already had columns for `Editoryal Puan`, `Anasayfa`, `Görüntülenme`, `Son Dakika` and `Manşet`, but the table is wide. Browser evidence from the previous pass showed the high-signal columns could fall outside the immediately visible viewport. That weakened the admin's ability to make fast editorial decisions from the list.
+
+Fix:
+
+- Changed the title column description from source-only text to a compact decision summary.
+- The row description now includes:
+  - source reference, for example `İHA ID: ...` or `Manuel kayıt`;
+  - editorial score, for example `Puan 88/100`;
+  - view count, for example `1.234 görüntülenme`;
+  - homepage pin area when present, for example `Anasayfa: Ana manşet`;
+  - `Son Dakika` and `Manşet` flags when active.
+- Cleaned homepage pin area labels to proper Turkish: `Ana manşet`, `Yan manşet`, `Adıyaman gündemi`, `Asayiş`, `Bölge`, `Yaşam`.
+
+Public effect: no public rendering changes. This is an admin decision-surface improvement for public-impacting content controls.
+
+### Browser Evidence
+
+- `/admin/news-articles`
+  - status 200.
+  - row summaries visible in the main title area.
+  - sample visible rows:
+    - `İHA ID: 20260711AW744559 | Puan 73/100 | 0 görüntülenme`
+    - `İHA ID: 20260711AW744555 | Puan 81/100 | 0 görüntülenme`
+    - `İHA ID: 20260711AW744541 | Puan 32/100 | 0 görüntülenme`
+  - `hasScoreSummary=true`
+  - `hasViewSummary=true`
+  - `mojibake=false`
+  - console error logs: none.
+
+The local live rows sampled did not include a homepage-pinned article, so `Anasayfa:` was verified through automated test rather than current DB state.
+
+### Additional Test Evidence
+
+- `php artisan test tests\Feature\Filament\AdminContentIntegrityTest.php --filter='news_list_(surface|title_description)'`
+  - PASS: 2 tests, 23 assertions.
+
+- `php artisan test tests\Feature\Filament\AdminContentIntegrityTest.php tests\Feature\Filament\AdminDashboardAndNewsResourceTest.php tests\Feature\Filament\AdminLanguageQualityTest.php`
+  - PASS: 28 tests, 361 assertions.
+
+- `git diff --check`
+  - PASS.
+
 ## Current Readiness Judgment
 
-This batch closes several visible admin trust and public-effect inconsistencies, but the broader objective is not complete yet. The remaining backlog now centers on news-list ergonomics for high-signal columns, role-management surface policy, IHA Health action exercise, and a final page-by-page admin evolution sweep.
+This batch closes several visible admin trust and public-effect inconsistencies, but the broader objective is not complete yet. The remaining backlog now centers on role-management surface policy, IHA Health action exercise, and a final page-by-page admin evolution sweep.
