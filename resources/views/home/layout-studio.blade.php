@@ -4,6 +4,13 @@
     $moduleMap = collect($layoutSections ?? [])->keyBy('key');
     $heroSection = $moduleMap->get('hero');
     $bodySections = collect($layoutSections ?? [])->reject(fn ($section) => $section['key'] === 'hero')->values();
+    $bodySectionKeys = $bodySections->pluck('key');
+    $reservedAdPositions = collect([
+        $heroSection ? 'home-top' : null,
+        $bodySectionKeys->contains('local_news') ? 'home-feed' : null,
+        $bodySectionKeys->contains('region_news') ? 'home-lower' : null,
+        $bodySectionKeys->contains('news_river') ? 'between-news' : null,
+    ])->filter()->values()->all();
     $backgroundClasses = [
         'surface' => '',
         'muted' => 'bg-slate-50/80 dark:bg-slate-900/35',
@@ -182,7 +189,7 @@
                             @break
 
                         @case('ads')
-                            @include('home.sections.ads', ['settings' => $settings, 'ads' => $ads])
+                            @include('home.sections.ads', ['settings' => $settings, 'ads' => $ads, 'reservedAdPositions' => $reservedAdPositions])
                             @break
                     @endswitch
                 </div>

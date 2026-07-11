@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
 
 class IhaHealth extends Page
 {
-    private const DEFAULT_SYNC_INTERVAL_MINUTES = 10;
+    private const DEFAULT_SYNC_INTERVAL_MINUTES = 15;
     private const CRITICAL_FRESHNESS_MINUTES = 60;
 
     protected static ?string $navigationIcon = 'heroicon-o-signal';
@@ -175,7 +175,7 @@ class IhaHealth extends Page
         return [
             'stats' => [
                 'effective_interval' => $effectiveInterval . ' dakika',
-                'schedule_note' => 'Operasyonel hedef: Turhost cron her dakika scheduler çalıştırır, İHA senkronu ise 10 dakikada bir inline koşar.',
+                'schedule_note' => "Operasyonel hedef: Turhost cron her dakika scheduler çalıştırır; İHA senkronu {$effectiveInterval} dakikada bir kuyruğa alınır ve sunucu queue worker tarafından tamamlanır.",
                 'last_successful_sync' => $lastSuccessfulSync,
                 'latest_sync' => $latestSync,
                 'latest_sync_label' => $this->statusLabel($latestSync?->status),

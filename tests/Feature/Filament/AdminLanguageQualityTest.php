@@ -33,6 +33,7 @@ class AdminLanguageQualityTest extends TestCase
     {
         $files = collect([
             ...$this->phpFiles(app_path('Filament')),
+            ...$this->phpFiles(app_path('Providers/Filament')),
             ...$this->phpFiles(app_path('Services')),
             ...$this->phpFiles(app_path('Support')),
             ...$this->bladeFiles(resource_path('views/filament')),

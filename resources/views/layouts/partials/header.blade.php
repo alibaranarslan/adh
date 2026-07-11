@@ -165,8 +165,12 @@
                         <span>{{ __('Canlı saat') }}</span>
                         <span class="tabular-nums text-adh-red dark:text-red-300" x-text="currentTime">{{ now()->format('H:i') }}</span>
                     </div>
-                    <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
-                       class="mt-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-adh-red transition hover:text-red-700">{{ __('Günün Seçkisi') }}</a>
+                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                        <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
+                           class="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-adh-red transition hover:text-red-700">{{ __('Günün Seçkisi') }}</a>
+                        <a href="{{ \App\Support\LocalizedUrl::route('home') }}"
+                           class="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-adh-red transition hover:text-red-700">{{ __('Günün Gazetesi') }}</a>
+                    </div>
                 </div>
 
                 <div class="min-w-0 text-center">

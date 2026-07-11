@@ -32,7 +32,7 @@
     $contactLabel = filled($contactPhone)
         ? __('İletişim: :value', ['value' => $contactPhone])
         : (filled($contactEmail) ? __('İletişim: :value', ['value' => $contactEmail]) : __('İletişim sayfası'));
-    $positionLabel = \App\Support\AdvertisementPlacement::options()[$position] ?? __('Reklam Alanı');
+    $positionLabel = __( \App\Support\AdvertisementPlacement::options()[$position] ?? 'Reklam Alanı' );
     $isHomeInventory = in_array($position, ['home-top', 'home-feed', 'home-lower', 'between-news'], true);
     $houseAdHeadline = $isHomeInventory
         ? __('Bu alanda markanızı öne çıkarın')

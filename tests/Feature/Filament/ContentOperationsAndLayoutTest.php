@@ -372,7 +372,7 @@ class ContentOperationsAndLayoutTest extends TestCase
 
     public function test_legacy_layout_manager_is_a_disabled_stub_without_mutation_methods(): void
     {
-        $this->assertFalse(LayoutManager::canAccess());
+        $this->assertFalse(LayoutManager::shouldRegisterNavigation());
 
         foreach (['updateModuleOrder', 'toggleModule', 'saveSettings', 'saveDraft', 'publishDraft', 'restoreRevision'] as $method) {
             $this->assertFalse(method_exists(LayoutManager::class, $method), "Legacy LayoutManager must not expose {$method}().");
@@ -380,7 +380,9 @@ class ContentOperationsAndLayoutTest extends TestCase
 
         $this->actingAs($this->makeAdmin())
             ->get('/admin/layout-manager-legacy')
-            ->assertStatus(410);
+            ->assertOk()
+            ->assertSee('Legacy Layout Manager devre dışı')
+            ->assertDontSee('Symfony\\Component\\HttpKernel\\Exception');
     }
 
     private function makeAdmin(): User

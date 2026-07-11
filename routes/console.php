@@ -19,7 +19,7 @@ $onScheduleFailure = function (\Illuminate\Console\Scheduling\ScheduledTaskFaile
     }
 };
 
-Schedule::command('iha:sync --inline')->cron('*/10 * * * *')->withoutOverlapping(9)
+Schedule::command('iha:sync')->cron('*/15 * * * *')->withoutOverlapping(14)
     ->onFailure($onScheduleFailure);
 
 if (filter_var(env('SCHEDULE_QUEUE_WORKER', true), FILTER_VALIDATE_BOOL)) {

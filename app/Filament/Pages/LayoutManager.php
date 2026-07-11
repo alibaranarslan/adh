@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Support\AdminPrivileges;
 use Filament\Pages\Page;
 
 class LayoutManager extends Page
@@ -22,11 +23,12 @@ class LayoutManager extends Page
 
     public static function canAccess(): bool
     {
-        return false;
+        // Legacy stub is informational only; keep it hidden from navigation but reachable to admin-panel users.
+        return AdminPrivileges::canAccessAdminPanel(auth()->user());
     }
 
-    public function mount(): void
+    public static function shouldRegisterNavigation(): bool
     {
-        abort(410, 'Legacy Layout Manager is disabled. Use Layout Studio.');
+        return false;
     }
 }

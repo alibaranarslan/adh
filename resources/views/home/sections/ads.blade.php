@@ -1,6 +1,10 @@
 @php
     $locale = app()->getLocale();
     $title = data_get($settings, "title_override.$locale") ?: __('Reklam Verilebilir Alanlar');
+    $reservedAdPositions = collect($reservedAdPositions ?? []);
+    $modulePositions = collect(['between-news', 'home-top', 'home-feed', 'home-lower', 'sidebar-top', 'sidebar-bottom'])
+        ->reject(fn (string $position): bool => $reservedAdPositions->contains($position))
+        ->values();
 @endphp
 
 <section class="py-4 md:py-5">
@@ -10,11 +14,8 @@
     </div>
 
     <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <x-ad-slot position="between-news" class="lg:col-span-2" />
-        <x-ad-slot position="home-top" class="lg:col-span-2" />
-        <x-ad-slot position="home-feed" class="lg:col-span-2" />
-        <x-ad-slot position="home-lower" class="lg:col-span-2" />
-        <x-ad-slot position="sidebar-top" />
-        <x-ad-slot position="sidebar-bottom" />
+        @foreach($modulePositions as $position)
+            <x-ad-slot :position="$position" @class(['lg:col-span-2' => ! str_starts_with($position, 'sidebar-')]) />
+        @endforeach
     </div>
 </section>
