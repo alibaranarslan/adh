@@ -154,6 +154,9 @@ class AdminOperationsReadinessTest extends TestCase
             ->call('save')
             ->assertHasNoFormErrors();
 
+        $this->assertSame('G-TEST123', Setting::get('integration', 'google_analytics_id'));
+        $this->assertSame('G-TEST123', Setting::get('seo', 'google_analytics_id'));
+
         Livewire::test(IntegrationSettings::class)
             ->fillForm([
                 'iha_user_code' => 'IHA-CODE',

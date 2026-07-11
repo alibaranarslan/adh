@@ -29,8 +29,8 @@
     </script>
     @include('layouts.partials.meta')
     @php
-        $gaId = trim((string) (\App\Models\Setting::get('seo', 'google_analytics_id')
-            ?: \App\Models\Setting::get('integration', 'google_analytics_id')
+        $gaId = trim((string) (\App\Models\Setting::get('integration', 'google_analytics_id')
+            ?: \App\Models\Setting::get('seo', 'google_analytics_id')
             ?: config('services.google_analytics.measurement_id')));
         $gscCode = \App\Models\Setting::get('seo', 'google_search_console_code');
     @endphp

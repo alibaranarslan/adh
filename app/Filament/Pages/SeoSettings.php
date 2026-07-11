@@ -44,7 +44,8 @@ class SeoSettings extends Page implements HasForms
             'og_image' => Setting::get('seo', 'og_image', ''),
             'robots_txt' => Setting::get('seo', 'robots_txt', "User-agent: *\nAllow: /"),
             'google_search_console_code' => Setting::get('seo', 'google_search_console_code', ''),
-            'google_analytics_id' => Setting::get('integration', 'google_analytics_id', ''),
+            'google_analytics_id' => Setting::get('integration', 'google_analytics_id')
+                ?: Setting::get('seo', 'google_analytics_id', ''),
         ];
         $this->form->fill($this->data);
     }
@@ -149,6 +150,7 @@ class SeoSettings extends Page implements HasForms
             Setting::set('seo', $key, $data[$key]);
         }
         Setting::set('integration', 'google_analytics_id', $data['google_analytics_id']);
+        Setting::set('seo', 'google_analytics_id', $data['google_analytics_id']);
 
         Notification::make()
             ->success()
