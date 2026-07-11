@@ -34,6 +34,10 @@ mkdir -p "${WORK_DIR}" "${APP_DIR}/storage/logs"
     cp -R app bootstrap config database lang resources routes scripts tests "${APP_DIR}/"
     cp artisan composer.json composer.lock package.json vite.config.js "${APP_DIR}/"
 
+    mkdir -p "${APP_DIR}/public"
+    rm -rf "${APP_DIR}/public/build"
+    cp -R public/build "${APP_DIR}/public/"
+
     cd "${APP_DIR}"
     "${PHP_BIN}" artisan migrate --force
     "${PHP_BIN}" artisan optimize:clear

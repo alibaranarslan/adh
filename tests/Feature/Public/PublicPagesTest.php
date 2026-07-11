@@ -947,10 +947,16 @@ class PublicPagesTest extends TestCase
             ->assertOk()
             ->assertSee('adh_site_cookie_consent', false)
             ->assertSee('inset-x-3 bottom-3', false)
-            ->assertSee('max-h-[32vh] overflow-y-auto', false)
+            ->assertSee('max-h-[38dvh] overflow-y-auto', false)
+            ->assertSee('bg-white/95', false)
+            ->assertSee('text-slate-900', false)
             ->assertSee('md:max-w-sm', false)
             ->assertSee('grid grid-cols-3', false)
-            ->assertSee('min-h-8', false)
+            ->assertSee('min-h-9', false)
+            ->assertSee('Çerez tercihleri', false)
+            ->assertSee('Detaylı Çerez Politikası', false)
+            ->assertDontSee('AdÄ±yaman', false)
+            ->assertDontSee('DetaylÄ±', false)
             ->assertDontSee('max-h-[34dvh]', false)
             ->assertDontSee('sticky -top-3', false);
     }
