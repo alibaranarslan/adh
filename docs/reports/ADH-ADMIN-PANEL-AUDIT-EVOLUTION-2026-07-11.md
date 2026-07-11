@@ -196,9 +196,7 @@ Priority order for the next admin evolution pass:
 
 - P1: complete deeper NewsArticle admin audit around IHA record mutation, score controls, homepage editorial controls, and public card/detail effects.
 - P1: exercise IHA Health actions from the panel, including test sync, translation queue button, and operation audit records.
-- P2: inspect HeaderTheme admin preview and public header impact after recent design iterations.
 - P2: decide whether the news-list view-count signal should be pinned/always-visible on desktop admin list or moved into a compact row description.
-- P2: run a focused browser interaction pass for HeaderTheme preview actions and visible public header deltas.
 - P3: decide whether `/admin/shield/roles` should remain direct-route guarded or become a fully usable super-admin role management surface.
 
 ## Pass 2 - News and IHA Operations
@@ -327,6 +325,67 @@ Public effect: no direct public-page mutation. The change improves admin confide
 - Advertisement admin/public contract is covered by tests and browser evidence: missing-media ads are visible as operational risk in admin and hidden/fallbacked appropriately on public pages.
 - General, SEO, Integration and Email settings have save/remount and write-only secret preservation coverage.
 
+## Pass 4 - HeaderTheme Admin Preview and Public Header Delta
+
+### Additional Test Coverage Applied
+
+Problem: the HeaderTheme public resolver and special-day strip had unit/public coverage, but the Filament table preview action itself was not directly covered. That left a gap between "theme can render" and "admin can open the signed public preview from the management surface."
+
+Fix:
+
+- Added a Filament test proving the `preview` table action is visible for a valid theme.
+- Added a Filament test proving the `preview` action redirects to a valid signed public preview URL with the selected locale and preview date.
+- The same test follows the redirect URL and verifies the public header receives the expected theme class, republic seal markup and event message.
+
+Public effect: admin preview now has a verified path from management table to signed public header simulation before any live theme decision is made.
+
+### Browser Evidence
+
+- `/admin/header-themes`
+  - status 200.
+  - `Yeni Milli Gün Teması` visible.
+  - `Önizle` action visible.
+  - readiness/status columns visible: `TAKVİM`, `ZAMANLAMA`, `HAZIRLIK`.
+  - asset policy columns visible: `BAYRAK`, `ATATÜRK`.
+  - listed themes visible: `10 Kasım`, `29 Ekim`, `30 Ağustos`, `19 Mayıs`, `23 Nisan`, `Ramazan Bayramı`, `Kurban Bayramı`.
+  - `mojibake=false`.
+  - console error logs: none.
+
+- Signed public preview `29-ekim`
+  - header class includes `adh-header-theme adh-theme-29-ekim adh-tone-national`.
+  - event badge exists.
+  - asset: `turkish-flag-official.svg`, alt `Türk bayrağı`.
+  - masthead overlay classes absent: no `adh-theme-visual`, no `adh-theme-ataturk`.
+  - visible preview text includes `ÖNİZLEME`.
+  - `mojibake=false`, console error logs: none.
+
+- Signed public preview `10-kasim`
+  - header class includes `adh-header-theme adh-theme-10-kasim adh-tone-commemoration`.
+  - event badge exists.
+  - asset: `ataturk-pd-tr-cutout.png`, alt `Mustafa Kemal Atatürk`.
+  - masthead overlay classes absent.
+  - visible message: `Saygı, özlem ve minnetle anıyoruz.`
+  - `mojibake=false`, console error logs: none.
+
+- Signed public preview `ramazan-bayrami`
+  - header class includes `adh-header-theme adh-theme-ramazan-bayrami adh-tone-bayram`.
+  - event badge exists.
+  - asset: `bayram-crescent.svg`, alt `Bayram hilali`.
+  - Atatürk/bayrak asset absent for bayram theme.
+  - `mojibake=false`, console error logs: none.
+
+### Additional Test Evidence
+
+- `php artisan test tests\Feature\Filament\AdminSecondaryResourcesOperationalTest.php tests\Feature\Public\HeaderThemeTest.php tests\Unit\Support\HeaderThemeResolverTest.php`
+  - PASS: 20 tests, 193 assertions.
+
+- `php artisan test tests\Feature\Filament\AdminContentIntegrityTest.php --filter=header_theme`
+  - PASS: 3 tests, 21 assertions.
+
+### Operational Note
+
+Signed preview URLs are host-sensitive. A URL signed for `localhost:8000` correctly returns `403 Invalid Signature` if manually rewritten to `127.0.0.1:8000`. The admin action itself redirects to the generated signed URL, so the local management flow works. Production still requires `APP_URL` to match the canonical public/admin host.
+
 ## Current Readiness Judgment
 
-This batch closes several visible admin trust and public-effect inconsistencies, but the broader objective is not complete yet. The remaining backlog now centers on HeaderTheme preview/public-delta verification, news-list ergonomics for high-signal columns, role-management surface policy, and a final page-by-page admin evolution sweep.
+This batch closes several visible admin trust and public-effect inconsistencies, but the broader objective is not complete yet. The remaining backlog now centers on news-list ergonomics for high-signal columns, role-management surface policy, IHA Health action exercise, and a final page-by-page admin evolution sweep.

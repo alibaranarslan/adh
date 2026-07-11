@@ -103,6 +103,37 @@ class AdminContentIntegrityTest extends TestCase
             ->assertDontSee('ManÅŸet');
     }
 
+    public function test_news_list_title_description_surfaces_public_decision_signals(): void
+    {
+        $admin = $this->admin();
+        $category = $this->category('gundem');
+
+        $this->article($category, [
+            'slug' => 'karar-sinyali-haberi',
+            'title' => ['tr' => 'Karar Sinyali Haberi'],
+            'source' => 'iha',
+            'iha_id' => 'IHA-SIGNAL-1',
+            'status' => 'published',
+            'published_at' => now(),
+            'editorial_score' => 88,
+            'view_count' => 1234,
+            'homepage_pin_area' => 'hero',
+            'is_breaking' => true,
+            'is_featured' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get('/admin/news-articles')
+            ->assertOk()
+            ->assertSee('Karar Sinyali Haberi')
+            ->assertSee('İHA ID: IHA-SIGNAL-1')
+            ->assertSee('Puan 88/100')
+            ->assertSee('1.234 görüntülenme')
+            ->assertSee('Anasayfa: Ana manşet')
+            ->assertSee('Son Dakika')
+            ->assertSee('Manşet');
+    }
+
     public function test_news_list_tabs_show_operational_counts_and_filter_records(): void
     {
         $admin = $this->admin();

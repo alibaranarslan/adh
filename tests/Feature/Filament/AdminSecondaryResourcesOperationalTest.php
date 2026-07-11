@@ -20,6 +20,7 @@ use App\Models\Tag;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -208,7 +209,8 @@ class AdminSecondaryResourcesOperationalTest extends TestCase
         Livewire::test(ListHeaderThemes::class)
             ->filterTable('schedule_scope', 'active_today')
             ->assertCanSeeTableRecords([$activeTheme])
-            ->assertCanNotSeeTableRecords([$futureTheme]);
+            ->assertCanNotSeeTableRecords([$futureTheme])
+            ->assertTableActionVisible('preview', $activeTheme);
 
         Livewire::test(ListAdvertisements::class)
             ->filterTable('render_status', 'missing_banner_image')
@@ -220,6 +222,44 @@ class AdminSecondaryResourcesOperationalTest extends TestCase
             ->assertCanSeeTableRecords([$currentInfo])
             ->assertCanNotSeeTableRecords([$scheduledInfo])
             ->assertTableActionVisible('deactivate', $currentInfo);
+    }
+
+    public function test_header_theme_preview_action_redirects_to_signed_public_preview(): void
+    {
+        $admin = $this->superAdmin();
+        $theme = HeaderTheme::query()->create([
+            'name' => ['tr' => '29 Ekim'],
+            'slug' => '29-ekim',
+            'theme_type' => HeaderTheme::TYPE_FIXED,
+            'month' => 10,
+            'day' => 29,
+            'mode' => HeaderTheme::MODE_AUTOMATIC,
+            'is_enabled' => true,
+            'banner_message' => ['tr' => '29 Ekim Cumhuriyet Bayramı kutlu olsun.'],
+            'show_flag' => true,
+            'show_ataturk' => true,
+            'decor_intensity' => 'strong',
+        ]);
+
+        $this->actingAs($admin);
+
+        $component = Livewire::test(ListHeaderThemes::class)
+            ->callTableAction('preview', $theme, data: [
+                'locale' => 'tr',
+                'preview_date' => '2026-10-29',
+            ])
+            ->assertRedirect();
+
+        $redirectUrl = $component->effects['redirect'] ?? '';
+
+        $this->assertNotSame('', $redirectUrl);
+        $this->assertTrue(URL::hasValidSignature(request()->create($redirectUrl)));
+
+        $this->get($redirectUrl)
+            ->assertOk()
+            ->assertSee('adh-theme-29-ekim', false)
+            ->assertSee('adh-event-seal--republic', false)
+            ->assertSee('29 Ekim Cumhuriyet Bayramı kutlu olsun.');
     }
 
     public function test_media_library_filters_by_collection_and_preserves_orphan_delete_guard(): void

@@ -331,7 +331,7 @@ class NewsArticleResource extends Resource
                     ->limit(72)
                     ->wrap()
                     ->formatStateUsing(fn (NewsArticle $record): string => self::tableTitle($record))
-                    ->description(fn (NewsArticle $record): string => self::tableSourceReference($record))
+                    ->description(fn (NewsArticle $record): string => self::tableDecisionSummary($record))
                     ->tooltip(fn (NewsArticle $record): string => self::tableTitle($record)),
 
                 BadgeColumn::make('category.name')
@@ -626,6 +626,29 @@ class NewsArticleResource extends Resource
         return 'Manuel kayıt';
     }
 
+    private static function tableDecisionSummary(NewsArticle $record): string
+    {
+        $signals = [
+            self::tableSourceReference($record),
+            'Puan ' . ((int) ($record->editorial_score ?? 0)) . '/100',
+            number_format((int) ($record->view_count ?? 0), 0, ',', '.') . ' görüntülenme',
+        ];
+
+        if (filled($record->homepage_pin_area)) {
+            $signals[] = 'Anasayfa: ' . (self::homepagePinAreaOptions()[$record->homepage_pin_area] ?? $record->homepage_pin_area);
+        }
+
+        if ($record->is_breaking) {
+            $signals[] = 'Son Dakika';
+        }
+
+        if ($record->is_featured) {
+            $signals[] = 'Manşet';
+        }
+
+        return implode(' | ', $signals);
+    }
+
     private static function isPubliclyVisibleOnSite(NewsArticle $record): bool
     {
         if ($record->trashed()) {
@@ -642,13 +665,13 @@ class NewsArticleResource extends Resource
     private static function homepagePinAreaOptions(): array
     {
         return [
-            'hero' => 'Ana manset',
-            'hero_side' => 'Yan manset',
-            'local_news' => 'Adiyaman gundemi',
-            'asayis_news' => 'Asayis',
-            'region_news' => 'Bolge',
+            'hero' => 'Ana manşet',
+            'hero_side' => 'Yan manşet',
+            'local_news' => 'Adıyaman gündemi',
+            'asayis_news' => 'Asayiş',
+            'region_news' => 'Bölge',
             'politics_economy' => 'Siyaset ve ekonomi',
-            'life_digest' => 'Yasam',
+            'life_digest' => 'Yaşam',
             'latest_news' => 'Son haberler',
         ];
     }
