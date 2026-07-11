@@ -2,6 +2,7 @@
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/home/adiyam29/adh}"
+PUBLIC_DOCROOT="${PUBLIC_DOCROOT:-/home/adiyam29/public_html}"
 TMP_ROOT="${TMP_ROOT:-/home/adiyam29/tmp}"
 REPO_ARCHIVE_URL="${REPO_ARCHIVE_URL:-https://github.com/alibaranarslan/adh/archive/refs/heads/main.tar.gz}"
 PHP_BIN="${PHP_BIN:-/usr/local/bin/php}"
@@ -37,6 +38,11 @@ mkdir -p "${WORK_DIR}" "${APP_DIR}/storage/logs"
     mkdir -p "${APP_DIR}/public"
     rm -rf "${APP_DIR}/public/build"
     cp -R public/build "${APP_DIR}/public/"
+
+    if [ -d "${PUBLIC_DOCROOT}" ]; then
+        rm -rf "${PUBLIC_DOCROOT}/build"
+        cp -R public/build "${PUBLIC_DOCROOT}/"
+    fi
 
     cd "${APP_DIR}"
     "${PHP_BIN}" artisan migrate --force
