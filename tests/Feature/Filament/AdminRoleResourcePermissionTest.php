@@ -135,6 +135,17 @@ class AdminRoleResourcePermissionTest extends TestCase
         }
     }
 
+    public function test_shield_role_manager_stays_guarded_for_all_admin_roles(): void
+    {
+        $this->seed(RoleSeeder::class);
+
+        foreach (['writer', 'editor', 'client_manager', 'super_admin'] as $role) {
+            $this->actingAs($this->userWithRole($role))
+                ->get('/admin/shield/roles')
+                ->assertForbidden();
+        }
+    }
+
     public function test_reorder_and_tag_merge_permissions_follow_mutating_permissions(): void
     {
         $this->seed(RoleSeeder::class);

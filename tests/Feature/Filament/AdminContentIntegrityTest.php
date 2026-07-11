@@ -345,6 +345,25 @@ class AdminContentIntegrityTest extends TestCase
         $this->assertSame('Orijinal İHA ana metni.', $ihaArticle->getTranslation('content', 'tr'));
     }
 
+    public function test_iha_edit_page_disables_homepage_curation_fields_that_cannot_be_saved(): void
+    {
+        $admin = $this->admin();
+        $category = $this->category('gundem');
+        $ihaArticle = $this->article($category, [
+            'slug' => 'iha-curation-disabled',
+            'source' => 'iha',
+            'iha_id' => 'IHA-CURATION-DISABLED',
+            'status' => 'published',
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(EditNewsArticle::class, ['record' => $ihaArticle->getKey()])
+            ->assertFormFieldIsDisabled('homepage_pin_area')
+            ->assertFormFieldIsDisabled('homepage_pin_until')
+            ->assertFormFieldIsDisabled('homepage_exclude_until');
+    }
+
     public function test_published_manual_news_created_in_admin_is_visible_on_public_detail(): void
     {
         $admin = $this->admin();

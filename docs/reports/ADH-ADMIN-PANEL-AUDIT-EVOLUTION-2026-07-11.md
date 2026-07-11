@@ -173,7 +173,7 @@ Public effect: homepage now shows professional house-ad inventory without duplic
 - `/admin/iha-health`
   - `healthHasQueueModel=true`
   - `healthHasOldInlineCopy=false`
-  - Rendered copy: `İHA senkronu 15 dakikada bir kuyruğa alınır ve sunucu queue worker tarafından tamamlanır.`
+  - Rendered copy: `İHA senkronu 10 dakikada bir doğrudan çalıştırılır; scheduler ve queue worker yardımcı/yedek akış olarak kalır.`
 
 - `/admin/pages`
   - `seoEksikCount=0`
@@ -193,10 +193,6 @@ Public effect: homepage now shows professional house-ad inventory without duplic
 ## Remaining Backlog
 
 Priority order for the next admin evolution pass:
-
-- P1: complete deeper NewsArticle admin audit around IHA record mutation, score controls, homepage editorial controls, and public card/detail effects.
-- P1: exercise IHA Health actions from the panel, including test sync, translation queue button, and operation audit records.
-- P3: decide whether `/admin/shield/roles` should remain direct-route guarded or become a fully usable super-admin role management surface.
 
 ## Pass 2 - News and IHA Operations
 
@@ -431,6 +427,244 @@ The local live rows sampled did not include a homepage-pinned article, so `Anasa
 - `git diff --check`
   - PASS.
 
+## Pass 6 - IHA Health Action Audit and Translation Queue Controls
+
+### Additional Test Coverage Applied
+
+Problem: Pass 2 added the production-mode queued sync action to the primary IHA Health screen, but the page still needed direct coverage for the other operator actions: inline test sync and translation requeue. Without that, an admin could see a button, click it, and still lack proof that the action created an operation audit record or respected the Google Translation API key gate.
+
+Fix:
+
+- Added coverage proving `Test Senkronu Başlat` calls `iha:sync --inline --force --limit=5`.
+- Added coverage proving manual test sync records `iha.manual_test_sync` in `admin_operation_audits`.
+- Added coverage proving `Çeviri Sürecini Başlat` is blocked when the Google Translation API key is missing.
+- Added coverage proving a ready Google Translation key requeues missing IHA translations through `TranslateArticleJob`.
+- Added coverage proving blocked translation attempts do not silently push queue jobs.
+
+Public effect: no immediate public page rendering change. The public effect is operational: future IHA freshness and multilingual readiness are now tied to admin-visible, auditable actions rather than invisible assumptions.
+
+### Browser Evidence
+
+- `/admin/iha-health`
+  - status 200.
+  - page title: `İHA Sağlık Merkezi - Adıyaman Dijital Haber Yönetim`.
+  - visible actions:
+    - `Senkronu Kuyruğa Al`
+    - `Test Senkronu Başlat`
+    - `Çeviri Sürecini Başlat`
+    - `Senkron Kayıtları`
+    - `Entegrasyon Ayarları`
+  - visible operational copy states Turhost cron runs IHA sync directly every 10 minutes; scheduler and queue worker remain helper/fallback flows.
+  - `hasIhaHealth=true`
+  - `hasQueue=true`
+  - `hasManual=true`
+  - `hasTranslation=true`
+  - `mojibake=false`
+  - console error logs: none.
+
+### Additional Test Evidence
+
+- `php artisan test tests\Feature\Filament\AdminOperationAuditTest.php`
+  - PASS: 6 tests, 57 assertions.
+
+- `php artisan test tests\Feature\Filament\AdminOperationAuditTest.php tests\Feature\Filament\IhaHealthPageTest.php tests\Unit\Services\IhaSyncTriggerServiceTest.php tests\Unit\Services\IhaTranslationRequeueServiceTest.php`
+  - PASS: 12 tests, 99 assertions.
+
+- `php artisan test tests\Feature\Filament\AdminLanguageQualityTest.php`
+  - PASS: 2 tests, 131 assertions.
+
+## Pass 7 - Role Management Surface Policy
+
+### Decision
+
+`/admin/shield/roles` remains intentionally guarded. ADH does not expose the generic Filament Shield role editor as a customer-facing management surface. The supported model is:
+
+- canonical role definitions live in code/seeders;
+- users receive curated roles through `/admin/users`;
+- super-admin account protection remains in `UserResource`;
+- permission schema changes remain developer-controlled rather than admin-defined at runtime.
+
+Reason: a generic role/permission editor would let production permissions drift away from the audited role matrix. That is not aligned with the current admin philosophy: curated operations, not unrestricted system design from the customer panel.
+
+### Additional Fix Applied
+
+- Updated `App\Policies\RolePolicy` so every RoleResource ability explicitly returns `false`.
+- Removed fragile placeholder permission checks such as `{{ ForceDelete }}` from the effective behavior.
+- Added a policy intent note explaining why the generic Shield role editor stays closed.
+- Added a regression test proving `/admin/shield/roles` returns `403` for `writer`, `editor`, `client_manager` and `super_admin`.
+
+Public effect: none directly. The public effect is risk reduction: content, operations and site configuration roles cannot be reshaped through an unaudited generic permission editor.
+
+### Browser Evidence
+
+- `/admin/shield/roles`
+  - status surface: `403 FORBIDDEN`.
+  - role list not visible.
+  - `hasForbidden=true`
+  - `hasRoleList=false`
+  - `mojibake=false`
+  - console error logs: none.
+
+### Additional Test Evidence
+
+- `php artisan test tests\Feature\Filament\AdminRoleResourcePermissionTest.php`
+  - PASS: 7 tests, 87 assertions.
+
+## Pass 8 - NewsArticle Admin/Public Effect Alignment
+
+### Additional Fix Applied
+
+Problem: IHA article edit-save is intentionally halted to protect source catalog integrity, but some homepage curation fields still appeared editable on the IHA edit form. That created a trust problem: an operator could attempt to pin or exclude an IHA article from homepage modules, save, and then see no effect because the IHA save flow is blocked.
+
+Fix:
+
+- Disabled `homepage_pin_area` on IHA edit pages.
+- Disabled `homepage_pin_until` on IHA edit pages.
+- Disabled `homepage_exclude_until` on IHA edit pages.
+- Added a regression test proving these fields are disabled for IHA records.
+
+Public effect: no ranking or rendering change. The improvement is admin truthfulness: public-impacting homepage controls no longer look editable on records where save is intentionally halted. Existing automatic homepage selection by editorial score remains covered separately.
+
+### Related Existing Coverage Reconfirmed
+
+- IHA records are not changed by bulk publish/archive/featured/category/delete actions.
+- IHA edit-save does not mutate title, content, slug, source or status.
+- IHA records cannot be deleted or force-deleted by resource policy.
+- Manual admin-created published news appears on the public detail page.
+- News list row descriptions surface public decision signals: source, score, views, homepage pin, breaking and featured flags.
+- Homepage service tests confirm high-score/visual selection, no repeated editorial blocks, and homepage exclusion behavior.
+
+### Additional Test Evidence
+
+- `php artisan test tests\Feature\Filament\AdminContentIntegrityTest.php --filter='iha_(article_edit_save|edit_page_disables|articles_are_not_changed|articles_cannot)'`
+  - PASS: 4 tests, 59 assertions.
+
+- `php artisan test tests\Feature\Filament\AdminContentIntegrityTest.php tests\Unit\Services\HomeModuleDataServiceTest.php`
+  - PASS: 27 tests, 226 assertions.
+
+- `php artisan test tests\Feature\Filament\AdminLanguageQualityTest.php`
+  - PASS: 2 tests, 131 assertions.
+
+## Pass 9 - Final Page-by-Page Admin Sweep
+
+### Scope
+
+The sweep covered the current local admin route set from `php artisan route:list --path=admin`.
+
+- Admin GET/HEAD route count: 49.
+- Browser-level pages directly opened in this pass: 41.
+- Expected guarded route: `/admin/shield/roles`.
+
+### Index, Create, Operation, and Settings Pages
+
+Opened and checked for login regression, 404, 500, mojibake, visible shell title, form/table presence where expected, and console errors:
+
+- `/admin`
+- `/admin/news-articles`
+- `/admin/news-articles/create`
+- `/admin/categories`
+- `/admin/categories/create`
+- `/admin/tags`
+- `/admin/tags/create`
+- `/admin/pages`
+- `/admin/pages/create`
+- `/admin/advertisements`
+- `/admin/advertisements/create`
+- `/admin/local-info-entries`
+- `/admin/local-info-entries/create`
+- `/admin/newsletter-subscriptions`
+- `/admin/newsletter-subscriptions/create`
+- `/admin/social-publications`
+- `/admin/media-library`
+- `/admin/analytics`
+- `/admin/layout-studio`
+- `/admin/layout-manager-legacy`
+- `/admin/iha-health`
+- `/admin/iha-sync-logs`
+- `/admin/admin-operation-audits`
+- `/admin/general-settings`
+- `/admin/seo-settings`
+- `/admin/integration-settings`
+- `/admin/email-settings`
+- `/admin/header-themes`
+- `/admin/header-themes/create`
+- `/admin/users`
+- `/admin/users/create`
+- `/admin/cache-management`
+- `/admin/backup-manager`
+- `/admin/shield/roles`
+
+Result:
+
+- No unexpected login redirect.
+- No unexpected 404.
+- No 500/server-error surface.
+- No rendered mojibake.
+- No browser console error logs.
+- `/admin/shield/roles` returned the expected `403 FORBIDDEN`.
+- Shield role subroutes also returned expected `403 FORBIDDEN`:
+  - `/admin/shield/roles/create`
+  - `/admin/shield/roles/1`
+  - `/admin/shield/roles/1/edit`
+- `layout-manager-legacy` rendered the informational disabled stub and linked toward Layout Studio.
+- Empty operational lists such as local info, newsletters and operation audits rendered explicit empty states rather than blank/broken pages.
+
+### Edit Page Browser Evidence
+
+Opened and checked representative edit/create record paths using current local DB records:
+
+- `/admin/news-articles/89/edit`
+  - status 200.
+  - IHA article edit form rendered.
+  - disabled controls present.
+  - no mojibake.
+  - no console errors.
+- `/admin/categories/11/edit`
+  - status 200, form rendered.
+- `/admin/tags/18/edit`
+  - status 200, form rendered.
+- `/admin/pages/7/edit`
+  - status 200, protected static/editorial-policy content rendered.
+- `/admin/advertisements/4/edit`
+  - status 200, ad slot controls rendered.
+- `/admin/header-themes/7/edit`
+  - status 200, special-day theme controls rendered.
+- `/admin/users/1/edit`
+  - status 200, `super_admin` role visible on bootstrap user.
+- `/admin/newsletter-subscriptions/create`
+  - status 200, create form rendered.
+
+Result:
+
+- No unexpected 403 on intended usable edit pages.
+- No rendered mojibake.
+- No browser console error logs.
+- No obvious blank form or missing title surface.
+
+### Final Sweep Finding
+
+No new P0/P1/P2 finding was discovered in this final browser sweep. The only intentionally non-usable admin surface is `/admin/shield/roles`, which is now explicitly guarded by policy and test coverage.
+
+### Final Regression Evidence
+
+- `php artisan test tests\Feature\Filament\AdminContentIntegrityTest.php tests\Feature\Filament\AdminRoleResourcePermissionTest.php tests\Feature\Filament\AdminOperationAuditTest.php tests\Feature\Filament\IhaHealthPageTest.php`
+  - PASS: 35 tests, 368 assertions.
+
+- `php artisan test tests\Feature\Filament\AdminLanguageQualityTest.php tests\Feature\Filament\AdminSettingsOperationsFinalSmokeTest.php`
+  - PASS: 5 tests, 168 assertions.
+
+- `git diff --check`
+  - PASS.
+
 ## Current Readiness Judgment
 
-This batch closes several visible admin trust and public-effect inconsistencies, but the broader objective is not complete yet. The remaining backlog now centers on role-management surface policy, IHA Health action exercise, and a final page-by-page admin evolution sweep.
+The local ADH admin panel is now in a materially stronger and internally consistent state. The current evidence supports local admin readiness for customer-facing review and continued content operations:
+
+- Public-impacting settings pages render and explain their effect boundaries.
+- IHA health, sync logs, translation queue controls and operation audit paths are visible and tested.
+- News article admin controls protect IHA source integrity and do not present unsavable homepage curation fields on IHA records.
+- Layout Studio is the active homepage layout surface; legacy layout manager is an informational disabled stub.
+- Media, ads, header themes, SEO, email, integration and user management surfaces render without obvious browser-level breakage.
+- Generic Shield role management stays intentionally closed; curated role assignment remains in UserResource.
+
+Residual production caveat: this is local admin readiness. Turhost production readiness still requires server-side cron/queue, HTTPS/domain, mail, IHA credentials, Google Translation key, Instagram credentials and production smoke evidence after migration.

@@ -237,19 +237,19 @@ class NewsArticleResource extends Resource
                         ->helperText('Suresi dolana kadar ilgili blokta oncelikli gosterilir. Hero ve yan manset icin gercek gorsel gerekir.')
                         ->nullable()
                         ->searchable()
-                        ->disabled(fn (): bool => $cannotPublish()),
+                        ->disabled(fn ($record): bool => $isIhaReadonly($record) || $cannotPublish()),
 
                     DateTimePicker::make('homepage_pin_until')
                         ->label('Sabitleme bitis zamani')
                         ->helperText('Bos kalirsa sabitleme manuel kaldirilana kadar surer.')
                         ->native(false)
-                        ->disabled(fn (): bool => $cannotPublish()),
+                        ->disabled(fn ($record): bool => $isIhaReadonly($record) || $cannotPublish()),
 
                     DateTimePicker::make('homepage_exclude_until')
                         ->label('Anasayfadan dislama bitis zamani')
                         ->helperText('Bu tarihe kadar haber anasayfa bloklarinda secilmez; haber detayi yayinda kalabilir.')
                         ->native(false)
-                        ->disabled(fn (): bool => $cannotPublish()),
+                        ->disabled(fn ($record): bool => $isIhaReadonly($record) || $cannotPublish()),
 
                     DateTimePicker::make('published_at')
                         ->label('Yayın Tarihi')
