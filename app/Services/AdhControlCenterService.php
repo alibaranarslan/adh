@@ -8,9 +8,11 @@ use App\Filament\Pages\CacheManagement;
 use App\Filament\Pages\IhaHealth;
 use App\Filament\Pages\IntegrationSettings;
 use App\Filament\Pages\LayoutStudio;
+use App\Filament\Resources\AdminOperationAuditResource;
 use App\Filament\Resources\IhaSyncLogResource;
 use App\Filament\Resources\NewsArticleResource;
 use App\Models\AnalyticsPageView;
+use App\Models\AdminOperationAudit;
 use App\Models\IhaSyncLog;
 use App\Models\LayoutRevision;
 use App\Models\NewsArticle;
@@ -37,7 +39,8 @@ class AdhControlCenterService
         $normalizedFilters = $this->normalizeFilters($filters);
         $window = $this->resolveWindow($normalizedFilters['window']);
         $isEditor = AdminPrivileges::canAccessConfiguration($user);
-        $isOps = AdminPrivileges::canManageSystemSettings($user);
+        $isOps = AdminPrivileges::canManageOperations($user);
+        $isSystem = AdminPrivileges::canManageSystemSettings($user);
         $thresholds = config('control_center.attention', []);
 
         $latestSync = IhaSyncLog::query()->latest('started_at')->first();
@@ -52,6 +55,7 @@ class AdhControlCenterService
 
         $freshnessLagMinutes = $lastSuccessfulSync?->completed_at?->diffInMinutes(now());
         $failedJobsCount = $this->failedJobsCount();
+        $latestAudit = $this->latestOperationAudit();
         $translationBacklog = $this->countTranslationBacklog();
         $queuedTranslations = $this->countQueuedTranslationJobs();
         $criticalDrafts = $this->criticalDrafts($normalizedFilters['source']);
@@ -78,8 +82,8 @@ class AdhControlCenterService
                 'title' => 'Kuyrukta başarısız iş var',
                 'body' => "{$failedJobsCount} failed job kaydı müdahale bekliyor.",
                 'meta' => 'Operasyon',
-                'url' => $isOps ? CacheManagement::getUrl(panel: 'admin') : IhaHealth::getUrl(panel: 'admin'),
-                'action_label' => $isOps ? 'Operasyon' : 'Sağlık',
+                'url' => $isSystem ? CacheManagement::getUrl(panel: 'admin') : IhaHealth::getUrl(panel: 'admin'),
+                'action_label' => $isSystem ? 'Operasyon' : 'Sağlık',
             ]);
         }
 
@@ -91,10 +95,10 @@ class AdhControlCenterService
                     ? "{$translationBacklog} İHA haberi EN/KU çeviri tamamlanmasını bekliyor."
                     : "{$translationBacklog} İHA haberi EN/KU çeviri bekliyor; Google Translation API key eksik.",
                 'meta' => 'Çeviri',
-                'url' => (! $translationCredentialsReady && $isOps)
+                'url' => (! $translationCredentialsReady && $isSystem)
                     ? IntegrationSettings::getUrl(panel: 'admin')
                     : IhaHealth::getUrl(panel: 'admin'),
-                'action_label' => (! $translationCredentialsReady && $isOps) ? 'Çeviri Ayarları' : 'Çeviriyi Yönet',
+                'action_label' => (! $translationCredentialsReady && $isSystem) ? 'Çeviri Ayarları' : 'Çeviriyi Yönet',
             ]);
         }
 
@@ -107,10 +111,10 @@ class AdhControlCenterService
                 'title' => 'Son senkron hata verdi',
                 'body' => AdminSafeText::limit($failureMessage, 140),
                 'meta' => optional($lastFailedSync->completed_at)->diffForHumans() ?? 'Senkron',
-                'url' => ($isConfigurationFailure && $isOps)
+                'url' => ($isConfigurationFailure && $isSystem)
                     ? IntegrationSettings::getUrl(panel: 'admin')
                     : ($isOps ? IhaSyncLogResource::getUrl(panel: 'admin') : IhaHealth::getUrl(panel: 'admin')),
-                'action_label' => ($isConfigurationFailure && $isOps) ? 'Entegrasyon Ayarları' : 'Logları Aç',
+                'action_label' => ($isConfigurationFailure && $isSystem) ? 'Entegrasyon Ayarları' : 'Logları Aç',
             ]);
         }
 
@@ -125,7 +129,7 @@ class AdhControlCenterService
             ]);
         }
 
-        if ($isOps && ! $this->instagramService->configurationStatus()['configured']) {
+        if ($isSystem && ! $this->instagramService->configurationStatus()['configured']) {
             $attention->push([
                 'tone' => 'neutral',
                 'title' => 'Instagram otomasyonu kapalı',
@@ -223,6 +227,13 @@ class AdhControlCenterService
                     'value' => array_key_exists('backup:run', app(\Illuminate\Contracts\Console\Kernel::class)->all()) ? 'Komut Hazır' : 'Hosting Katmanı',
                     'meta' => 'Yedek akışına bakış',
                     'tone' => 'neutral',
+                ],
+                [
+                    'label' => 'Son kritik işlem',
+                    'value' => $latestAudit['value'],
+                    'meta' => $latestAudit['meta'],
+                    'tone' => $latestAudit['tone'],
+                    'url' => AdminOperationAuditResource::getUrl(panel: 'admin'),
                 ],
             ] : [],
         ];
@@ -586,6 +597,33 @@ class AdhControlCenterService
         }
 
         return (int) DB::table('failed_jobs')->count();
+    }
+
+    private function latestOperationAudit(): array
+    {
+        if (! Schema::hasTable('admin_operation_audits')) {
+            return [
+                'value' => 'Kurulum bekliyor',
+                'meta' => 'Audit migration henüz çalışmamış',
+                'tone' => 'warning',
+            ];
+        }
+
+        $audit = AdminOperationAudit::query()->latest('created_at')->first();
+
+        if (! $audit) {
+            return [
+                'value' => 'Kayıt yok',
+                'meta' => 'Riskli aksiyon çalışınca burada görünür',
+                'tone' => 'neutral',
+            ];
+        }
+
+        return [
+            'value' => $audit->action,
+            'meta' => trim(($audit->user?->email ?? 'Sistem').' / '.$audit->created_at?->diffForHumans()),
+            'tone' => $audit->status === 'failed' ? 'danger' : ($audit->status === 'blocked' ? 'warning' : 'success'),
+        ];
     }
 
     private function countQueuedTranslationJobs(): int

@@ -1,6 +1,6 @@
 @php
     $locale = app()->getLocale();
-    $title = data_get($settings, "title_override.$locale") ?: __('Editoryal Manşet');
+    $title = data_get($settings, "title_override.$locale") ?: __('Günün Manşeti');
     $subtitle = data_get($settings, "subtitle_override.$locale");
     $heroStory = $heroMain ? \App\Support\NewsPresenter::present($heroMain) : null;
     $sideStories = $heroSide->take(5)->values();
@@ -15,7 +15,7 @@
     <section class="mb-1 border-b border-adh-red/20 pb-1 dark:border-red-400/20 md:mb-3 md:border-b-2 md:border-adh-text md:pb-3 md:dark:border-gray-700" aria-label="{{ __('Manşet Haberleri') }}" data-testid="editorial-hero-section">
         <div class="mb-2 flex flex-col gap-1.5 border-b border-adh-border/80 pb-2 dark:border-gray-700 md:mb-4 md:flex-row md:items-end md:justify-between md:gap-2 md:pb-3">
             <div>
-                <p class="text-[10px] font-bold uppercase tracking-[0.28em] text-adh-red">{{ __('Bugünün Editör Seçimi') }}</p>
+                <p class="text-[10px] font-bold uppercase tracking-[0.28em] text-adh-red">{{ __('Bugünün Öne Çıkanı') }}</p>
                 <h2 class="mt-1 font-serif text-[1.55rem] font-bold leading-tight text-adh-text dark:text-gray-100 md:text-3xl">
                     {{ $title }}
                 </h2>
@@ -26,7 +26,7 @@
 
             <div class="hidden items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-adh-gray dark:text-gray-400 md:flex">
                 <span class="h-px w-10 bg-adh-red/50" aria-hidden="true"></span>
-                <span>{{ __('Redaksiyon Vitrini') }}</span>
+                <span>{{ __('Güvenilir Haber Akışı') }}</span>
             </div>
         </div>
 
@@ -86,9 +86,9 @@
                         <div class="border-b border-adh-border px-3.5 py-3 dark:border-gray-700 md:px-4">
                             <div class="flex items-center justify-between gap-3">
                                 <div>
-                                    <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-adh-red">{{ __('Gündem Masası') }}</p>
+                                    <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-adh-red">{{ __('Son Gelişmeler') }}</p>
                                     <h3 class="mt-0.5 font-serif text-lg font-bold leading-tight text-adh-text dark:text-gray-100">
-                                        {{ __('Hızlı Haber Akışı') }}
+                                        {{ __('Haber Akışı') }}
                                     </h3>
                                 </div>
                                 <span class="rounded-full border border-adh-red/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-adh-red dark:border-red-400/25 dark:text-red-300">

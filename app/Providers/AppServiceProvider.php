@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
@@ -40,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Schema::defaultStringLength(191);
+
         Translatable::fallback('tr', true);
 
         if ($this->app->environment('production')) {
@@ -128,7 +131,9 @@ class AppServiceProvider extends ServiceProvider
                             NewsArticle::published()
                                 ->with('category')
                                 ->whereNotIn('id', $breaking->pluck('id')->toArray())
-                                ->orderByRaw('editorial_score DESC, published_at DESC')
+                                ->orderByDesc('is_breaking')
+                                ->latest('published_at')
+                                ->orderByDesc('editorial_score')
                                 ->take($limit - $breaking->count())
                                 ->get()
                         )

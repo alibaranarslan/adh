@@ -333,6 +333,9 @@
                                 <p class="admin-kpi__label">{{ $card['label'] }}</p>
                                 <p class="admin-kpi__value">{{ $card['value'] }}</p>
                                 <p class="admin-kpi__meta">{{ $card['meta'] }}</p>
+                                @if (! empty($card['url']))
+                                    <a href="{{ $card['url'] }}" class="admin-link">Kayıtları aç</a>
+                                @endif
                             </article>
                         @endforeach
                     </div>

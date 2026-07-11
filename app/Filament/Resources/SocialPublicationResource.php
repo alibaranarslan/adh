@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SocialPublicationResource\Pages;
 use App\Models\SocialPublication;
 use App\Services\SocialPublicationService;
+use App\Support\AdminOperationAuditor;
 use App\Support\AdminPrivileges;
 use App\Support\AdminSafeText;
 use Filament\Forms\Components\DatePicker;
@@ -170,6 +171,14 @@ class SocialPublicationResource extends Resource
                     ->action(function (SocialPublication $record): void {
                         app(SocialPublicationService::class)->retry($record);
 
+                        AdminOperationAuditor::record(
+                            'instagram.publication_retry',
+                            $record,
+                            ['article_id' => $record->news_article_id ?? $record->article_id],
+                            'simulated',
+                            'Instagram paylaşımı tekrar kuyruğa alındı'
+                        );
+
                         Notification::make()
                             ->success()
                             ->title('Instagram paylaşımı yeniden kuyruğa alındı')
@@ -186,7 +195,7 @@ class SocialPublicationResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return AdminPrivileges::canManageSystemSettings(auth()->user());
+        return AdminPrivileges::canManageOperations(auth()->user());
     }
 
     public static function canCreate(): bool

@@ -7,6 +7,7 @@ use App\Models\IhaSyncLog;
 use App\Models\Setting;
 use App\Services\IhaSyncTriggerService;
 use App\Services\IhaTranslationRequeueService;
+use App\Support\AdminOperationAuditor;
 use App\Support\AdminPrivileges;
 use App\Support\AdminSafeText;
 use App\Support\TranslationSettings;
@@ -17,7 +18,8 @@ use Illuminate\Support\Facades\Cache;
 
 class IhaHealth extends Page
 {
-    private const EFFECTIVE_SYNC_INTERVAL_MINUTES = 15;
+    private const DEFAULT_SYNC_INTERVAL_MINUTES = 10;
+    private const CRITICAL_FRESHNESS_MINUTES = 60;
 
     protected static ?string $navigationIcon = 'heroicon-o-signal';
     protected static ?string $navigationGroup = 'Operasyon';
@@ -28,23 +30,34 @@ class IhaHealth extends Page
 
     public static function canAccess(): bool
     {
-        return AdminPrivileges::canManageSystemSettings(auth()->user());
+        return AdminPrivileges::canManageOperations(auth()->user());
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('manual_sync')
-                ->label('Senkronu Başlat')
+                ->label('Test Senkronu Başlat')
                 ->icon('heroicon-o-arrow-path')
                 ->color('primary')
-                ->modalHeading('İHA senkronunu başlat')
-                ->modalDescription('Bu aksiyon mevcut iha:sync akışını kuyruğa alır. Uzak servis testi yapmaz; sonuçlar senkron kayıtları üzerinden izlenir.')
-                ->modalSubmitActionLabel('Senkronu Başlat')
+                ->modalHeading('İHA test senkronunu başlat')
+                ->modalDescription('Bu aksiyon sınırlı bir İHA senkronunu doğrudan çalıştırır. Kimlik, IP yetkisi, XML yanıtı, görsel çekimi ve kayıt davranışı aynı ekrandan izlenebilir.')
+                ->modalSubmitActionLabel('Testi Başlat')
                 ->requiresConfirmation()
                 ->action(function (): void {
-                    $result = app(IhaSyncTriggerService::class)->triggerQueued();
+                    $result = app(IhaSyncTriggerService::class)->triggerInlineTest();
                     $this->flushHealthCache();
+
+                    AdminOperationAuditor::record(
+                        'iha.manual_test_sync',
+                        null,
+                        [
+                            'status' => $result['status'] ?? 'unknown',
+                            'body' => $result['body'] ?? null,
+                        ],
+                        $result['status'] === 'failed' ? 'failed' : 'simulated',
+                        $result['title'] ?? 'İHA test senkronu'
+                    );
 
                     $notification = Notification::make()
                         ->title($result['title'])
@@ -69,6 +82,14 @@ class IhaHealth extends Page
                 ->requiresConfirmation()
                 ->action(function (): void {
                     if (! TranslationSettings::ready()) {
+                        AdminOperationAuditor::record(
+                            'iha.translation_requeue_blocked',
+                            null,
+                            ['reason' => 'missing_google_translation_api_key'],
+                            'blocked',
+                            'Google Translation API key eksik olduğu için çeviri kuyruğu başlatılmadı'
+                        );
+
                         Notification::make()
                             ->danger()
                             ->title('Google Translation API key eksik')
@@ -83,6 +104,17 @@ class IhaHealth extends Page
                     $skippedDuplicates = $result['skipped_duplicates'];
 
                     $this->flushHealthCache();
+
+                    AdminOperationAuditor::record(
+                        'iha.translation_requeue',
+                        null,
+                        [
+                            'queued' => $queued,
+                            'skipped_duplicates' => $skippedDuplicates,
+                        ],
+                        $queued > 0 ? 'success' : 'simulated',
+                        $queued > 0 ? "{$queued} çeviri işi kuyruğa alındı" : 'Çeviri kuyruğu güncel'
+                    );
 
                     Notification::make()
                         ->title($queued > 0 ? 'Çeviri süreci başlatıldı' : 'Çeviri kuyruğu güncel')
@@ -119,7 +151,14 @@ class IhaHealth extends Page
             ->latest('completed_at')
             ->first();
 
+        $effectiveInterval = max(
+            self::DEFAULT_SYNC_INTERVAL_MINUTES,
+            (int) config('services.iha.sync_interval', self::DEFAULT_SYNC_INTERVAL_MINUTES)
+        );
         $freshnessLagMinutes = $lastSuccessfulSync?->completed_at?->diffInMinutes(now());
+        $runningAgeMinutes = $latestSync?->status === 'running'
+            ? $latestSync->started_at?->diffInMinutes(now())
+            : null;
         $translationBacklog = Cache::remember(
             'iha.health.translation_backlog',
             now()->addMinutes(5),
@@ -135,18 +174,14 @@ class IhaHealth extends Page
 
         return [
             'stats' => [
-                'effective_interval' => self::EFFECTIVE_SYNC_INTERVAL_MINUTES . ' dakika',
-                'schedule_note' => 'Operasyonel kural sabittir. İHA senkronu cron üzerinden her 15 dakikada bir çalışır.',
+                'effective_interval' => $effectiveInterval . ' dakika',
+                'schedule_note' => 'Operasyonel hedef: Turhost cron her dakika scheduler çalıştırır, İHA senkronu ise 10 dakikada bir inline koşar.',
                 'last_successful_sync' => $lastSuccessfulSync,
                 'latest_sync' => $latestSync,
                 'latest_sync_label' => $this->statusLabel($latestSync?->status),
                 'freshness_lag_minutes' => $freshnessLagMinutes,
-                'freshness_state' => match (true) {
-                    $freshnessLagMinutes === null => 'unknown',
-                    $freshnessLagMinutes <= self::EFFECTIVE_SYNC_INTERVAL_MINUTES * 2 => 'healthy',
-                    $freshnessLagMinutes <= self::EFFECTIVE_SYNC_INTERVAL_MINUTES * 4 => 'warning',
-                    default => 'critical',
-                },
+                'running_age_minutes' => $runningAgeMinutes,
+                'freshness_state' => $this->freshnessState($freshnessLagMinutes),
                 'summary' => [
                     'fetched' => (int) $rollingWindow->sum('articles_fetched'),
                     'created' => (int) $rollingWindow->sum('articles_created'),
@@ -176,6 +211,16 @@ class IhaHealth extends Page
         ];
     }
 
+    private function freshnessState(?int $freshnessLagMinutes): string
+    {
+        return match (true) {
+            $freshnessLagMinutes === null => 'unknown',
+            $freshnessLagMinutes <= 15 => 'healthy',
+            $freshnessLagMinutes <= self::CRITICAL_FRESHNESS_MINUTES => 'warning',
+            default => 'critical',
+        };
+    }
+
     private function countTranslationBacklog(): int
     {
         return app(IhaTranslationRequeueService::class)->countBacklog();
@@ -201,7 +246,7 @@ class IhaHealth extends Page
         }
 
         if ($lastFailedSync !== null) {
-            return 'Son başarısız senkron kaydı görünüyor. Hata özeti okunup ardından manuel senkron ile kontrollü yeniden deneme yapılabilir.';
+            return 'Son başarısız senkron kaydı görünüyor. Hata özeti okunup ardından test senkronu ile kontrollü yeniden deneme yapılabilir.';
         }
 
         return 'Şu anda açık bir yeniden deneme ihtiyacı görünmüyor.';
@@ -239,7 +284,7 @@ class IhaHealth extends Page
         return [
             'ready' => false,
             'source' => 'Eksik',
-            'note' => 'İHA senkronu için user code, kullanıcı adı ve şifre tamamlanmalıdır.',
+            'note' => 'İHA senkronu için kullanıcı kodu, kullanıcı adı ve şifre tamamlanmalıdır.',
         ];
     }
 

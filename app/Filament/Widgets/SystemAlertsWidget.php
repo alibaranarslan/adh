@@ -8,9 +8,10 @@ use Filament\Widgets\Widget;
 
 class SystemAlertsWidget extends Widget
 {
-    private const EXPECTED_SYNC_INTERVAL_MINUTES = 15;
-    private const STALE_SUCCESS_MINUTES = 60;
-    private const STALE_RUNNING_MINUTES = 120;
+    private const EXPECTED_SYNC_INTERVAL_MINUTES = 10;
+    private const STALE_SUCCESS_MINUTES = 30;
+    private const CRITICAL_SUCCESS_MINUTES = 60;
+    private const STALE_RUNNING_MINUTES = 20;
 
     protected static ?int $sort = 7;
     protected static string $view = 'filament.widgets.system-alerts';
@@ -36,8 +37,8 @@ class SystemAlertsWidget extends Widget
             return [[
                 'state' => 'no_log',
                 'tone' => 'warning',
-                'title' => 'IHA sync kaniti yok',
-                'message' => 'Henuz IHA sync logu olusmadi. Cron, queue worker ve ilk evidence runbook kontrol edilmeli.',
+                'title' => 'İHA sync kanıtı yok',
+                'message' => 'Henüz İHA sync logu oluşmadı. Cron, queue worker ve ilk evidence runbook kontrol edilmeli.',
             ]];
         }
 
@@ -45,14 +46,15 @@ class SystemAlertsWidget extends Widget
 
         if ($lastSync->status === 'running') {
             $runningAgeMinutes = $lastSync->started_at?->diffInMinutes(now()) ?? 0;
+            $isStale = $runningAgeMinutes > self::STALE_RUNNING_MINUTES;
 
             $alerts[] = [
-                'state' => $runningAgeMinutes > self::STALE_RUNNING_MINUTES ? 'running_stale' : 'running_young',
-                'tone' => $runningAgeMinutes > self::STALE_RUNNING_MINUTES ? 'danger' : 'info',
-                'title' => $runningAgeMinutes > self::STALE_RUNNING_MINUTES ? 'IHA sync running kaydi bayat' : 'IHA sync calisiyor',
-                'message' => $runningAgeMinutes > self::STALE_RUNNING_MINUTES
-                    ? "Son running kaydi {$runningAgeMinutes} dakika once baslamis. Queue worker veya yarim kalmis job kontrol edilmeli."
-                    : "Son running kaydi {$runningAgeMinutes} dakika once basladi. Worker tamamlanma logu bekleniyor.",
+                'state' => $isStale ? 'running_stale' : 'running_young',
+                'tone' => $isStale ? 'danger' : 'info',
+                'title' => $isStale ? 'İHA sync running kaydı bayat' : 'İHA sync çalışıyor',
+                'message' => $isStale
+                    ? "Son running kaydı {$runningAgeMinutes} dakika önce başlamış. Queue worker veya yarım kalmış job kontrol edilmeli."
+                    : "Son running kaydı {$runningAgeMinutes} dakika önce başladı. Worker tamamlanma logu bekleniyor.",
             ];
         }
 
@@ -60,10 +62,10 @@ class SystemAlertsWidget extends Widget
             $alerts[] = [
                 'state' => 'last_failed',
                 'tone' => 'danger',
-                'title' => 'Son IHA sync basarisiz',
+                'title' => 'Son İHA sync başarısız',
                 'message' => $lastSync->error_message
                     ? 'Hata: '.AdminSafeText::redact($lastSync->error_message)
-                    : 'Son sync failed durumunda. IHA health ve log detaylari kontrol edilmeli.',
+                    : 'Son sync failed durumunda. İHA health ve log detayları kontrol edilmeli.',
             ];
         }
 
@@ -71,8 +73,8 @@ class SystemAlertsWidget extends Widget
             $alerts[] = [
                 'state' => 'no_success',
                 'tone' => 'warning',
-                'title' => 'Basarili IHA sync yok',
-                'message' => 'Log var ancak henuz success kaydi yok. Worker, credential ve feed yaniti kontrol edilmeli.',
+                'title' => 'Başarılı İHA sync yok',
+                'message' => 'Log var ancak henüz success kaydı yok. Worker, credential ve feed yanıtı kontrol edilmeli.',
             ];
 
             return $alerts;
@@ -80,12 +82,19 @@ class SystemAlertsWidget extends Widget
 
         $successLagMinutes = $lastSuccessfulSync->completed_at?->diffInMinutes(now());
 
-        if ($successLagMinutes !== null && $successLagMinutes > self::STALE_SUCCESS_MINUTES) {
+        if ($successLagMinutes !== null && $successLagMinutes > self::CRITICAL_SUCCESS_MINUTES) {
+            $alerts[] = [
+                'state' => 'last_success_critical',
+                'tone' => 'danger',
+                'title' => 'İHA akışı kritik derecede bayat',
+                'message' => "Son başarılı sync {$successLagMinutes} dakika önce tamamlandı. 60 dakikayı aşan gecikme canlı haber akışı riski üretir.",
+            ];
+        } elseif ($successLagMinutes !== null && $successLagMinutes > self::STALE_SUCCESS_MINUTES) {
             $alerts[] = [
                 'state' => 'last_success_lag',
                 'tone' => 'warning',
-                'title' => 'Son basarili IHA sync gecikmis',
-                'message' => "Son basarili sync {$successLagMinutes} dakika once tamamlandi. Beklenen aralik ".self::EXPECTED_SYNC_INTERVAL_MINUTES.' dakikadir.',
+                'title' => 'Son başarılı İHA sync gecikmiş',
+                'message' => "Son başarılı sync {$successLagMinutes} dakika önce tamamlandı. Beklenen aralık ".self::EXPECTED_SYNC_INTERVAL_MINUTES.' dakikadır.',
             ];
         }
 

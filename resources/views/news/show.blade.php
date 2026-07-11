@@ -162,6 +162,33 @@
             </figure>
         @endif
 
+        <div class="mx-auto mt-4 max-w-4xl px-4 md:mt-6 md:px-0">
+            <aside class="rounded-[var(--adh-radius)] border border-adh-border bg-slate-50/85 p-4 text-sm leading-6 text-adh-text shadow-sm dark:border-gray-700 dark:bg-adh-navy/35 dark:text-gray-200">
+                <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-adh-red">{{ __('Kaynak ve Şeffaflık') }}</p>
+                        <p class="mt-2">
+                            @if ($article->source === 'iha')
+                                {{ __('Bu haber İhlas Haber Ajansı akışından alınmış, ADH yayın sistemi içinde kategori, şehir ve görsel uygunluğu kontrol edilerek yayına hazırlanmıştır.') }}
+                            @else
+                                {{ __('Bu haber ADH editörleri tarafından hazırlanmış veya yerel kaynaklardan doğrulanarak yayına alınmıştır.') }}
+                            @endif
+                        </p>
+                    </div>
+                    <div class="grid min-w-[13rem] gap-2 text-xs text-adh-gray dark:text-gray-300">
+                        <span class="inline-flex items-center justify-between gap-3 rounded-full bg-white px-3 py-1.5 dark:bg-adh-blue/70">
+                            <strong class="text-adh-text dark:text-white">{{ __('Kaynak') }}</strong>
+                            <span>{{ strtoupper((string) $article->source) }}</span>
+                        </span>
+                        <span class="inline-flex items-center justify-between gap-3 rounded-full bg-white px-3 py-1.5 dark:bg-adh-blue/70">
+                            <strong class="text-adh-text dark:text-white">{{ __('Yayın') }}</strong>
+                            <time datetime="{{ $article->published_at?->toIso8601String() }}">{{ $article->published_at?->locale(app()->getLocale())->isoFormat('D MMM YYYY, HH:mm') }}</time>
+                        </span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
         <x-ad-slot position="article-top" class="mx-auto mt-4 max-w-3xl px-4 md:mt-6 md:px-0" />
 
         <div class="px-4 py-6 md:px-8 md:py-10">

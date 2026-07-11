@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\Schema;
 
 class AdminPrivileges
 {
-    private const ADMIN_PANEL_ROLES = ['super_admin', 'editor', 'writer'];
+    private const ADMIN_PANEL_ROLES = ['super_admin', 'client_manager', 'editor', 'writer'];
 
-    private const CONFIGURATION_ROLES = ['super_admin', 'editor'];
+    private const CONFIGURATION_ROLES = ['super_admin', 'client_manager', 'editor'];
+
+    private const OPERATION_ROLES = ['super_admin', 'client_manager'];
 
     public static function canAccessConfiguration(?User $user): bool
     {
@@ -35,7 +37,7 @@ class AdminPrivileges
             return self::isBootstrapAdmin($user);
         }
 
-        return self::userHasRole($user, 'super_admin');
+        return self::userHasAnyRole($user, self::OPERATION_ROLES);
     }
 
     public static function canAccessAdminPanel(?User $user): bool
@@ -53,7 +55,28 @@ class AdminPrivileges
 
     public static function canManageSystemSettings(?User $user): bool
     {
-        return self::canPublishConfiguration($user);
+        if (! (bool) $user?->is_active) {
+            return false;
+        }
+
+        if (! self::rolesAreConfigured()) {
+            return self::isBootstrapAdmin($user);
+        }
+
+        return self::userHasRole($user, 'super_admin');
+    }
+
+    public static function canManageOperations(?User $user): bool
+    {
+        if (! (bool) $user?->is_active) {
+            return false;
+        }
+
+        if (! self::rolesAreConfigured()) {
+            return self::isBootstrapAdmin($user);
+        }
+
+        return self::userHasAnyRole($user, self::OPERATION_ROLES);
     }
 
     public static function hasPermission(?User $user, string $permission): bool

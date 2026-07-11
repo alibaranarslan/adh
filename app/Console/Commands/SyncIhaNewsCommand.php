@@ -10,6 +10,8 @@ use Throwable;
 
 class SyncIhaNewsCommand extends Command
 {
+    private const DEFAULT_STALE_RUNNING_MINUTES = 20;
+
     protected $signature = 'iha:sync
         {--city= : Belirli bir sehir kodu ile senkronize et}
         {--force : Calisan sync kontrolunu atla}
@@ -22,14 +24,18 @@ class SyncIhaNewsCommand extends Command
     {
         $cityCode = $this->option('city') ? (int) $this->option('city') : null;
         $limit = $this->option('limit') !== null ? max(0, (int) $this->option('limit')) : null;
+        $staleRunningMinutes = max(
+            10,
+            (int) config('services.iha.stale_running_minutes', self::DEFAULT_STALE_RUNNING_MINUTES)
+        );
 
         IhaSyncLog::query()
             ->where('status', 'running')
-            ->where('started_at', '<', now()->subHours(2))
+            ->where('started_at', '<', now()->subMinutes($staleRunningMinutes))
             ->update([
                 'status' => 'failed',
                 'completed_at' => now(),
-                'error_message' => 'Zaman asimi: onceki IHA sync 2 saati asti ve yarim kalmis gorunuyor. Aktif runtime baglami, hedef DB ve son sync loglarini kontrol edin.',
+                'error_message' => "Zaman asimi: onceki IHA sync {$staleRunningMinutes} dakikayi asti ve yarim kalmis gorunuyor. Queue worker, hedef DB ve son sync loglarini kontrol edin.",
             ]);
 
         if (! $this->option('force')) {

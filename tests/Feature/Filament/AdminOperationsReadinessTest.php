@@ -104,7 +104,7 @@ class AdminOperationsReadinessTest extends TestCase
         $alerts = app(SystemAlertsWidget::class)->getViewData()['alerts'];
 
         $this->assertContains('last_failed', array_column($alerts, 'state'));
-        $this->assertContains('last_success_lag', array_column($alerts, 'state'));
+        $this->assertContains('last_success_critical', array_column($alerts, 'state'));
     }
 
     public function test_general_settings_save_persists_and_remounts_contact_recipient(): void

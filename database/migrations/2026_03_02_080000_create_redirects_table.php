@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('redirects', function (Blueprint $table) {
             $table->id();
-            $table->string('old_slug')->index();
+            $table->string('old_slug', 150)->index();
             $table->string('new_slug');
-            $table->string('model_type');
+            $table->string('model_type', 80);
             $table->unsignedBigInteger('model_id');
             $table->integer('status_code')->default(301);
             $table->timestamps();

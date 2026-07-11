@@ -8,6 +8,46 @@ use Illuminate\Support\Facades\Artisan;
 
 class IhaSyncTriggerService
 {
+    public function triggerInlineTest(int $limit = 5): array
+    {
+        $previousLogId = IhaSyncLog::query()->max('id');
+
+        $exitCode = Artisan::call('iha:sync', [
+            '--inline' => true,
+            '--force' => true,
+            '--limit' => $limit,
+        ]);
+        $output = trim(Artisan::output());
+
+        $latestLog = IhaSyncLog::query()->latest('id')->first();
+        $createdNewLog = $latestLog !== null && $latestLog->id !== $previousLogId;
+
+        if (! $createdNewLog) {
+            return [
+                'status' => 'skipped',
+                'title' => 'İHA test senkronu başlatılamadı',
+                'body' => $this->buildSkippedBody($latestLog, $output),
+                'log_id' => $latestLog?->id,
+                'exit_code' => $exitCode,
+                'output' => $output,
+            ];
+        }
+
+        return [
+            'status' => $latestLog->status,
+            'title' => match ($latestLog->status) {
+                'success' => 'İHA test senkronu tamamlandı',
+                'partial' => 'İHA test senkronu kısmi tamamlandı',
+                'failed' => 'İHA test senkronu başarısız oldu',
+                default => 'İHA test senkronu çalıştı',
+            },
+            'body' => $this->buildBody($latestLog, $output),
+            'log_id' => $latestLog->id,
+            'exit_code' => $exitCode,
+            'output' => $output,
+        ];
+    }
+
     public function triggerQueued(): array
     {
         $previousLogId = IhaSyncLog::query()->max('id');

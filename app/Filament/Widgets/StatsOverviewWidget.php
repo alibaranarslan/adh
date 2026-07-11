@@ -16,11 +16,12 @@ class StatsOverviewWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        $todayArticles  = NewsArticle::whereDate('created_at', today())->count();
-        $weekArticles   = NewsArticle::whereBetween('published_at', [now()->startOfWeek(), now()->endOfWeek()])
-            ->where('status', 'published')->count();
-        $totalArticles  = NewsArticle::count();
-        $todayViews     = AnalyticsPageView::whereDate('viewed_at', today())->count();
+        $todayArticles = NewsArticle::whereDate('created_at', today())->count();
+        $weekArticles = NewsArticle::whereBetween('published_at', [now()->startOfWeek(), now()->endOfWeek()])
+            ->where('status', 'published')
+            ->count();
+        $totalArticles = NewsArticle::count();
+        $todayViews = AnalyticsPageView::whereDate('viewed_at', today())->count();
         $lastSync = IhaSyncLog::query()
             ->where('status', 'success')
             ->latest('completed_at')
@@ -34,7 +35,7 @@ class StatsOverviewWidget extends BaseWidget
                 ->color('primary'),
 
             Stat::make('Bu Hafta Yayınlanan', $weekArticles)
-                ->description(now()->startOfWeek()->format('d.m') . ' – ' . now()->endOfWeek()->format('d.m'))
+                ->description(now()->startOfWeek()->format('d.m') . ' - ' . now()->endOfWeek()->format('d.m'))
                 ->icon('heroicon-o-calendar-days')
                 ->color('success'),
 
@@ -49,7 +50,7 @@ class StatsOverviewWidget extends BaseWidget
                 ->color('warning'),
 
             Stat::make(
-                'IHA Son Sync',
+                'İHA Son Sync',
                 $lastSync
                     ? (($lastSync->status === 'success' && $lastSync->completed_at)
                         ? $lastSync->completed_at->diffForHumans()

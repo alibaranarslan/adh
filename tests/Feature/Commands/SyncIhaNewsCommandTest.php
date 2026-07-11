@@ -76,8 +76,8 @@ class SyncIhaNewsCommandTest extends TestCase
 
         IhaSyncLog::query()->create([
             'status' => 'running',
-            'started_at' => now()->subHours(3),
-            'created_at' => now()->subHours(3),
+            'started_at' => now()->subMinutes(25),
+            'created_at' => now()->subMinutes(25),
         ]);
 
         Artisan::call('iha:sync');
@@ -85,22 +85,19 @@ class SyncIhaNewsCommandTest extends TestCase
         $staleLog = IhaSyncLog::query()->oldest('id')->firstOrFail();
 
         $this->assertSame('failed', $staleLog->status);
-        $this->assertSame(
-            'Zaman asimi: onceki IHA sync 2 saati asti ve yarim kalmis gorunuyor. Aktif runtime baglami, hedef DB ve son sync loglarini kontrol edin.',
-            $staleLog->error_message
-        );
+        $this->assertStringContainsString('20 dakikayi asti', $staleLog->error_message);
         Queue::assertPushedOn('default', SyncIhaNewsJob::class);
     }
 
-    public function test_command_skips_non_stale_running_log_older_than_thirty_minutes(): void
+    public function test_command_skips_non_stale_running_log_within_stale_window(): void
     {
         config()->set('queue.default', 'database');
         Queue::fake();
 
         IhaSyncLog::query()->create([
             'status' => 'running',
-            'started_at' => now()->subMinutes(90),
-            'created_at' => now()->subMinutes(90),
+            'started_at' => now()->subMinutes(10),
+            'created_at' => now()->subMinutes(10),
         ]);
 
         $exitCode = Artisan::call('iha:sync');

@@ -2,7 +2,7 @@
 
 return [
     'attention' => [
-        'iha_stale_minutes' => 45,
+        'iha_stale_minutes' => 30,
         'translation_backlog_warning' => 3,
         'critical_draft_score' => 80,
         'featured_candidate_score' => 72,

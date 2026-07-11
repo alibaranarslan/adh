@@ -57,7 +57,7 @@
     }"
     x-show="visible"
     x-transition
-    class="fixed inset-x-3 bottom-3 z-[100] max-h-[32vh] overflow-y-auto rounded-2xl border border-white/10 bg-adh-navy p-2.5 text-white shadow-2xl md:inset-x-auto md:right-4 md:bottom-4 md:max-h-[70vh] md:max-w-sm md:p-3"
+    class="fixed inset-x-3 bottom-3 z-[100] max-h-[32vh] overflow-y-auto rounded-2xl border border-white/10 bg-adh-navy/96 p-2.5 text-white shadow-2xl backdrop-blur md:inset-x-auto md:right-4 md:bottom-4 md:max-h-[70vh] md:max-w-sm md:p-3"
     style="display: none;"
 >
     <div class="space-y-1.5">

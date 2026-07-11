@@ -4,6 +4,7 @@ namespace App\Filament\Resources\NewsArticleResource\Pages;
 
 use App\Filament\Resources\NewsArticleResource;
 use App\Models\NewsArticle;
+use App\Support\AdminOperationAuditor;
 use App\Support\AdminPrivileges;
 use Filament\Actions;
 use Filament\Notifications\Notification;
@@ -30,11 +31,20 @@ class ListNewsArticles extends ListRecords
                 ->modalSubmitActionLabel('Yeniden Hesapla')
                 ->action(function (): void {
                     Artisan::call('editorial:recalculate');
+                    $output = trim(Artisan::output());
+
+                    AdminOperationAuditor::record(
+                        'news.editorial_score_recalculate',
+                        null,
+                        ['output' => $output],
+                        'success',
+                        'Editoryal puanlar yeniden hesaplandı'
+                    );
 
                     Notification::make()
                         ->success()
                         ->title('Editoryal puanlar güncellendi')
-                        ->body(trim(Artisan::output()) ?: 'Yayınlanan haberler yeniden hesaplandı.')
+                        ->body($output ?: 'Yayınlanan haberler yeniden hesaplandı.')
                         ->send();
                 }),
         ];

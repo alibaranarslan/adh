@@ -6,7 +6,7 @@
 @endphp
 
 @if ($items->isNotEmpty())
-    <section class="rounded-[var(--adh-radius)] border border-adh-red/20 bg-gradient-to-b from-adh-red/[0.04] to-white px-3 py-3 dark:border-red-400/20 dark:from-red-400/10 dark:to-adh-blue/60 md:px-4" aria-label="{{ __('Son Dakika') }}">
+    <section id="son-dakika" class="scroll-mt-28 rounded-[var(--adh-radius)] border border-adh-red/20 bg-gradient-to-b from-adh-red/[0.04] to-white px-3 py-3 dark:border-red-400/20 dark:from-red-400/10 dark:to-adh-blue/60 md:px-4" aria-label="{{ __('Son Dakika') }}">
         <div class="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-adh-red md:hidden">
             <span class="h-px flex-1 bg-adh-red/25" aria-hidden="true"></span>
             <span>{{ __('Gündem akışının devamı') }}</span>

@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->string('group', 100);
-            $table->string('key', 255);
+            $table->string('group', 80);
+            $table->string('key', 150);
             $table->text('value')->nullable();
             $table->timestamps();
 

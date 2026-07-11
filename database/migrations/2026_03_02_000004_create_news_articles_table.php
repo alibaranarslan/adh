@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('iha_id', 50)->nullable()->unique();
             $table->json('title');
-            $table->string('slug', 500)->unique();
+            $table->string('slug', 191)->unique();
             $table->json('summary')->nullable();
             $table->json('content');
             $table->string('featured_image', 500)->nullable();

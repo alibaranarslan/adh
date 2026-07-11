@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\LayoutRevision;
 use App\Services\LayoutConfigService;
+use App\Support\AdminOperationAuditor;
 use App\Support\AdminPrivileges;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -390,6 +391,11 @@ class LayoutStudio extends Page
         app(LayoutConfigService::class)->storeDraftState($this->modules, $this->appearance, auth()->user());
         $this->refreshFromDraft(app(LayoutConfigService::class));
 
+        AdminOperationAuditor::record('layout.save_draft', null, [
+            'module_count' => count($this->modules),
+            'selected_module' => $this->selectedModuleKey,
+        ]);
+
         Notification::make()
             ->success()
             ->title('Taslak kaydedildi')
@@ -403,8 +409,12 @@ class LayoutStudio extends Page
             Notification::make()
                 ->warning()
                 ->title('Yayın yetkisi gerekli')
-                ->body('Canlıya alma işlemi yalnızca süper yönetici yetkisiyle yapılabilir.')
+                ->body('Canlıya alma işlemi yalnızca yetkili yönetici rolüyle yapılabilir.')
                 ->send();
+
+            AdminOperationAuditor::record('layout.publish_blocked', null, [
+                'reason' => 'missing_publish_authority',
+            ], 'blocked', 'Layout yayını yetki nedeniyle engellendi');
 
             return;
         }
@@ -418,6 +428,11 @@ class LayoutStudio extends Page
                 ->body(implode(' ', $readiness['errors']))
                 ->send();
 
+            AdminOperationAuditor::record('layout.publish_blocked', null, [
+                'reason' => 'readiness_errors',
+                'errors' => $readiness['errors'],
+            ], 'blocked', 'Layout yayını kalite kapısı nedeniyle engellendi');
+
             return;
         }
 
@@ -425,6 +440,11 @@ class LayoutStudio extends Page
         $service->storeDraftState($this->modules, $this->appearance, auth()->user());
         $revision = $service->publishDraft(auth()->user());
         $this->refreshFromDraft($service);
+
+        AdminOperationAuditor::record('layout.publish_draft', $revision, [
+            'revision_name' => $revision->name,
+            'warnings' => $readiness['warnings'],
+        ]);
 
         $body = 'Yeni düzen yayınlandı: '.$revision->name;
 
@@ -445,8 +465,12 @@ class LayoutStudio extends Page
             Notification::make()
                 ->warning()
                 ->title('Yayın yetkisi gerekli')
-                ->body('Geri alma işlemi yalnızca süper yönetici yetkisiyle yapılabilir.')
+                ->body('Geri alma işlemi yalnızca yetkili yönetici rolüyle yapılabilir.')
                 ->send();
+
+            AdminOperationAuditor::record('layout.restore_blocked', null, [
+                'reason' => 'missing_publish_authority',
+            ], 'blocked', 'Layout geri alma yetki nedeniyle engellendi');
 
             return;
         }
@@ -473,6 +497,10 @@ class LayoutStudio extends Page
         $service->restoreRevisionToDraft($revision, auth()->user());
         $this->refreshFromDraft($service);
         $this->restoreRevisionId = null;
+
+        AdminOperationAuditor::record('layout.restore_revision', $revision, [
+            'revision_name' => $revision->name,
+        ]);
 
         Notification::make()
             ->success()
