@@ -36,6 +36,44 @@ class IhaHealth extends Page
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('queue_sync')
+                ->label('Senkronu Kuyruğa Al')
+                ->icon('heroicon-o-cloud-arrow-down')
+                ->color('success')
+                ->modalHeading('İHA senkronunu kuyruğa al')
+                ->modalDescription('Bu aksiyon production akışıyla aynı şekilde iha:sync komutunu queue işine dönüştürür. Sonuç için senkron kayıtları ve queue worker durumu izlenmelidir.')
+                ->modalSubmitActionLabel('Kuyruğa Al')
+                ->requiresConfirmation()
+                ->action(function (): void {
+                    $result = app(IhaSyncTriggerService::class)->triggerQueued();
+                    $this->flushHealthCache();
+
+                    AdminOperationAuditor::record(
+                        'iha.queued_sync',
+                        null,
+                        [
+                            'status' => $result['status'] ?? 'unknown',
+                            'log_id' => $result['log_id'] ?? null,
+                            'exit_code' => $result['exit_code'] ?? null,
+                            'body' => $result['body'] ?? null,
+                        ],
+                        $result['status'] === 'failed' ? 'failed' : ($result['status'] === 'skipped' ? 'skipped' : 'success'),
+                        $result['title'] ?? 'İHA senkronu kuyruğa alındı'
+                    );
+
+                    $notification = Notification::make()
+                        ->title($result['title'])
+                        ->body($result['body']);
+
+                    match ($result['status']) {
+                        'running', 'success' => $notification->success(),
+                        'partial', 'skipped' => $notification->warning(),
+                        'failed' => $notification->danger(),
+                        default => $notification->info(),
+                    };
+
+                    $notification->send();
+                }),
             Action::make('manual_sync')
                 ->label('Test Senkronu Başlat')
                 ->icon('heroicon-o-arrow-path')

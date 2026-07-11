@@ -8,8 +8,11 @@
     $layoutReadiness = $this->getLayoutReadiness();
     $previewDevice = $this->previewDevice;
     $previewFrameClass = $previewDevice === 'mobile'
-        ? 'mx-auto h-[720px] w-[390px] max-w-full'
-        : 'h-[720px] w-full';
+        ? 'mx-auto max-w-full'
+        : 'w-full';
+    $previewFrameStyle = $previewDevice === 'mobile'
+        ? 'height: 720px; width: 390px; max-width: 100%;'
+        : 'height: 720px; width: 100%;';
     $moduleCount = count($modules);
     $activeModuleCount = collect($modules)->where('is_active', true)->count();
     $selectedSettings = $selectedModule['settings'] ?? [];
@@ -368,7 +371,7 @@
                 </div>
 
                 <div class="studio-panel px-4 py-4">
-                    <div class="{{ $previewFrameClass }} studio-preview-frame">
+                    <div class="{{ $previewFrameClass }} studio-preview-frame" style="{{ $previewFrameStyle }}">
                         <iframe
                             src="{{ $previewUrls['tr'] ?? '#' }}"
                             title="Layout Studio canlı önizleme"

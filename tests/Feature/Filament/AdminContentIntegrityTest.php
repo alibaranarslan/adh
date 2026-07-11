@@ -276,6 +276,76 @@ class AdminContentIntegrityTest extends TestCase
             ->assertActionHidden('delete');
     }
 
+    public function test_iha_article_edit_save_does_not_mutate_source_content(): void
+    {
+        $admin = $this->admin();
+        $category = $this->category('gundem');
+        $ihaArticle = $this->article($category, [
+            'slug' => 'iha-edit-save-korumasi',
+            'source' => 'iha',
+            'iha_id' => 'IHA-EDIT-GUARD',
+            'title' => ['tr' => 'Orijinal İHA Başlığı'],
+            'summary' => ['tr' => 'Orijinal İHA özeti'],
+            'content' => ['tr' => 'Orijinal İHA ana metni.'],
+            'status' => 'published',
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(EditNewsArticle::class, ['record' => $ihaArticle->getKey()])
+            ->fillForm([
+                'title' => 'Değiştirilmeye Çalışılan Başlık',
+                'slug' => 'degistirilmeye-calisilan-baslik',
+                'summary' => 'Değiştirilmeye çalışılan özet',
+                'content' => 'Değiştirilmeye çalışılan içerik.',
+                'source' => 'manuel',
+                'category_id' => $category->id,
+                'status' => 'draft',
+                'images_data' => [],
+            ])
+            ->call('save');
+
+        $ihaArticle->refresh();
+
+        $this->assertSame('iha-edit-save-korumasi', $ihaArticle->slug);
+        $this->assertSame('iha', $ihaArticle->source);
+        $this->assertSame('published', $ihaArticle->status);
+        $this->assertSame('Orijinal İHA Başlığı', $ihaArticle->getTranslation('title', 'tr'));
+        $this->assertSame('Orijinal İHA ana metni.', $ihaArticle->getTranslation('content', 'tr'));
+    }
+
+    public function test_published_manual_news_created_in_admin_is_visible_on_public_detail(): void
+    {
+        $admin = $this->admin();
+        $category = $this->category('gundem');
+
+        $this->actingAs($admin);
+
+        Livewire::test(CreateNewsArticle::class)
+            ->fillForm([
+                'title' => 'Admin Public Etki Haberi',
+                'slug' => 'admin-public-etki-haberi',
+                'summary' => 'Admin panelden girilen haber özeti.',
+                'content' => 'Admin panelden girilen haberin ana metni public detay sayfasında görünmelidir.',
+                'source' => 'manuel',
+                'category_id' => $category->id,
+                'status' => 'published',
+                'published_at' => now(),
+                'images_data' => [],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $article = NewsArticle::query()->where('slug', 'admin-public-etki-haberi')->firstOrFail();
+
+        $this->assertSame('published', $article->status);
+
+        $this->get(route('news.show', ['slug' => $article->slug]))
+            ->assertOk()
+            ->assertSee('Admin Public Etki Haberi')
+            ->assertSee('Admin panelden girilen haberin ana metni public detay sayfasında görünmelidir.');
+    }
+
     public function test_iha_articles_cannot_be_deleted_or_force_deleted_by_resource_policy(): void
     {
         $admin = $this->admin();

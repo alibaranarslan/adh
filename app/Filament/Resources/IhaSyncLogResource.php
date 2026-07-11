@@ -6,6 +6,7 @@ use App\Filament\Pages\IhaHealth;
 use App\Filament\Resources\IhaSyncLogResource\Pages;
 use App\Models\IhaSyncLog;
 use App\Services\IhaSyncTriggerService;
+use App\Support\AdminOperationAuditor;
 use App\Support\AdminPrivileges;
 use App\Support\AdminSafeText;
 use Filament\Forms\Components\DatePicker;
@@ -148,6 +149,19 @@ class IhaSyncLogResource extends Resource
                     ->requiresConfirmation()
                     ->action(function (): void {
                         $result = app(IhaSyncTriggerService::class)->triggerQueued();
+
+                        AdminOperationAuditor::record(
+                            'iha.queued_sync',
+                            null,
+                            [
+                                'status' => $result['status'] ?? 'unknown',
+                                'log_id' => $result['log_id'] ?? null,
+                                'exit_code' => $result['exit_code'] ?? null,
+                                'body' => $result['body'] ?? null,
+                            ],
+                            $result['status'] === 'failed' ? 'failed' : ($result['status'] === 'skipped' ? 'skipped' : 'success'),
+                            $result['title'] ?? 'İHA senkronu kuyruğa alındı'
+                        );
 
                         $notification = Notification::make()
                             ->title($result['title'])

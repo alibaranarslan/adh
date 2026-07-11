@@ -310,7 +310,8 @@ class ContentOperationsAndLayoutTest extends TestCase
             ->assertOk()
             ->assertSee('Canlı Önizleme ve Yayın Hazırlığı')
             ->assertSee('Yayına hazır mı?')
-            ->assertSee('Mobil 390px');
+            ->assertSee('Mobil 390px')
+            ->assertSee('height: 720px; width: 100%;', false);
 
         Livewire::test(LayoutStudio::class)
             ->assertSet('previewDevice', 'desktop')
