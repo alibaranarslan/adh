@@ -87,4 +87,42 @@ class IhaHealthPageTest extends TestCase
             ->assertDontSee('secret-token')
             ->assertDontSee('username=ali');
     }
+
+    public function test_iha_health_surfaces_ip_authorization_wait_state(): void
+    {
+        $admin = User::query()->create([
+            'name' => 'Admin',
+            'email' => 'admin@admin.com',
+            'password' => 'secret-password',
+            'is_active' => true,
+        ]);
+
+        config([
+            'services.iha.user_code' => 'ENV-CODE',
+            'services.iha.username' => 'ENV-USER',
+            'services.iha.password' => 'ENV-PASS',
+        ]);
+
+        IhaSyncLog::query()->create([
+            'status' => 'success',
+            'started_at' => now()->subHours(2),
+            'completed_at' => now()->subHours(2),
+            'articles_fetched' => 10,
+        ]);
+
+        IhaSyncLog::query()->create([
+            'status' => 'failed',
+            'started_at' => now()->subMinutes(5),
+            'completed_at' => now()->subMinutes(4),
+            'error_message' => 'IHA kimlik bilgileri reddedildi. Entegrasyon ayarlarini ve IP yetkisini kontrol edin.',
+        ]);
+
+        $this->actingAs($admin)
+            ->get('/admin/iha-health')
+            ->assertOk()
+            ->assertSee('İHA yetkisi bekleniyor')
+            ->assertSee('İHA IP/abonelik yetkisi bekleniyor')
+            ->assertSee('Dış işlem bekleniyor')
+            ->assertSee('Yetki açılmadan otomatik cron veya manuel test senkronu yeni haber çekemez');
+    }
 }

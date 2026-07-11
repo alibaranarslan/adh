@@ -188,6 +188,7 @@ class IhaHealth extends Page
             ->where('status', 'failed')
             ->latest('completed_at')
             ->first();
+        $ihaAccessBlocked = $this->isIhaAccessAuthorizationFailure($lastFailedSync);
 
         $effectiveInterval = self::DEFAULT_SYNC_INTERVAL_MINUTES;
         $freshnessLagMinutes = $lastSuccessfulSync?->completed_at?->diffInMinutes(now());
@@ -213,7 +214,9 @@ class IhaHealth extends Page
                 'schedule_note' => "Operasyonel hedef: Turhost cron İHA senkronunu {$effectiveInterval} dakikada bir doğrudan çalıştırır; scheduler ve queue worker yardımcı/yedek akış olarak kalır.",
                 'last_successful_sync' => $lastSuccessfulSync,
                 'latest_sync' => $latestSync,
-                'latest_sync_label' => $this->statusLabel($latestSync?->status),
+                'latest_sync_label' => $ihaAccessBlocked && $latestSync?->status === 'failed'
+                    ? 'İHA yetkisi bekleniyor'
+                    : $this->statusLabel($latestSync?->status),
                 'freshness_lag_minutes' => $freshnessLagMinutes,
                 'running_age_minutes' => $runningAgeMinutes,
                 'freshness_state' => $this->freshnessState($freshnessLagMinutes),
@@ -230,6 +233,9 @@ class IhaHealth extends Page
                 'iha_credentials_ready' => $credentialStatus['ready'],
                 'iha_credentials_source' => $credentialStatus['source'],
                 'iha_credentials_note' => $credentialStatus['note'],
+                'iha_access_blocked' => $ihaAccessBlocked,
+                'iha_access_blocked_label' => 'İHA IP/abonelik yetkisi bekleniyor',
+                'iha_access_blocked_note' => 'Kimlik bilgileri dolu ancak İHA RSS sunucusu isteği reddediyor. Turhost çıkış IP adresinin İHA hesabına tanımlanması veya abonelik yetkisinin doğrulanması gerekir.',
                 'translation_credentials_ready' => TranslationSettings::ready(),
                 'last_error' => AdminSafeText::redact($lastFailedSync?->error_message),
                 'last_error_at' => $lastFailedSync?->completed_at,
@@ -268,6 +274,10 @@ class IhaHealth extends Page
 
     private function buildRetryNote(int $translationBacklog, int $queuedTranslationJobs, ?IhaSyncLog $lastFailedSync): string
     {
+        if ($this->isIhaAccessAuthorizationFailure($lastFailedSync)) {
+            return 'İHA tarafında IP/abonelik yetkisi bekleniyor. Yetki açılmadan otomatik cron veya manuel test senkronu yeni haber çekemez; yetki açıldıktan sonra sistem ilk cron koşusunda kendiliğinden toparlanır.';
+        }
+
         if (! TranslationSettings::ready()) {
             return 'Google Translation API key eksik. Key Entegrasyon Ayarları ekranından kaydedildiğinde eksik çeviriler otomatik kuyruğa alınır.';
         }
@@ -333,6 +343,19 @@ class IhaHealth extends Page
             null => 'Veri yok',
             default => (string) $status,
         };
+    }
+
+    private function isIhaAccessAuthorizationFailure(?IhaSyncLog $syncLog): bool
+    {
+        if (! $syncLog || ! filled($syncLog->error_message)) {
+            return false;
+        }
+
+        $message = mb_strtolower($syncLog->error_message);
+
+        return str_contains($message, 'kimlik bilgileri reddedildi')
+            || str_contains($message, 'ip yetkisini')
+            || str_contains($message, 'ip yetkisi');
     }
 
     private function flushHealthCache(): void

@@ -19,6 +19,20 @@
         </span>
     </div>
 
+    @if ($stats['iha_access_blocked'])
+        <div class="rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4 text-amber-950 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+            <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                <div>
+                    <p class="text-sm font-semibold">{{ $stats['iha_access_blocked_label'] }}</p>
+                    <p class="mt-1 text-sm leading-6">{{ $stats['iha_access_blocked_note'] }}</p>
+                </div>
+                <span class="inline-flex w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-400/10 dark:text-amber-100">
+                    Dış işlem bekleniyor
+                </span>
+            </div>
+        </div>
+    @endif
+
     <div class="admin-page-grid admin-page-grid--three" data-tour-anchor="iha.health.summary">
         <div class="admin-section-panel">
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Efektif senkron aralığı</p>
@@ -34,6 +48,9 @@
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Son koşu durumu</p>
             <p class="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{{ $stats['latest_sync_label'] }}</p>
             <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ $stats['latest_sync']?->started_at?->format('d.m.Y H:i:s') ?? 'Henüz çalışma kaydı yok.' }}</p>
+            @if ($stats['iha_access_blocked'])
+                <p class="mt-2 text-sm text-amber-700 dark:text-amber-300">Otomatik ve manuel IHA sync, IHA yetkisi açılana kadar yeni haber çekemez.</p>
+            @endif
         </div>
         <div class="admin-section-panel">
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Tazelik farkı</p>
