@@ -39,7 +39,7 @@ return [
         'user_code'       => env('IHA_USER_CODE'),
         'username'        => env('IHA_USERNAME'),
         'password'        => env('IHA_PASSWORD'),
-        'sync_interval'   => env('IHA_SYNC_INTERVAL', 15),
+        'sync_interval'   => env('IHA_SYNC_INTERVAL', 10),
         'stale_running_minutes' => env('IHA_STALE_RUNNING_MINUTES', 20),
         'request_delay'   => env('IHA_REQUEST_DELAY', 1),
         'verify_ssl'      => env('IHA_VERIFY_SSL', true),

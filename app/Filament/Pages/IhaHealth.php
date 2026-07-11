@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
 
 class IhaHealth extends Page
 {
-    private const DEFAULT_SYNC_INTERVAL_MINUTES = 15;
+    private const DEFAULT_SYNC_INTERVAL_MINUTES = 10;
     private const CRITICAL_FRESHNESS_MINUTES = 60;
 
     protected static ?string $navigationIcon = 'heroicon-o-signal';
@@ -41,7 +41,7 @@ class IhaHealth extends Page
                 ->icon('heroicon-o-cloud-arrow-down')
                 ->color('success')
                 ->modalHeading('İHA senkronunu kuyruğa al')
-                ->modalDescription('Bu aksiyon production akışıyla aynı şekilde iha:sync komutunu queue işine dönüştürür. Sonuç için senkron kayıtları ve queue worker durumu izlenmelidir.')
+                ->modalDescription('Bu aksiyon production akışına ek olarak iha:sync komutunu kuyruğa alır. Ana canlı akış Turhost cron üzerinde 10 dakikada bir doğrudan inline senkron çalıştırır.')
                 ->modalSubmitActionLabel('Kuyruğa Al')
                 ->requiresConfirmation()
                 ->action(function (): void {
@@ -189,10 +189,7 @@ class IhaHealth extends Page
             ->latest('completed_at')
             ->first();
 
-        $effectiveInterval = max(
-            self::DEFAULT_SYNC_INTERVAL_MINUTES,
-            (int) config('services.iha.sync_interval', self::DEFAULT_SYNC_INTERVAL_MINUTES)
-        );
+        $effectiveInterval = self::DEFAULT_SYNC_INTERVAL_MINUTES;
         $freshnessLagMinutes = $lastSuccessfulSync?->completed_at?->diffInMinutes(now());
         $runningAgeMinutes = $latestSync?->status === 'running'
             ? $latestSync->started_at?->diffInMinutes(now())
@@ -213,7 +210,7 @@ class IhaHealth extends Page
         return [
             'stats' => [
                 'effective_interval' => $effectiveInterval . ' dakika',
-                'schedule_note' => "Operasyonel hedef: Turhost cron her dakika scheduler çalıştırır; İHA senkronu {$effectiveInterval} dakikada bir kuyruğa alınır ve sunucu queue worker tarafından tamamlanır.",
+                'schedule_note' => "Operasyonel hedef: Turhost cron İHA senkronunu {$effectiveInterval} dakikada bir doğrudan çalıştırır; scheduler ve queue worker yardımcı/yedek akış olarak kalır.",
                 'last_successful_sync' => $lastSuccessfulSync,
                 'latest_sync' => $latestSync,
                 'latest_sync_label' => $this->statusLabel($latestSync?->status),

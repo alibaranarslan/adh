@@ -19,7 +19,7 @@ $onScheduleFailure = function (\Illuminate\Console\Scheduling\ScheduledTaskFaile
     }
 };
 
-Schedule::command('iha:sync')->cron('*/15 * * * *')->withoutOverlapping(14)
+Schedule::command('iha:sync --inline --limit=50')->cron('*/10 * * * *')->withoutOverlapping(9)
     ->onFailure($onScheduleFailure);
 
 if (filter_var(env('SCHEDULE_QUEUE_WORKER', true), FILTER_VALIDATE_BOOL)) {
@@ -29,7 +29,7 @@ if (filter_var(env('SCHEDULE_QUEUE_WORKER', true), FILTER_VALIDATE_BOOL)) {
         ->onFailure($onScheduleFailure);
 }
 
-Schedule::command('iha:monitor-forward --limit=20')->everyFifteenMinutes()
+Schedule::command('iha:monitor-forward --limit=20')->everyTenMinutes()
     ->onFailure($onScheduleFailure);
 
 Schedule::command('adh:security-ingest-audit --freshness-minutes=60')->everyThirtyMinutes()
